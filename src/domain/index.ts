@@ -10,4 +10,6 @@ export * from "./documents";
 export * from "./dashboard";
 export * from "./pipeline";
 export * from "./money";
+export * from "./prompts";
+export * from "./operator";
 export * from "./migrate";

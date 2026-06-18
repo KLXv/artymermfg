@@ -2,6 +2,37 @@
 
 A short, running log of architectural choices. Newest phase on top.
 
+## Phase 4 — Assistant as operator
+
+The assistant moves from a chat box to an operator that proposes actions the
+human applies. Logic is pure and tested (`src/domain/operator.ts`, +8 tests, 61
+total).
+
+### Human-in-the-loop, not autonomous tool-use
+
+The serverless proxy is a plain SSE passthrough, and a solo operator wants to
+approve changes — so rather than wire Anthropic tool-use round-trips, the
+assistant emits a fenced `artymer-actions` JSON block which `parseAssistantReply`
+extracts, validates and strips from the prose. The UI renders each action as a
+confirm card; **nothing touches the store until the operator taps Apply.** During
+streaming the prose is rendered through the same parser, so a half-written fence
+never flashes.
+
+### Handles, not raw ids
+
+The operator prompt lists live entities as `[P1] … [A1] …` and the model
+references those handles only. A handle→entity map is **snapshotted at send
+time** and attached to the assistant turn; apply resolves through it, so a stale
+or fabricated reference simply can't be applied (the Apply button disables). This
+keeps the model from ever fabricating a target id.
+
+### Action set
+
+create_task (optionally linked), advance_stage (reuses the Phase-2 engine),
+set_price, log_contact, set_next_action, and draft (finished copy → clipboard).
+The operator prompt extends `assistantSystemPrompt`, so the "designs + directs,
+does NOT hand-assemble" rule and the Private-Label voice carry through to drafts.
+
 ## Phase 3 — Money engine
 
 Money stops being flat totals and becomes forward-looking. All logic is a pure,

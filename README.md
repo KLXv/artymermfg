@@ -34,6 +34,13 @@ supabase/       schema migrations
 
 ## Status
 
+**Phase 4 — Assistant as operator.** The assistant proposes confirmable actions
+grounded in live state — create a task, advance a stage, set a price, log
+contact, schedule a follow-up, or draft copy. It references entities by handles
+([P1]/[A1]) resolved through a map snapshotted at send time; nothing touches the
+store until you tap Apply. Pure parsing/protocol (`src/domain/operator.ts`); 61
+tests green.
+
 **Phase 3 — Money engine.** Money is forward-looking: a 6-month cash-flow
 forecast (scheduled receivables vs overhead burn, cumulative position/runway),
 receivables aging (cash at risk by overdue bucket), margin health (worst-first +
