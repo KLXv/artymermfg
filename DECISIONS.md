@@ -2,6 +2,40 @@
 
 A short, running log of architectural choices. Newest phase on top.
 
+## Phase 2 — Pipeline engine
+
+The board stops being a display and starts driving work. All the engine logic
+is a pure, tested module (`src/domain/pipeline.ts`, +11 tests) consumed by a
+thin store action and UI.
+
+### Stage advance has effects (`planAdvance`)
+
+Advancing a project returns an `AdvanceEffect` — the stage patch, the canonical
+next-action task (from `NEXT`, deduped against open tasks, tagged `source:
+"stage"`), and expected payment dates *filled in only when blank* (deposit on
+entering Won, balance on entering QC). It's a pure planner: the store's
+`advanceProject` applies stage + task atomically and returns human notes for the
+confirmation toast. So the engine is testable and never double-creates tasks.
+
+### Forecast over the open pipeline (`pipelineMetrics`)
+
+Probability-weighted value by stage (`STAGE_PROB`), speculative vs committed
+value, win rate (committed ÷ decided). Surfaced as the forecast strip on the
+pipeline. Uses the existing finance derivations — no new persisted fields.
+
+### Outreach cadence (`contactsDue`)
+
+Turns the deck's outreach *count* into an actionable list: never-contacted
+prospects, due follow-ups, and active accounts gone cold past a threshold,
+most-urgent first. "Log contact" (pipeline + client header) stamps `lastContact`
+to today in one tap.
+
+### Tasks become first-class
+
+The `Task` entity and the deck queue already existed; Phase 2 adds the `/tasks`
+surface to manage them (add, complete, delete, jump to linked project/client),
+and stage advances now feed it. Overdue floats up; done sinks.
+
 ## Phase 1 — Parity & polish
 
 ### State: one Zustand store, persisted to localStorage

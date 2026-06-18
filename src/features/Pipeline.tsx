@@ -9,13 +9,16 @@ import {
   STAGES,
   acctName,
   blankProject,
+  contactsDue,
   money,
   owed,
+  pipelineMetrics,
   projFin,
   stageIdx,
+  today,
   type Project,
 } from "@/domain";
-import { Button, Empty, Tag, cx } from "@/ui/kit";
+import { Button, Empty, Panel, SectionHead, Stat, Tag, cx } from "@/ui/kit";
 import { StageTrack } from "@/ui/StageTrack";
 import { useStore } from "@/state/store";
 import { PageHeader } from "./PageHeader";
@@ -52,8 +55,14 @@ function Card({ p }: { p: Project }) {
 
 export function Pipeline() {
   const projects = useStore((s) => s.projects);
+  const accounts = useStore((s) => s.accounts);
+  const company = useStore((s) => s.company);
+  const patchAccount = useStore((s) => s.patchAccount);
   const upsertProject = useStore((s) => s.upsertProject);
   const navigate = useNavigate();
+
+  const metrics = useMemo(() => pipelineMetrics(Object.values(projects), company), [projects, company]);
+  const due = useMemo(() => contactsDue(Object.values(accounts)), [accounts]);
 
   const byStage = useMemo(() => {
     const m: Record<string, Project[]> = {};
@@ -73,6 +82,8 @@ export function Pipeline() {
     navigate(`/projects/${p.id}`);
   };
 
+  const logContact = (id: string) => patchAccount(id, { lastContact: today() });
+
   return (
     <div>
       <PageHeader
@@ -84,6 +95,46 @@ export function Pipeline() {
           </Button>
         }
       />
+
+      {/* Forecast */}
+      <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Stat label="Weighted forecast" value={money(metrics.weighted, "€")} tone="brass" sub="open × stage probability" />
+        <Stat label="Speculative" value={money(metrics.prospectValue, "€")} sub="proposal · negotiating" />
+        <Stat label="Committed" value={money(metrics.committedValue, "€")} tone="ok" sub="won, in production" />
+        <Stat
+          label="Win rate"
+          value={`${metrics.winRate.toFixed(0)}%`}
+          sub={`${metrics.wonCount} won · ${metrics.lostCount} lost`}
+        />
+      </div>
+
+      {/* Outreach cadence */}
+      {due.length > 0 && (
+        <Panel className="mb-5 p-4">
+          <SectionHead title="Needs a touch" kicker={`${due.length} accounts`} />
+          <ul className="flex flex-col divide-y divide-line">
+            {due.slice(0, 6).map(({ account, reason, daysSince }) => (
+              <li key={account.id} className="flex items-center gap-3 py-2">
+                <button
+                  onClick={() => navigate(`/clients/${account.id}`)}
+                  className="min-w-0 flex-1 truncate text-left text-[13px] text-ink hover:text-brass"
+                >
+                  {account.name || "Unnamed"}
+                </button>
+                <Tag tone={reason === "follow-up due" ? "warn" : reason === "going cold" ? "bad" : "neutral"}>
+                  {reason}
+                </Tag>
+                <span className="hidden w-16 text-right font-mono text-[10px] text-faint sm:inline">
+                  {daysSince != null ? `${daysSince}d` : "never"}
+                </span>
+                <Button variant="ghost" onClick={() => logContact(account.id)}>
+                  Log contact
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
 
       {Object.keys(projects).length === 0 ? (
         <Empty>No projects yet. Start one, or import your data from Settings.</Empty>

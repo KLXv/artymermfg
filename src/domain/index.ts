@@ -8,4 +8,5 @@ export * from "./finance";
 export * from "./qc";
 export * from "./documents";
 export * from "./dashboard";
+export * from "./pipeline";
 export * from "./migrate";

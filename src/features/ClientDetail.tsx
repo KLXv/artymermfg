@@ -7,10 +7,12 @@ import {
   SERVICE,
   STAGES,
   blankProject,
+  dAgo,
   money,
   owed,
   projFin,
   stageIdx,
+  today,
   type Account,
 } from "@/domain";
 import { StageTrack } from "@/ui/StageTrack";
@@ -67,9 +69,14 @@ export function ClientDetail() {
         title={a.name || "Unnamed client"}
         kicker={`${a.servicePath} · ${a.market}`}
         actions={
-          <Button variant="danger" onClick={remove}>
-            Delete
-          </Button>
+          <>
+            <Button variant="primary" onClick={() => set({ lastContact: today() })}>
+              Log contact
+            </Button>
+            <Button variant="danger" onClick={remove}>
+              Delete
+            </Button>
+          </>
         }
       />
 
@@ -87,7 +94,10 @@ export function ClientDetail() {
         </Panel>
 
         <Panel className="p-4">
-          <SectionHead title="Contact" />
+          <SectionHead
+            title="Contact"
+            kicker={a.lastContact ? `last ${dAgo(a.lastContact)}d ago` : "no contact logged"}
+          />
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Contact name" {...f("contactName")} />
             <Field label="Role" {...f("contactRole")} />

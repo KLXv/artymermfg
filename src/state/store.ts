@@ -22,6 +22,7 @@ import {
   buildBackup,
   migrateLegacy,
   parseBackup,
+  planAdvance,
 } from "@/domain";
 
 export interface WorkspaceState {
@@ -43,6 +44,8 @@ export interface WorkspaceActions {
   upsertProject: (p: Project) => void;
   patchProject: (id: string, patch: Partial<Project>) => void;
   deleteProject: (id: string) => void;
+  /** Pipeline engine: advance one stage, applying its effects atomically. */
+  advanceProject: (id: string) => string[];
 
   upsertSupplier: (s: Supplier) => void;
   patchSupplier: (id: string, patch: Partial<Supplier>) => void;
@@ -98,6 +101,18 @@ export const useStore = create<Store>()(
           delete projects[id];
           return { projects };
         }),
+
+      advanceProject: (id) => {
+        const s = get();
+        const p = s.projects[id];
+        if (!p) return [];
+        const eff = planAdvance(p, Object.values(s.tasks));
+        if (!eff.canAdvance) return [];
+        const projects = { ...s.projects, [id]: { ...p, ...eff.patch } };
+        const tasks = eff.newTask ? { ...s.tasks, [eff.newTask.id]: eff.newTask } : s.tasks;
+        set({ projects, tasks });
+        return eff.notes;
+      },
 
       upsertSupplier: (sup) => set((s) => ({ suppliers: { ...s.suppliers, [sup.id]: sup } })),
       patchSupplier: (id, patch) =>

@@ -41,7 +41,9 @@ export function ProjectDetail() {
   const company = useStore((s) => s.company);
   const patchProject = useStore((s) => s.patchProject);
   const deleteProject = useStore((s) => s.deleteProject);
+  const advanceProject = useStore((s) => s.advanceProject);
   const [tab, setTab] = useState<TabId>("Build");
+  const [toast, setToast] = useState<string[] | null>(null);
 
   if (!project) {
     return (
@@ -70,6 +72,14 @@ export function ProjectDetail() {
   const setStage = (next: number) => {
     const clamped = Math.max(0, Math.min(STAGES.length - 1, next));
     patch({ stage: STAGES[clamped] });
+  };
+
+  const advance = () => {
+    const notes = advanceProject(p.id);
+    if (notes.length) {
+      setToast(notes);
+      setTimeout(() => setToast(null), 4000);
+    }
   };
 
   const accountOpts = [
@@ -125,11 +135,19 @@ export function ProjectDetail() {
             <Button variant="ghost" onClick={() => setStage(idx - 1)} disabled={idx <= 0}>
               ← Back
             </Button>
-            <Button variant="primary" onClick={() => setStage(idx + 1)} disabled={idx >= STAGES.length - 1}>
+            <Button variant="primary" onClick={advance} disabled={idx >= STAGES.length - 1}>
               Advance →
             </Button>
             <span className="font-mono text-[11px] text-dim">Next: {NEXT[p.stage]}</span>
           </div>
+
+          {toast && (
+            <div className="rounded border border-brass/40 bg-brass-dim px-3 py-2 font-mono text-[11px] text-brass">
+              {toast.map((n, i) => (
+                <div key={i}>• {n}</div>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <KV label="Revenue" value={money(fin.rev, "€")} tone="brass" />

@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { to: "/projects", label: "Projects", glyph: "❖" },
   { to: "/clients", label: "Clients", glyph: "✦" },
   { to: "/suppliers", label: "Suppliers", glyph: "⛭" },
+  { to: "/tasks", label: "Tasks", glyph: "✓" },
   { to: "/money", label: "Money", glyph: "€" },
   { to: "/assistant", label: "Assistant", glyph: "✺" },
   { to: "/settings", label: "Settings", glyph: "⚙" },

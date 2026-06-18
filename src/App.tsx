@@ -7,6 +7,7 @@ import { ProjectDetail } from "./features/project/ProjectDetail";
 import { Clients } from "./features/Clients";
 import { ClientDetail } from "./features/ClientDetail";
 import { Suppliers } from "./features/Suppliers";
+import { Tasks } from "./features/Tasks";
 import { Money } from "./features/Money";
 import { Assistant } from "./features/Assistant";
 import { Settings } from "./features/Settings";
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="clients" element={<Clients />} />
         <Route path="clients/:id" element={<ClientDetail />} />
         <Route path="suppliers" element={<Suppliers />} />
+        <Route path="tasks" element={<Tasks />} />
         <Route path="money" element={<Money />} />
         <Route path="assistant" element={<Assistant />} />
         <Route path="settings" element={<Settings />} />

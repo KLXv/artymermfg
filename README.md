@@ -34,7 +34,14 @@ supabase/       schema migrations
 
 ## Status
 
-**Phase 1 — Parity & polish.** The full app is rebuilt on the foundation:
+**Phase 2 — Pipeline engine.** The board now drives work, not just displays it:
+advancing a stage generates its canonical next-action task and fills in expected
+payment dates; a forecast strip shows probability-weighted pipeline value and win
+rate; an outreach cadence lists who needs a touch with one-tap "Log contact"; and
+Tasks are a first-class surface (`/tasks`). All engine logic is pure and tested
+(`src/domain/pipeline.ts`); 44 tests green.
+
+**Phase 1 — Parity & polish.** The full app rebuilt on the foundation:
 
 - **Shell + routing** — the brass-on-graphite instrument frame, "the index" tick language throughout (`IndexRing`, `StageTrack`), mobile-first.
 - **Views** — Command Deck (action queue, cash runway, pulse), Pipeline board, Projects register + the five-tab project workbench (Build/spec · Commercial · QC · Presentation · Documents), Clients CRM, Suppliers bench, Money engine, AI Assistant (streaming), Settings.
