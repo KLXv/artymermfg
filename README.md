@@ -34,4 +34,11 @@ supabase/       schema migrations
 
 ## Status
 
-**Phase 0 — Foundation & direction.** Stack scaffolded, schema + secure AI proxy wired, design language and the signature element ("the index") in place, and the hard-won domain logic ported into `src/domain/` with 33 passing tests. Phase 1 rebuilds the shell and all views and migrates real data.
+**Phase 1 — Parity & polish.** The full app is rebuilt on the foundation:
+
+- **Shell + routing** — the brass-on-graphite instrument frame, "the index" tick language throughout (`IndexRing`, `StageTrack`), mobile-first.
+- **Views** — Command Deck (action queue, cash runway, pulse), Pipeline board, Projects register + the five-tab project workbench (Build/spec · Commercial · QC · Presentation · Documents), Clients CRM, Suppliers bench, Money engine, AI Assistant (streaming), Settings.
+- **Real PDF export** — dossier + certificate via `@react-pdf/renderer`, with the Private-Label override baked in. Lazy-loaded so the renderer stays out of the initial bundle.
+- **Data vehicle** — JSON import/export round-trip preserved, with the one-time legacy migration applied on import, so existing data (LóFő, HFN) drops straight in. Persists to `localStorage`; cloud sync arrives with auth in a later phase.
+
+State lives in one Zustand store (`src/state/`); every view is a faithful surface over the pure `src/domain/` layer (33 passing tests). **Phase 0** laid the foundation: stack, schema, secure AI proxy, design language, and the ported logic.

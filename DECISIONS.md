@@ -2,6 +2,44 @@
 
 A short, running log of architectural choices. Newest phase on top.
 
+## Phase 1 — Parity & polish
+
+### State: one Zustand store, persisted to localStorage
+
+The original derived everything from a single state object mirrored to
+localStorage. We preserve that model exactly: one `useStore` (Zustand +
+`persist`), selector-level subscriptions, no whole-tree re-renders. **Auth-gated
+Supabase sync is deferred to a later phase** — until then the app is fully usable
+offline and the JSON export/import is the data bridge. `useDashboard` memoizes
+`buildDashboard` over the live store; every view is a thin surface over the pure
+domain layer, so no business logic leaked into React.
+
+### Field binding preserves the raw-string model
+
+Projects carry ~80 mostly-string fields. The editor binds them with a tiny
+`makeBind(p, patch)` helper that shuttles strings to `patchProject` and coerces
+only at calculation time (via `num()`), exactly as the original did. The project
+workbench is five tabs — Build (the spec), Commercial, QC, Presentation,
+Documents — over a header instrument carrying the stage `IndexRing` and the live
+money line.
+
+### Real PDF, lazy-loaded
+
+The dossier and certificate are real PDFs (`@react-pdf/renderer`), the only place
+the serif voice and the full type system appear — the outward "object," distinct
+from the inward instrument. The **Private-Label override is enforced in the
+documents themselves**: Commission leads with `Σ` and the "designed and directed
+by one person" credit; Private Label leads with the client's brand and demotes
+`Σ` to a small maker's mark. The renderer (~1.4 MB) is dynamically imported on
+export so it never enters the initial bundle (app shell ≈ 222 KB gzip); fonts
+load from the Fontsource CDN with a base-14 fallback.
+
+### "The index" as a system, not a logo
+
+The signature tick language recurs as the ring (`IndexRing`) on the project
+header and a linear bar (`StageTrack`) in every project row and the pipeline
+cards — stage progress reads as a machined bezel everywhere, not a progress bar.
+
 ## Phase 0 — Foundation & direction
 
 ### Stack
