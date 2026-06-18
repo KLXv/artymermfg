@@ -34,6 +34,13 @@ supabase/       schema migrations
 
 ## Status
 
+**Phase 5 — Auth, cloud sync, deploy.** Optional Supabase auth + cloud sync over
+the offline-first store: a sign-in gate, the pure flat ↔ relational+JSONB repo
+mapping (deferred from Phase 1, round-trip tested), and a diff-based sync engine
+that loads/seeds on sign-in and write-throughs debounced changes — degrading
+gracefully to local-only. Mobile polish + `SETUP.md` deploy guide. 67 tests green.
+See `SETUP.md` to deploy.
+
 **Phase 4 — Assistant as operator.** The assistant proposes confirmable actions
 grounded in live state — create a task, advance a stage, set a price, log
 contact, schedule a follow-up, or draft copy. It references entities by handles

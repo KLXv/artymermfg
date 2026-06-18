@@ -9,6 +9,45 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Sigma } from "@/ui/Sigma";
 import { cx } from "@/ui/kit";
 import { useDashboard } from "@/state/useDashboard";
+import { useAuth, signOut } from "@/state/useAuth";
+import { useSyncStore } from "@/state/sync";
+import { isSupabaseConfigured } from "@/data/supabase";
+
+const SYNC_LABEL: Record<string, string> = {
+  idle: "local only",
+  loading: "loading…",
+  saving: "saving…",
+  synced: "synced",
+  error: "sync error",
+};
+const SYNC_TONE: Record<string, string> = {
+  idle: "text-faint",
+  loading: "text-dim",
+  saving: "text-brass",
+  synced: "text-ok",
+  error: "text-bad",
+};
+
+function SyncFooter() {
+  const { user } = useAuth();
+  const status = useSyncStore((s) => s.status);
+  if (!isSupabaseConfigured()) {
+    return <div className="px-2 font-mono text-[8px] uppercase tracking-wide text-faint">local only · no cloud</div>;
+  }
+  return (
+    <div className="flex flex-col gap-1.5 px-2">
+      <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wide">
+        <span className={cx("h-1.5 w-1.5 rounded-full", status === "error" ? "bg-bad" : status === "synced" ? "bg-ok" : "bg-brass")} />
+        <span className={SYNC_TONE[status]}>{SYNC_LABEL[status]}</span>
+      </div>
+      {user && (
+        <button onClick={signOut} className="text-left font-mono text-[9px] uppercase tracking-wide text-faint hover:text-dim">
+          Sign out
+        </button>
+      )}
+    </div>
+  );
+}
 
 interface NavItem {
   to: string;
@@ -87,8 +126,8 @@ export function Shell() {
           </div>
         </div>
         <NavLinks alerts={alerts} />
-        <div className="mt-auto px-2 pt-4 font-mono text-[8px] uppercase tracking-wide text-faint">
-          one operator · one workshop
+        <div className="mt-auto pt-4">
+          <SyncFooter />
         </div>
       </aside>
 

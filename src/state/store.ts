@@ -58,6 +58,9 @@ export interface WorkspaceActions {
 
   setExpenses: (e: Expense[]) => void;
 
+  /** Replace the entire workspace (used by cloud sync on load). */
+  hydrate: (state: WorkspaceState) => void;
+
   exportJSON: () => string;
   /** Merge a backup payload over current state, then run legacy migration. */
   importJSON: (raw: string) => { accounts: number; projects: number };
@@ -139,6 +142,8 @@ export const useStore = create<Store>()(
         }),
 
       setExpenses: (expenses) => set({ expenses }),
+
+      hydrate: (state) => set({ ...state }),
 
       exportJSON: () => {
         const s = get();

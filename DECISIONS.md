@@ -2,6 +2,40 @@
 
 A short, running log of architectural choices. Newest phase on top.
 
+## Phase 5 — Auth, cloud sync, deploy
+
+The last phase wires persistence, login and shipping — without disturbing the
+offline-first model.
+
+### Local-first, cloud-optional
+
+The Zustand store (localStorage) stays the live copy in every mode. Three clean
+supersets: local-only → +AI → +cloud, each gated on env vars, so the app is
+fully usable before any backend exists. When Supabase is configured, a sign-in
+gate appears and `SyncProvider` activates; when it isn't, nothing changes.
+
+### The repo mapping (deferred from Phase 1)
+
+`src/data/mappers.ts` — the pure flat-domain ↔ relational+JSONB transforms, with
+a unit-tested round-trip (+6 tests, 67 total). Queryable fields are columns; the
+deep spec/presentation/costs/controls/images/qc are JSONB groups. Postgres
+`date` columns reject "", so empties are nulled on write and restored on read.
+`src/data/repo.ts` loads the workspace and pushes **minimal diffs** in FK-safe
+phases (parents before children on upsert; children first on delete).
+
+### Sync engine
+
+`SyncProvider` loads (and, on a fresh account, seeds) the cloud on sign-in, then
+write-throughs debounced diffs against a last-synced snapshot. Failures degrade
+gracefully — the local copy stays authoritative and the sidebar shows the
+status. Auth is Supabase email+password; the AI proxy already verified the JWT,
+so the model was correct from Phase 0.
+
+### Polish & deploy
+
+Mobile viewport + web-app meta, the Newsreader serif URL fixed, and `SETUP.md`
+documenting the Supabase schema, env vars, and the Vercel deploy.
+
 ## Phase 4 — Assistant as operator
 
 The assistant moves from a chat box to an operator that proposes actions the
