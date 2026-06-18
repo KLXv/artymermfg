@@ -9,4 +9,5 @@ export * from "./qc";
 export * from "./documents";
 export * from "./dashboard";
 export * from "./pipeline";
+export * from "./money";
 export * from "./migrate";

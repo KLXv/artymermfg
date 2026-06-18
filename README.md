@@ -34,7 +34,13 @@ supabase/       schema migrations
 
 ## Status
 
-**Phase 2 — Pipeline engine.** The board now drives work, not just displays it:
+**Phase 3 — Money engine.** Money is forward-looking: a 6-month cash-flow
+forecast (scheduled receivables vs overhead burn, cumulative position/runway),
+receivables aging (cash at risk by overdue bucket), margin health (worst-first +
+blended, thin-margin flags), and inline payment tracking on the ledger. Pure and
+tested (`src/domain/money.ts`); 53 tests green.
+
+**Phase 2 — Pipeline engine.** The board drives work, not just displays it:
 advancing a stage generates its canonical next-action task and fills in expected
 payment dates; a forecast strip shows probability-weighted pipeline value and win
 rate; an outreach cadence lists who needs a touch with one-tap "Log contact"; and

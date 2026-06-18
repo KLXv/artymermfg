@@ -2,6 +2,38 @@
 
 A short, running log of architectural choices. Newest phase on top.
 
+## Phase 3 — Money engine
+
+Money stops being flat totals and becomes forward-looking. All logic is a pure,
+tested module (`src/domain/money.ts`, +9 tests, 53 total) over the existing
+finance derivations — no new persisted fields.
+
+### Cash-flow forecast (`cashFlowForecast`)
+
+Monthly inflow (scheduled, committed, unpaid deposits/balances bucketed by their
+expected date) vs the overhead burn, as a running cumulative position. Overdue
+and undated receivables are pulled into the first month so nothing is lost; the
+cumulative line's slope is the runway. Rendered as a recharts `ComposedChart`
+(inflow + burn bars, position line) on the Money screen.
+
+### Receivables aging (`receivablesAging`)
+
+Outstanding committed receivables split per leg (deposit/balance) and bucketed by
+how overdue the expected date is — not due / 0–30 / 31–60 / 60+ — so cash at risk
+is explicit rather than a single "outstanding" number.
+
+### Margin health (`marginAnalysis`)
+
+Per-project margin worst-first, the blended margin across all priced work, and a
+count of projects under the thin threshold (30%). Surfaces underpriced jobs.
+
+### Inline payment tracking
+
+The ledger's deposit/balance legs are tappable on the Money screen — mark paid
+without opening the project. Flows straight back into the forecast, aging, the
+deck queue and cash events, since they all read the same `committed`/`owed`
+derivations.
+
 ## Phase 2 — Pipeline engine
 
 The board stops being a display and starts driving work. All the engine logic
