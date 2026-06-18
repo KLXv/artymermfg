@@ -1,0 +1,69 @@
+/**
+ * Design tokens — brass on graphite. The custom layer over Tailwind.
+ * Mirrors the Tailwind theme so raw CSS (PDF documents, signature components)
+ * can reference the same values. See DECISIONS.md → Design.
+ */
+:root {
+  --ground: #15171c;
+  --panel: #1b1e25;
+  --panel2: #20242d;
+  --inset: #101216;
+  --line: #2b3039;
+  --line2: #3a4150;
+  --ink: #e8e8e8;
+  --dim: #9aa0ac;
+  --faint: #5e6470;
+  --brass: #c9a24b;
+  --brass-dim: rgba(201, 162, 75, 0.12);
+  --ok: #6fb98f;
+  --warn: #d08a45;
+  --bad: #c25b52;
+  --pl: #b9a6e0;
+  --pl-line: #6e5da8;
+
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --disp: "Space Grotesk", system-ui, sans-serif;
+  --body: "Inter", system-ui, sans-serif;
+  --serif: "Newsreader", Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--brass);
+  color: #15171c;
+}
+
+/* Quality floor: respect reduced motion everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Visible keyboard focus, brass hairline. */
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
