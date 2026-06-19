@@ -24,6 +24,7 @@ import { IndexRing } from "@/ui/IndexRing";
 import { Button, Empty, Field, Label, Panel, SelectField, Tag, Toggle, cx } from "@/ui/kit";
 import { useStore } from "@/state/store";
 import { PageHeader } from "../PageHeader";
+import { AttachmentsTab } from "./AttachmentsTab";
 import { BuildTab } from "./BuildTab";
 import { CommercialTab } from "./CommercialTab";
 import { QcTab } from "./QcTab";
@@ -31,7 +32,7 @@ import { PresentationTab } from "./PresentationTab";
 import { DocumentsTab } from "./DocumentsTab";
 import type { Patch } from "./bind";
 
-const TABS = ["Build", "Commercial", "QC", "Presentation", "Documents"] as const;
+const TABS = ["Build", "Commercial", "QC", "Presentation", "Documents", "Attachments"] as const;
 type TabId = (typeof TABS)[number];
 
 export function ProjectDetail() {
@@ -224,6 +225,7 @@ export function ProjectDetail() {
       {tab === "QC" && <QcTab p={p} patch={patch} company={company} />}
       {tab === "Presentation" && <PresentationTab p={p} patch={patch} account={account} company={company} />}
       {tab === "Documents" && <DocumentsTab p={p} account={account} company={company} />}
+      {tab === "Attachments" && <AttachmentsTab p={p} patch={patch} />}
     </div>
   );
 }

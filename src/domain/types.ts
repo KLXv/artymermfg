@@ -90,6 +90,12 @@ export interface ProjectImages {
   caseImg: string;
   back: string;
   clientLogo: string;
+  movementImg: string;
+}
+
+export interface ProjectFiles {
+  movementSpec: string;
+  engravingVector: string;
 }
 
 export interface QcUnitResult {
@@ -207,6 +213,7 @@ export interface Project {
   highlights: string;
   lang: Lang;
   images: ProjectImages;
+  files: ProjectFiles;
 
   // costs (per-unit material lines + one-off tooling + channel fee %)
   tooling: string;

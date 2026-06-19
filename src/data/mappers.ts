@@ -86,6 +86,7 @@ export const projectToRow = (p: Project, ownerId: string): Row => {
   row.spec = pick(p, SPEC_FIELDS);
   row.presentation = { ...pick(p, PRESENTATION_FIELDS), colors: p.colors };
   row.images = p.images;
+  row.files = p.files;
   row.costs = pick(p, COSTS_FIELDS);
   row.qc = p.qc;
   return row;
@@ -111,6 +112,7 @@ export const rowToProject = (row: Row): Project => {
   const pres = row.presentation as { colors?: Project["colors"] } | undefined;
   if (pres?.colors && Array.isArray(pres.colors) && pres.colors.length) p.colors = pres.colors;
   if (row.images && typeof row.images === "object") p.images = { ...p.images, ...(row.images as object) };
+  if (row.files && typeof row.files === "object") p.files = { ...p.files, ...(row.files as object) };
   if (row.qc && typeof row.qc === "object") p.qc = { ...p.qc, ...(row.qc as object) };
   return p;
 };

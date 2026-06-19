@@ -34,7 +34,7 @@ describe("project mapper", () => {
       cMovement: "22",
       deposit: "40",
       colors: [{ name: "Midnight", ref: "PMS 5395" }],
-      images: { hero: "https://x/h.jpg", dial: "", caseImg: "", back: "", clientLogo: "" },
+      images: { hero: "https://x/h.jpg", dial: "", caseImg: "", back: "", clientLogo: "", movementImg: "" },
       depositPaid: true,
       depositDate: "2026-06-01",
       qc: { received: true, results: { 1: { caliber: "pass" } }, signed: false, signedDate: "", disabled: [] },
