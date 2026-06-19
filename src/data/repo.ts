@@ -27,6 +27,29 @@ export const isWorkspaceEmpty = (s: WorkspaceState): boolean =>
 const indexById = <T extends { id: string }>(rows: T[]): Record<string, T> =>
   Object.fromEntries(rows.map((r) => [r.id, r]));
 
+/**
+ * Merge the cloud workspace with the local one, preserving any local-only
+ * records the cloud is missing. This is the safety net against silent data
+ * loss: if a previous push only partially succeeded (e.g. clients saved but
+ * projects didn't), loading the cloud copy must not discard the local projects.
+ * Remote is the base of truth for records it has; local fills the gaps.
+ */
+export function mergeWorkspaces(remote: WorkspaceState, local: WorkspaceState): WorkspaceState {
+  const fill = <T extends { id: string }>(r: Record<string, T>, l: Record<string, T>) => {
+    const out = { ...r };
+    for (const id of Object.keys(l)) if (!(id in out)) out[id] = l[id];
+    return out;
+  };
+  return {
+    company: remote.company,
+    accounts: fill(remote.accounts, local.accounts),
+    suppliers: fill(remote.suppliers, local.suppliers),
+    projects: fill(remote.projects, local.projects),
+    tasks: fill(remote.tasks, local.tasks),
+    expenses: remote.expenses.length ? remote.expenses : local.expenses,
+  };
+}
+
 /** Load the full workspace for the signed-in owner. Throws on a hard error. */
 export async function loadWorkspace(): Promise<WorkspaceState> {
   const sb = client();

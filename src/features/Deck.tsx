@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { money } from "@/domain";
 import { Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
+import { deckGreeting, deckSubline } from "@/ui/companion";
 import { WatchDial } from "@/ui/WatchDial";
 import { useDashboard } from "@/state/useDashboard";
 import { useStore } from "@/state/store";
@@ -35,8 +36,8 @@ export function Deck() {
   return (
     <div>
       <PageHeader
-        title="Command deck"
-        kicker="Today · what needs you"
+        title={`${deckGreeting()}.`}
+        kicker={deckSubline(d.alerts)}
         actions={
           <Tag tone={d.alerts ? "warn" : "ok"}>{d.alerts ? `${d.alerts} open` : "all clear"}</Tag>
         }

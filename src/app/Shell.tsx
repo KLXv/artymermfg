@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { Sigma } from "@/ui/Sigma";
 import { cx } from "@/ui/kit";
 import { CommandPalette } from "./CommandPalette";
+import { Companion } from "@/ui/Companion";
 import { useDashboard } from "@/state/useDashboard";
 import { useAuth, signOut } from "@/state/useAuth";
 import { useSyncStore } from "@/state/sync";
@@ -119,6 +120,7 @@ export function Shell() {
   return (
     <div className="min-h-screen bg-ground text-ink">
       <CommandPalette />
+      <Companion />
       {/* Desktop rail */}
       <aside className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0E121A] to-[#0A0D12] px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2">

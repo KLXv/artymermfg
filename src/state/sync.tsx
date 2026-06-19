@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef } from "react";
 import { create } from "zustand";
-import { isWorkspaceEmpty, loadWorkspace, pushWorkspaceDiff } from "@/data/repo";
+import { isWorkspaceEmpty, loadWorkspace, mergeWorkspaces, pushWorkspaceDiff } from "@/data/repo";
 import { useStore, type WorkspaceState } from "./store";
 import { useAuth } from "./useAuth";
 
@@ -65,8 +65,15 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
           await pushWorkspaceDiff(user.id, { ...remote }, local);
           lastSynced.current = local;
         } else {
-          useStore.getState().hydrate(remote);
+          // Merge so any local-only records (e.g. from a previously failed
+          // push) survive instead of being overwritten by a partial cloud copy.
+          const merged = mergeWorkspaces(remote, local);
+          useStore.getState().hydrate(merged);
           lastSynced.current = remote;
+          if (JSON.stringify(merged) !== JSON.stringify(remote)) {
+            await pushWorkspaceDiff(user.id, remote, merged);
+            lastSynced.current = merged;
+          }
         }
         setSync({ status: "synced", lastSyncedAt: Date.now(), error: "" });
       } catch (e) {
