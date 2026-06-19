@@ -16,7 +16,7 @@ import { useRef, useState } from "react";
 import { uploadAttachment, deleteAttachment } from "@/data/storage";
 import { isSupabaseConfigured } from "@/data/supabase";
 import { useAuth } from "@/state/useAuth";
-import { Button, Label, Panel, SectionHead } from "@/ui/kit";
+import { Label, Panel, SectionHead } from "@/ui/kit";
 import { cx } from "@/ui/kit";
 import type { Project, ProjectFiles, ProjectImages } from "@/domain";
 import type { Patch } from "./bind";

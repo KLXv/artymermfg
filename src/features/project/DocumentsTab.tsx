@@ -4,8 +4,18 @@
  * domain layer. Copy to clipboard or download as text.
  */
 import { useState } from "react";
-import { qcSignoff, specText, termsText, type Account, type Company, type Project } from "@/domain";
-import { Button, Panel, SectionHead } from "@/ui/kit";
+import {
+  qcSignoff,
+  qcSignoffZh,
+  specText,
+  specTextZh,
+  termsText,
+  termsTextZh,
+  type Account,
+  type Company,
+  type Project,
+} from "@/domain";
+import { Button, Panel, SectionHead, cx } from "@/ui/kit";
 import { useStore } from "@/state/store";
 import { docName } from "@/documents/name";
 
@@ -56,26 +66,50 @@ export function DocumentsTab({ p, account, company }: { p: Project; account?: Ac
   const suppliers = useStore((s) => s.suppliers);
   const accounts = account ? { [account.id]: account } : {};
   const piece = p.pieceName || p.name || "piece";
+  const [lang, setLang] = useState<"EN" | "ZH">("EN");
+  const zh = lang === "ZH";
+  const suffix = zh ? "-zh" : "";
 
   return (
     <div className="flex flex-col gap-5">
+      <Panel className="flex items-center gap-3 p-3">
+        <span className="font-mono text-[12px] uppercase tracking-label text-faint">Factory language</span>
+        <div className="flex gap-1">
+          {(["EN", "ZH"] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => setLang(l)}
+              className={cx(
+                "rounded-md border px-3 py-1.5 font-mono text-[12px] transition-colors",
+                lang === l ? "border-brass bg-brass-dim text-brass" : "border-line text-dim hover:border-line2 hover:text-ink",
+              )}
+            >
+              {l === "EN" ? "English" : "简体中文"}
+            </button>
+          ))}
+        </div>
+        <span className="ml-auto font-mono text-[11px] text-faint">
+          {zh ? "供应商版本 · 与英文同源" : "source of record"}
+        </span>
+      </Panel>
       <DocBlock
         title="Production specification"
         kicker={`Rev ${p.rev || "—"}`}
-        text={specText(p, accounts, suppliers)}
-        file={docName(piece, "spec")}
+        text={zh ? specTextZh(p, accounts, suppliers) : specText(p, accounts, suppliers)}
+        file={docName(piece, "spec") + suffix}
       />
       <DocBlock
         title="Trade-assurance contract terms"
         kicker="Alibaba channel"
-        text={termsText(p, accounts, company)}
-        file={docName(piece, "terms")}
+        text={zh ? termsTextZh(p, accounts, company) : termsText(p, accounts, company)}
+        file={docName(piece, "terms") + suffix}
       />
       <DocBlock
         title="QC sign-off"
         kicker="Watchmaker & Founder"
-        text={qcSignoff(p, accounts, company)}
-        file={docName(piece, "qc-signoff")}
+        text={zh ? qcSignoffZh(p, accounts, company) : qcSignoff(p, accounts, company)}
+        file={docName(piece, "qc-signoff") + suffix}
       />
     </div>
   );

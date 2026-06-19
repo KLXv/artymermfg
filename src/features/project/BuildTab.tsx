@@ -5,7 +5,7 @@
  * tolerances.
  */
 import { type DialColor, type Project } from "@/domain";
-import { Button, Field, Panel, SectionHead, Label, cx } from "@/ui/kit";
+import { Button, Field, Panel, SectionHead, Label, TextArea, cx } from "@/ui/kit";
 import { WatchDial, type DialSpec } from "@/ui/WatchDial";
 import { makeBind, type Patch } from "./bind";
 
@@ -54,11 +54,22 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
+/** A full-width free-text note that flows into the production spec. */
+function Note({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <div className="sm:col-span-2 lg:col-span-3">
+      <TextArea label="Notes for the factory" value={value} onChange={onChange} rows={2} placeholder={placeholder} />
+    </div>
+  );
+}
+
 function DialPreview({ p }: { p: Project }) {
   const firstColor = p.colors.find((c) => c.ref || c.name);
   const spec: DialSpec = {
     caseDia: p.caseDia,
     dialColor: firstColor?.ref || firstColor?.name,
+    dialColors: p.colors.map((c) => c.ref || c.name).filter(Boolean),
+    gradient: p.dialGrad,
     texture: p.tex,
     markers: p.marker,
     hasDate: !!p.date && p.date !== "none",
@@ -130,6 +141,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
           />
           <Field {...f("wr")} className="mt-2" placeholder="…or a custom rating" />
         </div>
+        <Note value={p.caseNote} onChange={(v) => patch({ caseNote: v })} placeholder="e.g. brushed top, polished bevel; drilled lugs; specific caseback gasket…" />
       </Group>
 
       <Group title="Movement">
@@ -146,6 +158,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Hand length" {...f("handLen")} />
         <Field label="Hand finish" {...f("handFin")} />
         <Field label="Lume" {...f("lume")} />
+        <Note value={p.movementNote} onChange={(v) => patch({ movementNote: v })} placeholder="e.g. regulated to chronometer spec; custom rotor engraving; hack seconds required…" />
       </Group>
 
       <Group title="Crystal & exterior">
@@ -157,6 +170,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Crown" {...f("crown")} />
         <Field label="Caseback" {...f("back")} />
         <Field label="Strap" {...f("strap")} />
+        <Note value={p.crystalNote} onChange={(v) => patch({ crystalNote: v })} placeholder="e.g. box sapphire with inner + outer AR; signed crown; quick-release spring bars…" />
       </Group>
 
       <Group title="Dial — designed by Artymer">
@@ -174,6 +188,18 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Marker placement (mm)" {...f("markerPos")} />
         <Field label="Marker attachment" {...f("markerAtt")} />
         <Field label="Date" {...f("date")} />
+        <div className="sm:col-span-2 lg:col-span-3">
+          <Segmented
+            label="Colour rendering"
+            value={p.dialGrad || "Solid"}
+            onChange={(v) => patch({ dialGrad: v })}
+            options={["Solid", "Fumé", "Gradient"]}
+          />
+          <p className="mt-1.5 font-mono text-[11px] text-faint">
+            Solid = one colour · Fumé = smoked rim (uses colour 01) · Gradient = blends every colour below, centre → rim.
+          </p>
+        </div>
+        <Note value={p.dialNote} onChange={(v) => patch({ dialNote: v })} placeholder="e.g. multi-level dial; sandwich construction; specific brushing direction; SuperLumiNova grade…" />
       </Group>
 
       <Panel className="p-4">
@@ -229,6 +255,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Text" {...f("engTxt")} />
         <Field label="Method" {...f("engMethod")} />
         <Field label="Depth (mm)" {...f("engDepth")} />
+        <Note value={p.engNote} onChange={(v) => patch({ engNote: v })} placeholder="e.g. fill colour; font reference; individual serial numbering per unit…" />
       </Group>
 
       <Panel className="p-4">

@@ -74,6 +74,7 @@ const project: Project = {
   lugW: "20",
   caseFin: "Brushed flanks, polished bezel",
   wr: "5 ATM",
+  caseNote: "Drilled lugs for quick strap changes. Polished chamfer between brushed top and flanks must be crisp and continuous.",
 
   cal: "NH35A",
   calFn: "3-hand + date",
@@ -83,6 +84,7 @@ const project: Project = {
   handLen: "Hour 9.0 / minute 11.5 mm",
   handFin: "Polished, rhodium-plated",
   lume: "BGW9",
+  movementNote: "Hack seconds required. Regulate to +/-10 s/day in 3 positions before casing.",
 
   crysMat: "Sapphire",
   crysShape: "Flat",
@@ -92,6 +94,7 @@ const project: Project = {
   crown: "Screw-down, signed",
   back: "Solid, laser-engraved",
   strap: "Black calf leather, 20/18 mm",
+  crystalNote: "Box sapphire, inner + outer AR with a neutral (non-blue) tint. Signed crown with positive screw-down feel.",
 
   dialMat: "Brass",
   dialDia: "34.0",
@@ -111,13 +114,16 @@ const project: Project = {
   markerPos: "0.15",
   markerAtt: "Pressed",
   date: "none",
+  dialGrad: "Fumé",
+  dialNote: "Smoked fumé: bright at centre burning to near-black at the rim. Transition must match the approved sample under D65.",
 
-  colors: [{ name: "Midnight Navy", ref: "PMS 289 C" }],
+  colors: [{ name: "Midnight Navy", ref: "#1b3a6b" }],
 
   engLoc: "Caseback",
   engTxt: "Hartmann & Sohn · No. [XX]/50",
   engMethod: "Laser",
   engDepth: "0.08",
+  engNote: "Sequential serial numbering per unit (01–50) substituted into [XX]. Confirm font matches the supplied vector.",
 
   center: "0.10",
   align: "0.25",

@@ -146,6 +146,7 @@ export interface Project {
   lugW: string;
   caseFin: string;
   wr: string;
+  caseNote: string; // free-text notes for the factory (case)
 
   // movement
   cal: string;
@@ -156,6 +157,7 @@ export interface Project {
   handLen: string;
   handFin: string;
   lume: string;
+  movementNote: string; // free-text notes (movement / hands)
 
   // crystal
   crysMat: string;
@@ -166,6 +168,7 @@ export interface Project {
   crown: string;
   back: string;
   strap: string;
+  crystalNote: string; // free-text notes (crystal & exterior)
 
   // dial
   dialMat: string;
@@ -188,6 +191,8 @@ export interface Project {
   markerPos: string;
   markerAtt: string;
   date: string;
+  dialGrad: string; // "Solid" | "Fumé" | "Gradient" — how the dial colours render
+  dialNote: string; // free-text notes (dial)
 
   colors: DialColor[];
 
@@ -196,6 +201,7 @@ export interface Project {
   engTxt: string;
   engMethod: string;
   engDepth: string;
+  engNote: string; // free-text notes (engraving)
 
   // finished-watch tolerances
   center: string;

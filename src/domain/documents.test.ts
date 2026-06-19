@@ -34,6 +34,22 @@ describe("specText", () => {
     // an unset value renders as the underscored blank
     expect(out).toContain("________");
   });
+
+  it("flows per-component free-text notes into the right sections", () => {
+    const p = { ...base(), caseNote: "drilled lugs", dialNote: "sandwich dial", engNote: "serial per unit" };
+    const out = specText(p, accounts, suppliers);
+    expect(out).toContain("drilled lugs");
+    expect(out).toContain("sandwich dial");
+    expect(out).toContain("serial per unit");
+    // a blank note adds no line
+    expect(specText(base(), accounts, suppliers)).not.toContain("Notes");
+  });
+
+  it("calls out a non-solid dial finish only when set", () => {
+    expect(specText(base(), accounts, suppliers)).not.toContain("dial — colour transition");
+    const fume = { ...base(), dialGrad: "Fumé" };
+    expect(specText(fume, accounts, suppliers)).toContain("Fumé dial — colour transition");
+  });
 });
 
 describe("termsText", () => {
@@ -48,6 +64,16 @@ describe("termsText", () => {
   it("honours a project-level deposit override", () => {
     const out = termsText({ ...base(), deposit: "40" }, accounts, company);
     expect(out).toContain("40% deposit on order + sample approval; 60% after Buyer approves");
+  });
+
+  it("opens with the responsibility & authority section", () => {
+    const out = termsText(base(), accounts, company);
+    expect(out).toContain("1. RESPONSIBILITY & AUTHORITY");
+    expect(out).toContain("Artymer holds sole design + quality authority");
+    expect(out).toContain("full liability for manufacturing");
+    // existing sections still present, just renumbered
+    expect(out).toContain("2. PAYMENT");
+    expect(out).toContain("7. DISPUTE");
   });
 });
 

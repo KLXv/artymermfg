@@ -20,6 +20,14 @@ import type { Account, Company, Project, Supplier } from "./types";
 type AccountMap = Record<string, Account>;
 type SupplierMap = Record<string, Supplier>;
 
+/** A free-text note rendered as an indented, wrapped block under a section. */
+const noteLines = (label: string, val: string): string[] => {
+  const t = (val || "").trim();
+  if (!t) return [];
+  const rows = t.split(/\r?\n/);
+  return rows.map((r, i) => `   ${(i === 0 ? label : "").padEnd(10)}${r}`);
+};
+
 export const specText = (p: Project, accounts: AccountMap, suppliers: SupplierMap): string => {
   const L: string[] = [];
   L.push("Σ  ARTYMER — PRODUCTION SPECIFICATION");
@@ -43,11 +51,14 @@ export const specText = (p: Project, accounts: AccountMap, suppliers: SupplierMa
     `             Ø ${D(p.caseDia, p.caseDiaT, "mm")} · L2L ${V(p.l2l)} mm · H ${V(p.thick)} mm · lug ${V(p.lugW)} mm`,
   );
   L.push(`             finish ${V(p.caseFin)} · WR ${V(p.wr)}`);
+  L.push(...noteLines("Notes", p.caseNote));
   L.push(`   Movement  genuine ${V(p.cal)} (${V(p.calFn)}) · ${V(p.acc)} s/${p.accUnit === "month" ? "month" : "day"}`);
   L.push("             VERIFY: backplate caliber-marking macro BEFORE casing");
   L.push(`   Hands     ${V(p.handRef)} · ${V(p.handLen)} · ${V(p.handFin)} · lume ${V(p.lume)}`);
+  L.push(...noteLines("Notes", p.movementNote));
   L.push(`   Crystal   ${V(p.crysMat)} · ${V(p.crysShape)} · AR ${V(p.ar)} · Ø ${D(p.crysDia, p.crysDiaT, "mm")}`);
   L.push(`   Crown ${V(p.crown)} · Caseback ${V(p.back)} · Strap ${V(p.strap)}`);
+  L.push(...noteLines("Notes", p.crystalNote));
   L.push(RULE, "2. DIAL  (designed by Artymer)");
   L.push(`   Base      ${V(p.dialMat)} · Ø ${D(p.dialDia, p.dialDiaT, "mm")} · thickness ${D(p.dialThk, p.dialThkT, "mm")}`);
   L.push(`   Feet      ${V(p.feet)}  (must match movement ${V(p.cal)})`);
@@ -58,7 +69,10 @@ export const specText = (p: Project, accounts: AccountMap, suppliers: SupplierMa
   L.push("             NO pad print over textured zones — appliqué only on texture");
   L.push(`   Markers   ${V(p.marker)} · placement ≤ ${V(p.markerPos)} mm from datum · ${V(p.markerAtt)}`);
   L.push(`   Date      ${p.date === "none" ? "none" : V(p.date)}`);
+  if ((p.dialGrad || "Solid") !== "Solid") L.push(`   Finish    ${V(p.dialGrad)} dial — colour transition per approved sample`);
+  L.push(...noteLines("Notes", p.dialNote));
   L.push(RULE, "3. ENGRAVING", `   ${V(p.engLoc)} · "${V(p.engTxt)}" · ${V(p.engMethod)} · depth ${V(p.engDepth)} mm`);
+  L.push(...noteLines("Notes", p.engNote));
   L.push(RULE, "4. ASSEMBLY & FINISHED-WATCH TOLERANCES  (verify vs factory)");
   L.push(`   Dial centering    ≤ ${V(p.center)} mm concentricity`);
   L.push(`   Hand alignment    indices ≤ ${V(p.align)}° ; coincident at 12:00:00`);
@@ -91,28 +105,37 @@ export const termsText = (p: Project, accounts: AccountMap, company: Company): s
   );
   L.push(`Quality is defined by the attached Production Specification (Rev ${V(p.rev)}) and`);
   L.push("the approved first-off sample. Both are part of this contract.", RULE);
-  L.push("1. PAYMENT");
+  L.push("1. RESPONSIBILITY & AUTHORITY");
+  L.push("   • Artymer holds sole design + quality authority: artwork, CAD, tolerances,");
+  L.push("     the approved first-off sample, and final QC sign-off. No component");
+  L.push("     substitution or deviation without Artymer's prior written approval.");
+  L.push("   • The Supplier manufactures strictly to this Specification and the approved");
+  L.push("     sample, and bears full liability for manufacturing defects, non-conforming");
+  L.push("     materials, and any undisclosed component substitution.");
+  L.push("   • Genuine components only; counterfeit or unauthorised parts void acceptance");
+  L.push("     and place all resulting cost and liability on the Supplier.", RULE);
+  L.push("2. PAYMENT");
   L.push(`   • ${V(cfg(p, "deposit", company))}% deposit on order + sample approval; ${bal2}% after Buyer approves`);
   L.push("     the pre-shipment QC media, before shipment.");
   L.push("   • All payment via the Alibaba.com designated channel — only channel-paid amounts are protected.");
   L.push("   • Deposit funds tooling + materials; non-refundable on Buyer cancellation once tooling is cut.", RULE);
-  L.push("2. CONFORMANCE");
+  L.push("3. CONFORMANCE");
   L.push("   Conforms only if every measured parameter is within Specification tolerance");
   L.push("   AND matches the approved sample under 5000–6500 K light.");
   L.push(`   Movement genuine ${V(p.cal)}, proven by backplate macro before casing.`, RULE);
-  L.push("3. REJECTION");
+  L.push("4. REJECTION");
   L.push("   • Unit: out of tolerance, or visibly deviates from the approved sample.");
   L.push(`   • Lot: > ${V(cfg(p, "lotFail", company))}% non-conforming = whole batch may be rejected.`);
   L.push(`   • Supplier reworks/replaces at own cost or refunds in full; max ${V(cfg(p, "rework", company))} reworks.`);
   L.push("   • Failure evidenced pre-shipment = no shipment, no balance release.", RULE);
-  L.push("4. SHIPPING & RETURNS");
+  L.push("5. SHIPPING & RETURNS");
   L.push("   • Non-conforming shipped goods: Supplier bears 100% return freight and replaces or refunds in full.");
   L.push("   • Where return is impractical vs order value, refund without return on evidence of non-conformance.", RULE);
-  L.push("5. QC MEDIA (release gate)");
+  L.push("6. QC MEDIA (release gate)");
   L.push("   Continuous unedited video; order+date sheet; full-batch count; numbered per-unit macro;");
   L.push("   caliber clip before casing; neutral light; per-unit stills.");
   L.push(`   Delivered before balance release. Buyer approves/rejects within ${V(cfg(p, "window", company))} business days.`, RULE);
-  L.push("6. DISPUTE");
+  L.push("7. DISPUTE");
   L.push("   References Specification + approved sample + QC media. Unresolved within the Trade");
   L.push("   Assurance window (5-day response / 15-day settlement) → Buyer escalates to Alibaba.com.");
   return L.join("\n");

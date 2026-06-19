@@ -14,6 +14,10 @@ import { useEffect, useState } from "react";
 export interface DialSpec {
   caseDia?: string;
   dialColor?: string;
+  /** All approved dial colours (ref or name), in order — drives fumé/gradient. */
+  dialColors?: string[];
+  /** "Solid" | "Fumé" | "Gradient" — how the dial colours render. */
+  gradient?: string;
   texture?: string;
   markers?: string;
   hasDate?: boolean;
@@ -59,6 +63,36 @@ function shade(hex: string, amt: number): string {
   const b = Math.max(0, Math.min(255, (n & 255) + amt));
   return `rgb(${r},${g},${b})`;
 }
+/* Dial fill stops. Solid = shaded single colour (the classic look); Fumé =
+ * bright centre burning to a near-black rim (smoked dial); Gradient = a true
+ * blend across every approved colour, centre → rim. Returns [offset%, colour]. */
+function dialStops(base: string, colors: string[], mode = "Solid"): [number, string][] {
+  const m = mode.toLowerCase();
+  const cs = colors.length ? colors : [base];
+  if (m.startsWith("fum")) {
+    const c0 = cs[0];
+    return [
+      [0, shade(c0, 34)],
+      [45, c0],
+      [82, shade(c0, -52)],
+      [100, shade(c0, -84)],
+    ];
+  }
+  if (m.startsWith("grad") && cs.length >= 2) {
+    const last = cs.length - 1;
+    const stops: [number, string][] = [[0, shade(cs[0], 22)]];
+    cs.forEach((c, i) => stops.push([8 + (i / last) * 84, c]));
+    stops.push([100, shade(cs[last], -30)]);
+    return stops;
+  }
+  // Solid — the original three-stop shaded radial.
+  return [
+    [0, shade(base, 30)],
+    [62, base],
+    [100, shade(base, -28)],
+  ];
+}
+
 /* case metal → [light, mid, dark] gradient stops */
 function metalStops(material = "", finish = ""): [string, string, string] {
   const t = (material + " " + finish).toLowerCase();
@@ -102,6 +136,8 @@ export function WatchDial({
   const uid = `wd${size}-${mode}-${Math.round((rCaseOut + bezelW) * 7)}`;
 
   const dialBase = parseColor(spec.dialColor);
+  const parsedColors = (spec.dialColors ?? []).map(parseColor).filter(Boolean);
+  const dialFill = dialStops(dialBase, parsedColors, spec.gradient);
   const [mL, mM, mD] = metalStops(spec.caseMaterial, spec.caseFinish);
   const lume = !!spec.lume;
   const lumeC = "#BFF7CE";
@@ -163,9 +199,9 @@ export function WatchDial({
       aria-label={mode === "live" ? "Artymer studio clock" : "Watch dial preview"} className={className}>
       <defs>
         <radialGradient id={`${uid}-dial`} cx="50%" cy="36%" r="78%">
-          <stop offset="0%" stopColor={shade(dialBase, 30)} />
-          <stop offset="62%" stopColor={dialBase} />
-          <stop offset="100%" stopColor={shade(dialBase, -28)} />
+          {dialFill.map(([off, col], i) => (
+            <stop key={i} offset={`${off}%`} stopColor={col} />
+          ))}
         </radialGradient>
         <linearGradient id={`${uid}-metal`} x1="0" y1="0" x2="0.3" y2="1">
           <stop offset="0%" stopColor={mL} />

@@ -7,6 +7,7 @@ export * from "./i18n";
 export * from "./finance";
 export * from "./qc";
 export * from "./documents";
+export * from "./documents-zh";
 export * from "./dashboard";
 export * from "./pipeline";
 export * from "./money";

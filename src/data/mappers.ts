@@ -63,13 +63,13 @@ const PROJECT_COLUMNS: Record<string, keyof Project> = {
 const PROJECT_DATE_COLS = new Set(["deadline", "deposit_expected", "balance_expected", "deposit_date", "balance_date"]);
 
 const SPEC_FIELDS = [
-  "caseRef", "caseMat", "caseDia", "caseDiaT", "l2l", "thick", "lugW", "caseFin", "wr",
-  "cal", "calFn", "acc", "accUnit", "handRef", "handLen", "handFin", "lume",
-  "crysMat", "crysShape", "ar", "crysDia", "crysDiaT", "crown", "back", "strap",
+  "caseRef", "caseMat", "caseDia", "caseDiaT", "l2l", "thick", "lugW", "caseFin", "wr", "caseNote",
+  "cal", "calFn", "acc", "accUnit", "handRef", "handLen", "handFin", "lume", "movementNote",
+  "crysMat", "crysShape", "ar", "crysDia", "crysDiaT", "crown", "back", "strap", "crystalNote",
   "dialMat", "dialDia", "dialDiaT", "dialThk", "dialThkT", "feet",
   "tex", "texDepth", "texDepthT", "gloss", "print", "reg",
-  "marker", "markerPos", "markerAtt", "date",
-  "engLoc", "engTxt", "engMethod", "engDepth",
+  "marker", "markerPos", "markerAtt", "date", "dialGrad", "dialNote",
+  "engLoc", "engTxt", "engMethod", "engDepth", "engNote",
   "center", "align", "clear", "bezel", "wrTest", "clean", "lumeStd",
 ] as const satisfies readonly (keyof Project)[];
 const COSTS_FIELDS = ["tooling", "cMovement", "cCase", "cDial", "cHands", "cCrystal", "cStrap", "cAssembly", "cPack", "cShip", "cDuty", "cOther", "feePct"] as const satisfies readonly (keyof Project)[];
