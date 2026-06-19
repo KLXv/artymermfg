@@ -101,6 +101,8 @@ export interface ProjectQc {
   results: Record<string | number, QcUnitResult>;
   signed: boolean;
   signedDate: string;
+  /** Check ids switched off for this project (excluded from the verdict). */
+  disabled?: string[];
 }
 
 export interface Project {
@@ -143,6 +145,7 @@ export interface Project {
   cal: string;
   calFn: string;
   acc: string;
+  accUnit: string; // "day" | "month" — the accuracy window
   handRef: string;
   handLen: string;
   handFin: string;

@@ -43,7 +43,7 @@ export const specText = (p: Project, accounts: AccountMap, suppliers: SupplierMa
     `             Ø ${D(p.caseDia, p.caseDiaT, "mm")} · L2L ${V(p.l2l)} mm · H ${V(p.thick)} mm · lug ${V(p.lugW)} mm`,
   );
   L.push(`             finish ${V(p.caseFin)} · WR ${V(p.wr)}`);
-  L.push(`   Movement  genuine ${V(p.cal)} (${V(p.calFn)}) · ${V(p.acc)} s/day`);
+  L.push(`   Movement  genuine ${V(p.cal)} (${V(p.calFn)}) · ${V(p.acc)} s/${p.accUnit === "month" ? "month" : "day"}`);
   L.push("             VERIFY: backplate caliber-marking macro BEFORE casing");
   L.push(`   Hands     ${V(p.handRef)} · ${V(p.handLen)} · ${V(p.handFin)} · lume ${V(p.lume)}`);
   L.push(`   Crystal   ${V(p.crysMat)} · ${V(p.crysShape)} · AR ${V(p.ar)} · Ø ${D(p.crysDia, p.crysDiaT, "mm")}`);

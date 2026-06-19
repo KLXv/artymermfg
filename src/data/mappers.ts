@@ -64,7 +64,7 @@ const PROJECT_DATE_COLS = new Set(["deadline", "deposit_expected", "balance_expe
 
 const SPEC_FIELDS = [
   "caseRef", "caseMat", "caseDia", "caseDiaT", "l2l", "thick", "lugW", "caseFin", "wr",
-  "cal", "calFn", "acc", "handRef", "handLen", "handFin", "lume",
+  "cal", "calFn", "acc", "accUnit", "handRef", "handLen", "handFin", "lume",
   "crysMat", "crysShape", "ar", "crysDia", "crysDiaT", "crown", "back", "strap",
   "dialMat", "dialDia", "dialDiaT", "dialThk", "dialThkT", "feet",
   "tex", "texDepth", "texDepthT", "gloss", "print", "reg",

@@ -28,11 +28,13 @@ export interface ProjVerdict {
 export const projVerdict = (pr: Project, company: Company): ProjVerdict => {
   const qtyN = Math.max(0, parseInt(pr.qty) || 0);
   const results = pr.qc?.results || {};
+  const disabled = new Set(pr.qc?.disabled || []);
+  const checks = QC_CHECKS.filter(([id]) => !disabled.has(id));
   const statusOf = (n: number): UnitStatus => {
     const u = results[n] || {};
-    const v = QC_CHECKS.map(([id]) => u[id]);
+    const v = checks.map(([id]) => u[id]);
     if (v.some((x) => x === "fail")) return "fail";
-    if (v.every((x) => x === "pass")) return "pass";
+    if (v.length > 0 && v.every((x) => x === "pass")) return "pass";
     return "pending";
   };
   let passU = 0;

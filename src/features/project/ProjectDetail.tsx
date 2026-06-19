@@ -11,6 +11,7 @@ import {
   SERVICE,
   STAGES,
   acctName,
+  blankAccount,
   committed,
   dFromNow,
   money,
@@ -20,7 +21,7 @@ import {
   stageIdx,
 } from "@/domain";
 import { IndexRing } from "@/ui/IndexRing";
-import { Button, Empty, Panel, SelectField, Tag, Toggle, cx } from "@/ui/kit";
+import { Button, Empty, Field, Label, Panel, SelectField, Tag, Toggle, cx } from "@/ui/kit";
 import { useStore } from "@/state/store";
 import { PageHeader } from "../PageHeader";
 import { BuildTab } from "./BuildTab";
@@ -43,6 +44,8 @@ export function ProjectDetail() {
   const deleteProject = useStore((s) => s.deleteProject);
   const advanceProject = useStore((s) => s.advanceProject);
   const cloneProject = useStore((s) => s.cloneProject);
+  const upsertAccount = useStore((s) => s.upsertAccount);
+  const patchAccount = useStore((s) => s.patchAccount);
   const [tab, setTab] = useState<TabId>("Build");
   const [toast, setToast] = useState<string[] | null>(null);
 
@@ -100,6 +103,13 @@ export function ProjectDetail() {
     if (newId) navigate(`/projects/${newId}`);
   };
 
+  const newClient = () => {
+    const a = blankAccount();
+    a.servicePath = p.servicePath === "Private label" ? "Private label" : "Commission";
+    upsertAccount(a);
+    patch({ accountId: a.id });
+  };
+
   return (
     <div>
       <button onClick={() => navigate("/projects")} className="mb-3 font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim">
@@ -129,8 +139,17 @@ export function ProjectDetail() {
           <IndexRing stages={STAGES} current={idx} size={150} centerKicker="Stage" centerLabel={p.stage} />
         </div>
         <div className="flex flex-col gap-3">
+          <Field label="Project name" value={p.name} onChange={(v) => patch({ name: v })} placeholder="e.g. Falcon Mk II" mono={false} />
           <div className="grid gap-3 sm:grid-cols-3">
-            <SelectField label="Client" value={p.accountId} onChange={(v) => patch({ accountId: v })} options={accountOpts} />
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <Label>Client</Label>
+                <button onClick={newClient} className="font-mono text-[11px] uppercase tracking-label text-brass hover:underline">
+                  + New
+                </button>
+              </div>
+              <SelectField value={p.accountId} onChange={(v) => patch({ accountId: v })} options={accountOpts} />
+            </div>
             <SelectField
               label="Service path"
               value={p.servicePath}
@@ -139,6 +158,15 @@ export function ProjectDetail() {
             />
             <SelectField label="Stage" value={p.stage} onChange={(v) => patch({ stage: v })} options={STAGES} />
           </div>
+          {account && (
+            <Field
+              label="Client / organisation name"
+              value={account.name}
+              onChange={(v) => patchAccount(account.id, { name: v })}
+              placeholder="Name this client"
+              mono={false}
+            />
+          )}
 
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="ghost" onClick={() => setStage(idx - 1)} disabled={idx <= 0}>

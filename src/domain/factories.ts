@@ -94,6 +94,7 @@ export const blankProject = (accountId = ""): Project => ({
   cal: "",
   calFn: "3-hand",
   acc: "±20",
+  accUnit: "day",
   handRef: "",
   handLen: "",
   handFin: "",
@@ -153,5 +154,5 @@ export const blankProject = (accountId = ""): Project => ({
   depositDate: "",
   balancePaid: false,
   balanceDate: "",
-  qc: { received: false, results: {}, signed: false, signedDate: "" },
+  qc: { received: false, results: {}, signed: false, signedDate: "", disabled: [] },
 });

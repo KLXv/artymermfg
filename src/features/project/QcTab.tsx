@@ -31,6 +31,14 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
   const v = projVerdict(p, company);
   const qtyN = v.qtyN;
   const units = Array.from({ length: qtyN }, (_, i) => i + 1);
+  const disabled = new Set(p.qc.disabled || []);
+  const enabled = QC_CHECKS.filter(([id]) => !disabled.has(id));
+  const toggleCheck = (id: string) => {
+    const next = new Set(disabled);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    patch({ qc: { ...p.qc, disabled: [...next] } });
+  };
 
   const setCheck = (unit: number, checkId: string, val: "pass" | "fail" | "") => {
     const results = { ...(p.qc.results || {}) };
@@ -48,7 +56,7 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
 
   const markAll = (val: "pass" | "") => {
     const results: Record<number, QcUnitResult> = {};
-    if (val === "pass") units.forEach((u) => (results[u] = Object.fromEntries(QC_CHECKS.map(([id]) => [id, "pass"]))));
+    if (val === "pass") units.forEach((u) => (results[u] = Object.fromEntries(enabled.map(([id]) => [id, "pass"]))));
     patch({ qc: { ...p.qc, results } });
   };
 
@@ -84,6 +92,27 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
       </Panel>
 
       <Panel className="p-4">
+        <SectionHead title="Checks" kicker="switch off any that don't apply to this piece" />
+        <div className="flex flex-wrap gap-2">
+          {QC_CHECKS.map(([id, label]) => {
+            const on = !disabled.has(id);
+            return (
+              <button
+                key={id}
+                onClick={() => toggleCheck(id)}
+                className={cx(
+                  "rounded-md border px-2.5 py-1.5 font-mono text-[12px] transition-colors",
+                  on ? "border-brass/50 bg-brass-dim text-brass" : "border-line text-faint line-through hover:text-dim",
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </Panel>
+
+      <Panel className="p-4">
         <SectionHead title="Per-unit inspection" kicker="tap to cycle · pass → fail → clear" />
         {qtyN === 0 ? (
           <Empty>Set a quantity on the Commercial tab to inspect units.</Empty>
@@ -93,7 +122,7 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
               <thead>
                 <tr className="font-mono text-[11px] uppercase tracking-wide text-faint">
                   <th className="px-2 py-1 text-left font-normal">Unit</th>
-                  {QC_CHECKS.map(([id, label]) => (
+                  {enabled.map(([id, label]) => (
                     <th key={id} className="px-1 py-1 font-normal">
                       {label}
                     </th>
@@ -107,7 +136,7 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
                   return (
                     <tr key={u} className="border-t border-line">
                       <td className="px-2 py-1 font-mono text-[13px] text-dim">{String(u).padStart(2, "0")}</td>
-                      {QC_CHECKS.map(([id]) => {
+                      {enabled.map(([id]) => {
                         const val = p.qc.results?.[u]?.[id] || "";
                         return (
                           <td key={id} className="px-1 py-1 text-center">

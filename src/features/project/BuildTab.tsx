@@ -5,9 +5,45 @@
  * tolerances.
  */
 import { type DialColor, type Project } from "@/domain";
-import { Button, Field, Panel, SectionHead, Label } from "@/ui/kit";
+import { Button, Field, Panel, SectionHead, Label, cx } from "@/ui/kit";
 import { WatchDial, type DialSpec } from "@/ui/WatchDial";
 import { makeBind, type Patch } from "./bind";
+
+/** A segmented toggle for preset choices (water resistance, accuracy window…). */
+function Segmented({
+  label,
+  value,
+  options,
+  onChange,
+  className,
+}: {
+  label?: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      {label && <Label>{label}</Label>}
+      <div className="flex flex-wrap gap-1">
+        {options.map((o) => (
+          <button
+            key={o}
+            type="button"
+            onClick={() => onChange(o)}
+            className={cx(
+              "rounded-md border px-2.5 py-1.5 font-mono text-[12px] transition-colors",
+              value === o ? "border-brass bg-brass-dim text-brass" : "border-line text-dim hover:border-line2 hover:text-ink",
+            )}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -35,27 +71,22 @@ function DialPreview({ p }: { p: Project }) {
     crystalShape: p.crysShape,
   };
   return (
-    <Panel className="p-4">
-      <SectionHead title="Live dial" kicker="updates as you design · blueprint" />
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-6">
-        <div className="shrink-0 rounded-lg border border-line bg-inset-grad p-3 shadow-inset">
-          <WatchDial size={260} mode="preview" spec={spec} showConstruction showLogo />
+    <Panel className="flex items-center gap-4 p-3">
+      <div className="shrink-0 rounded-lg border border-line bg-inset-grad p-2 shadow-inset">
+        <WatchDial size={150} mode="preview" spec={spec} showConstruction showLogo />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="font-disp text-[15px] font-semibold text-ink">Live dial</span>
+          <span className="font-mono text-[11px] uppercase tracking-label text-faint">redraws as you design</span>
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="font-disp text-[18px] font-semibold text-ink">{p.pieceName || p.name || "Untitled piece"}</div>
-          <p className="mt-1 text-[13px] leading-relaxed text-dim">
-            A live rendering from your spec — it reflects case metal &amp; finish, marker style (applied · Arabic ·
-            Roman · dots), dial texture (sunburst · concentric · guilloché · brushed), hand style, the date aperture,
-            and lume. Indicative, for feel — not factory output.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {p.colors.filter((c) => c.name || c.ref).map((c, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/[.03] px-2 py-0.5 font-mono text-[11px] text-dim">
-                <span className="h-2.5 w-2.5 rounded-full border border-line2" style={{ background: parseSwatch(c.ref || c.name) }} />
-                {c.name || c.ref}
-              </span>
-            ))}
-          </div>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {p.colors.filter((c) => c.name || c.ref).map((c, i) => (
+            <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/[.03] px-2 py-0.5 font-mono text-[11px] text-dim">
+              <span className="h-2.5 w-2.5 rounded-full border border-line2" style={{ background: parseSwatch(c.ref || c.name) }} />
+              {c.name || c.ref}
+            </span>
+          ))}
         </div>
       </div>
     </Panel>
@@ -90,13 +121,27 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Lug-to-lug (mm)" {...f("l2l")} />
         <Field label="Thickness (mm)" {...f("thick")} />
         <Field label="Lug width (mm)" {...f("lugW")} />
-        <Field label="Water resistance" {...f("wr")} />
+        <div className="sm:col-span-2 lg:col-span-3">
+          <Segmented
+            label="Water resistance"
+            value={p.wr}
+            onChange={(v) => patch({ wr: v })}
+            options={["3 ATM", "5 ATM", "6 ATM", "10 ATM", "20 ATM"]}
+          />
+          <Field {...f("wr")} className="mt-2" placeholder="…or a custom rating" />
+        </div>
       </Group>
 
       <Group title="Movement">
         <Field label="Caliber" {...f("cal")} />
         <Field label="Function" {...f("calFn")} />
-        <Field label="Accuracy (s/day)" {...f("acc")} />
+        <Field label="Accuracy (seconds)" {...f("acc")} />
+        <Segmented
+          label="Accuracy window"
+          value={p.accUnit === "month" ? "/ month" : "/ day"}
+          onChange={(v) => patch({ accUnit: v === "/ month" ? "month" : "day" })}
+          options={["/ day", "/ month"]}
+        />
         <Field label="Hands ref" {...f("handRef")} />
         <Field label="Hand length" {...f("handLen")} />
         <Field label="Hand finish" {...f("handFin")} />
@@ -118,10 +163,8 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Base material" {...f("dialMat")} />
         <Field label="Ø diameter (mm)" {...f("dialDia")} />
         <Field label="Ø tolerance" {...f("dialDiaT")} />
-        <Field label="Thickness (mm)" {...f("dialThk")} />
-        <Field label="Thickness tol." {...f("dialThkT")} />
         <Field label="Feet (match caliber)" {...f("feet")} />
-        <Field label="Texture" {...f("tex")} />
+        <Field label="Finish / texture (sunburst…)" {...f("tex")} />
         <Field label="Texture depth (mm)" {...f("texDepth")} />
         <Field label="Depth tolerance" {...f("texDepthT")} />
         <Field label="Gloss (GU)" {...f("gloss")} />
