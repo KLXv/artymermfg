@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blankAccount, blankCompany, blankProject } from "./factories";
-import { bal, committed, dep, owed, projFin, rateOf, stageIdx, svcOf, unitCOGS } from "./finance";
+import { bal, committed, dep, feePerUnit, owed, projFin, projFinance, rateOf, stageIdx, svcOf, unitCOGS } from "./finance";
 import type { Account, Company, Project } from "./types";
 
 const company = (): Company => blankCompany();
@@ -109,5 +109,36 @@ describe("svcOf", () => {
 describe("stageIdx", () => {
   it("orders pipeline before production", () => {
     expect(stageIdx(project({ stage: "Proposal" }))).toBeLessThan(stageIdx(project({ stage: "QC" })));
+  });
+});
+
+describe("projFinance — the money engine", () => {
+  it("applies the channel fee per unit and to total cost", () => {
+    const p = project({ qty: "10", unitPrice: "200", cMovement: "50", feePct: "5" });
+    expect(feePerUnit(p)).toBeCloseTo(10); // 5% of 200
+    const fb = projFinance(p, company());
+    expect(fb.unitMaterial).toBeCloseTo(50);
+    expect(fb.fee).toBeCloseTo(10);
+    expect(fb.unitProfit).toBeCloseTo(140); // 200 - 50 - 10 - 0 tooling
+  });
+
+  it("amortizes tooling and computes break-even from contribution", () => {
+    const p = project({ qty: "100", unitPrice: "100", cMovement: "40", feePct: "0", tooling: "1200" });
+    const fb = projFinance(p, company());
+    expect(fb.toolingPerUnit).toBeCloseTo(12); // 1200 / 100
+    expect(fb.contribution).toBeCloseTo(60); // 100 - 40 - 0
+    expect(fb.breakEvenUnits).toBe(20); // ceil(1200 / 60)
+  });
+
+  it("returns no break-even when price is below variable cost", () => {
+    const p = project({ qty: "10", unitPrice: "30", cMovement: "40", tooling: "500" });
+    expect(projFinance(p, company()).breakEvenUnits).toBeNull();
+  });
+
+  it("converts totals to euros via the FX rate", () => {
+    const p = project({ qty: "2", unitPrice: "100", currency: "USD", cMovement: "10" });
+    const fb = projFinance(p, company()); // USD rate 0.92
+    expect(fb.revenue).toBeCloseTo(184); // 2*100*0.92
+    expect(fb.unitPrice).toBeCloseTo(92);
   });
 });

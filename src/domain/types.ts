@@ -208,16 +208,20 @@ export interface Project {
   lang: Lang;
   images: ProjectImages;
 
-  // costs
+  // costs (per-unit material lines + one-off tooling + channel fee %)
   tooling: string;
   cMovement: string;
   cCase: string;
   cDial: string;
+  cHands: string;
+  cCrystal: string;
+  cStrap: string;
   cAssembly: string;
   cPack: string;
   cShip: string;
   cDuty: string;
   cOther: string;
+  feePct: string; // payment-channel fee %, applied to the sale price
 
   // payment + qc
   depositPaid: boolean;
