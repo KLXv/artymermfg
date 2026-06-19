@@ -38,17 +38,17 @@ function Card({ p }: { p: Project }) {
     >
       <div className="flex items-start gap-2">
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-medium text-ink">{p.name || "Untitled"}</span>
-          <span className="block truncate text-[11px] text-dim">{acctName(p, accounts)}</span>
+          <span className="block truncate text-[14px] font-medium text-ink">{p.name || "Untitled"}</span>
+          <span className="block truncate text-[13px] text-dim">{acctName(p, accounts)}</span>
         </span>
         {pl && <Tag tone="pl">PL</Tag>}
       </div>
       <StageTrack count={STAGES.length} current={stageIdx(p)} className="mt-2.5" height={16} />
-      <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
+      <div className="mt-2 flex items-center justify-between font-mono text-[12px]">
         <span className="text-faint">{p.qty || "—"} pc</span>
         <span className="text-brass">{money(fin.rev, "€")}</span>
       </div>
-      {due > 0 && <div className="mt-1 font-mono text-[10px] text-warn">{money(due, "€")} owed</div>}
+      {due > 0 && <div className="mt-1 font-mono text-[12px] text-warn">{money(due, "€")} owed</div>}
     </button>
   );
 }
@@ -117,14 +117,14 @@ export function Pipeline() {
               <li key={account.id} className="flex items-center gap-3 py-2">
                 <button
                   onClick={() => navigate(`/clients/${account.id}`)}
-                  className="min-w-0 flex-1 truncate text-left text-[13px] text-ink hover:text-brass"
+                  className="min-w-0 flex-1 truncate text-left text-[14px] text-ink hover:text-brass"
                 >
                   {account.name || "Unnamed"}
                 </button>
                 <Tag tone={reason === "follow-up due" ? "warn" : reason === "going cold" ? "bad" : "neutral"}>
                   {reason}
                 </Tag>
-                <span className="hidden w-16 text-right font-mono text-[10px] text-faint sm:inline">
+                <span className="hidden w-16 text-right font-mono text-[12px] text-faint sm:inline">
                   {daysSince != null ? `${daysSince}d` : "never"}
                 </span>
                 <Button variant="ghost" onClick={() => logContact(account.id)}>
@@ -145,12 +145,12 @@ export function Pipeline() {
             return (
               <div key={stage} className="flex w-60 shrink-0 flex-col">
                 <div className="mb-2 flex items-baseline justify-between border-b border-line pb-1.5">
-                  <span className="font-mono text-[10px] uppercase tracking-label text-dim">{stage}</span>
-                  <span className="font-mono text-[10px] text-faint">{items.length}</span>
+                  <span className="font-mono text-[12px] uppercase tracking-label text-dim">{stage}</span>
+                  <span className="font-mono text-[12px] text-faint">{items.length}</span>
                 </div>
                 <div className={cx("flex flex-col gap-2", items.length === 0 && "min-h-[60px]")}>
                   {items.length === 0 ? (
-                    <div className="rounded border border-dashed border-line/60 p-3 text-center font-mono text-[9px] text-faint">
+                    <div className="rounded border border-dashed border-line/60 p-3 text-center font-mono text-[11px] text-faint">
                       {NEXT[stage]}
                     </div>
                   ) : (
@@ -165,13 +165,13 @@ export function Pipeline() {
 
       {lost.length > 0 && (
         <div className="mt-6">
-          <div className="mb-2 font-mono text-[10px] uppercase tracking-label text-faint">Lost / archived</div>
+          <div className="mb-2 font-mono text-[12px] uppercase tracking-label text-faint">Lost / archived</div>
           <div className="flex flex-wrap gap-2">
             {lost.map((p) => (
               <button
                 key={p.id}
                 onClick={() => navigate(`/projects/${p.id}`)}
-                className="rounded border border-line px-3 py-1.5 font-mono text-[11px] text-faint hover:text-dim"
+                className="rounded border border-line px-3 py-1.5 font-mono text-[13px] text-faint hover:text-dim"
               >
                 {p.name || "Untitled"}
               </button>

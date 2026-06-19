@@ -94,7 +94,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <div className="flex flex-col gap-2">
           {p.colors.map((c, i) => (
             <div key={i} className="flex items-end gap-2">
-              <span className="pb-2 font-mono text-[10px] text-faint">{String(i + 1).padStart(2, "0")}</span>
+              <span className="pb-2 font-mono text-[12px] text-faint">{String(i + 1).padStart(2, "0")}</span>
               <Field
                 label={i === 0 ? "Name" : undefined}
                 value={c.name}
@@ -146,7 +146,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         </div>
       </Panel>
 
-      <p className="px-1 text-[11px] text-faint">
+      <p className="px-1 text-[13px] text-faint">
         Movement and case are <span className="text-dim">selected</span>; the dial is{" "}
         <span className="text-brass">designed</span>. Artymer holds design + QC authority — the watch is built by the
         OEM partner.

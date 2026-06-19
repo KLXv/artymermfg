@@ -91,7 +91,7 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
           <div className="overflow-x-auto">
             <table className="border-collapse">
               <thead>
-                <tr className="font-mono text-[9px] uppercase tracking-wide text-faint">
+                <tr className="font-mono text-[11px] uppercase tracking-wide text-faint">
                   <th className="px-2 py-1 text-left font-normal">Unit</th>
                   {QC_CHECKS.map(([id, label]) => (
                     <th key={id} className="px-1 py-1 font-normal">
@@ -106,7 +106,7 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
                   const st = v.statusOf(u);
                   return (
                     <tr key={u} className="border-t border-line">
-                      <td className="px-2 py-1 font-mono text-[11px] text-dim">{String(u).padStart(2, "0")}</td>
+                      <td className="px-2 py-1 font-mono text-[13px] text-dim">{String(u).padStart(2, "0")}</td>
                       {QC_CHECKS.map(([id]) => {
                         const val = p.qc.results?.[u]?.[id] || "";
                         return (
@@ -154,7 +154,7 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
             >
               Sign off QC
             </Button>
-            <span className="font-mono text-[11px] text-faint">
+            <span className="font-mono text-[13px] text-faint">
               {!committed(p)
                 ? "project not yet committed"
                 : !p.qc.received
@@ -166,7 +166,7 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
           </div>
         )}
         {p.qc.signed && (
-          <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded border border-line bg-inset p-3 font-mono text-[11px] leading-relaxed text-dim">
+          <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded border border-line bg-inset p-3 font-mono text-[13px] leading-relaxed text-dim">
             {qcSignoff(p, accounts, company)}
           </pre>
         )}

@@ -62,7 +62,7 @@ export function ClientDetail() {
 
   return (
     <div>
-      <button onClick={() => navigate("/clients")} className="mb-3 font-mono text-[10px] uppercase tracking-label text-faint hover:text-dim">
+      <button onClick={() => navigate("/clients")} className="mb-3 font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim">
         ← Clients
       </button>
       <PageHeader
@@ -142,12 +142,12 @@ export function ClientDetail() {
                   onClick={() => navigate(`/projects/${p.id}`)}
                   className="flex w-full items-center gap-3 py-2.5 text-left hover:bg-inset"
                 >
-                  <span className="min-w-0 flex-1 truncate text-[13px]">{p.name || "Untitled"}</span>
+                  <span className="min-w-0 flex-1 truncate text-[14px]">{p.name || "Untitled"}</span>
                   <StageTrack count={STAGES.length} current={stageIdx(p)} height={14} />
                   <Tag>{p.stage}</Tag>
-                  <span className="w-20 text-right font-mono text-[11px] text-brass">{money(projFin(p, company).rev, "€")}</span>
+                  <span className="w-20 text-right font-mono text-[13px] text-brass">{money(projFin(p, company).rev, "€")}</span>
                   {owed(p, company) > 0 && (
-                    <span className="w-16 text-right font-mono text-[11px] text-warn">{money(owed(p, company), "€")}</span>
+                    <span className="w-16 text-right font-mono text-[13px] text-warn">{money(owed(p, company), "€")}</span>
                   )}
                 </button>
               </li>

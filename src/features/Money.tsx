@@ -75,7 +75,7 @@ export function Money() {
           title="Cash-flow forecast"
           kicker="6 months · scheduled receivables vs burn"
           right={
-            <span className="font-mono text-[11px]">
+            <span className="font-mono text-[13px]">
               <span className="text-faint">ending position </span>
               <span className={endingPosition >= 0 ? "text-ok" : "text-bad"}>{money(endingPosition, "€")}</span>
             </span>
@@ -123,7 +123,7 @@ export function Money() {
               <AgeRow label="Overdue 0–30d" bucket={aging.d0_30} tone="warn" />
               <AgeRow label="Overdue 31–60d" bucket={aging.d31_60} tone="warn" />
               <AgeRow label="Overdue 60d+" bucket={aging.d60plus} tone="bad" />
-              <div className="mt-1 flex items-center justify-between border-t border-line pt-2 font-mono text-[12px]">
+              <div className="mt-1 flex items-center justify-between border-t border-line pt-2 font-mono text-[13px]">
                 <span className="text-dim">Total outstanding</span>
                 <span className="text-brass">{money(aging.total, "€")}</span>
               </div>
@@ -144,11 +144,11 @@ export function Money() {
             <ul className="flex flex-col divide-y divide-line">
               {margin.rows.slice(0, 6).map((r) => (
                 <li key={r.project.id} className="flex items-center gap-3 py-2">
-                  <span className="min-w-0 flex-1 truncate text-[12px]">{r.project.name || "Untitled"}</span>
-                  <span className="font-mono text-[11px] text-faint">{money(r.profit, "€")}</span>
+                  <span className="min-w-0 flex-1 truncate text-[13px]">{r.project.name || "Untitled"}</span>
+                  <span className="font-mono text-[13px] text-faint">{money(r.profit, "€")}</span>
                   <span
                     className={cx(
-                      "w-12 text-right font-mono text-[12px]",
+                      "w-12 text-right font-mono text-[13px]",
                       r.margin < margin.thinThreshold ? "text-warn" : "text-ok",
                     )}
                   >
@@ -187,7 +187,7 @@ export function Money() {
             ))}
           </div>
         )}
-        <div className="mt-2 text-right font-mono text-[12px] text-dim">
+        <div className="mt-2 text-right font-mono text-[13px] text-dim">
           Total {money(expenses.reduce((a, e) => a + num(e.amount), 0), "€")}
         </div>
       </Panel>
@@ -201,7 +201,7 @@ export function Money() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-line font-mono text-[9px] uppercase tracking-wide text-faint">
+                <tr className="border-b border-line font-mono text-[11px] uppercase tracking-wide text-faint">
                   <th className="px-2 py-1.5 font-normal">Project</th>
                   <th className="px-2 py-1.5 text-right font-normal">Revenue</th>
                   <th className="px-2 py-1.5 text-center font-normal">Deposit</th>
@@ -215,10 +215,10 @@ export function Money() {
                   return (
                     <tr key={p.id} className="border-b border-line last:border-0">
                       <td className="px-2 py-1.5">
-                        <div className="truncate text-[12px]">{p.name || "Untitled"}</div>
-                        <div className="truncate text-[10px] text-faint">{acctName(p, accounts)}</div>
+                        <div className="truncate text-[13px]">{p.name || "Untitled"}</div>
+                        <div className="truncate text-[12px] text-faint">{acctName(p, accounts)}</div>
                       </td>
-                      <td className="px-2 py-1.5 text-right font-mono text-[11px] text-brass">
+                      <td className="px-2 py-1.5 text-right font-mono text-[13px] text-brass">
                         {money(projFin(p, company).rev, "€")}
                       </td>
                       <td className="px-2 py-1.5 text-center">
@@ -237,7 +237,7 @@ export function Money() {
                           onToggle={() => patchProject(p.id, { balancePaid: !p.balancePaid })}
                         />
                       </td>
-                      <td className="px-2 py-1.5 text-right font-mono text-[11px] text-warn">
+                      <td className="px-2 py-1.5 text-right font-mono text-[13px] text-warn">
                         {owed(p, company) > 0 ? money(owed(p, company), "€") : "—"}
                       </td>
                     </tr>
@@ -256,21 +256,21 @@ function AgeRow({ label, bucket, tone }: { label: string; bucket: { amount: numb
   const color = tone === "bad" ? "text-bad" : tone === "warn" ? "text-warn" : "text-dim";
   return (
     <div className="flex items-center justify-between">
-      <span className="text-[12px] text-dim">
-        {label} {bucket.count > 0 && <span className="font-mono text-[10px] text-faint">· {bucket.count}</span>}
+      <span className="text-[13px] text-dim">
+        {label} {bucket.count > 0 && <span className="font-mono text-[12px] text-faint">· {bucket.count}</span>}
       </span>
-      <span className={cx("font-mono text-[12px]", bucket.amount > 0 ? color : "text-faint")}>{money(bucket.amount, "€")}</span>
+      <span className={cx("font-mono text-[13px]", bucket.amount > 0 ? color : "text-faint")}>{money(bucket.amount, "€")}</span>
     </div>
   );
 }
 
 function PayLeg({ paid, amount, disabled, onToggle }: { paid: boolean; amount: number; disabled: boolean; onToggle: () => void }) {
-  if (disabled) return <span className="font-mono text-[11px] text-faint">—</span>;
+  if (disabled) return <span className="font-mono text-[13px] text-faint">—</span>;
   return (
     <button
       onClick={onToggle}
       className={cx(
-        "rounded border px-2 py-0.5 font-mono text-[10px] transition-colors",
+        "rounded border px-2 py-0.5 font-mono text-[12px] transition-colors",
         paid ? "border-[#6FB98F66] bg-[#6FB98F22] text-ok" : "border-line text-warn hover:border-brass",
       )}
     >

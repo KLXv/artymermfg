@@ -96,7 +96,7 @@ export function ProjectDetail() {
 
   return (
     <div>
-      <button onClick={() => navigate("/projects")} className="mb-3 font-mono text-[10px] uppercase tracking-label text-faint hover:text-dim">
+      <button onClick={() => navigate("/projects")} className="mb-3 font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim">
         ← Projects
       </button>
 
@@ -138,11 +138,11 @@ export function ProjectDetail() {
             <Button variant="primary" onClick={advance} disabled={idx >= STAGES.length - 1}>
               Advance →
             </Button>
-            <span className="font-mono text-[11px] text-dim">Next: {NEXT[p.stage]}</span>
+            <span className="font-mono text-[13px] text-dim">Next: {NEXT[p.stage]}</span>
           </div>
 
           {toast && (
-            <div className="rounded border border-brass/40 bg-brass-dim px-3 py-2 font-mono text-[11px] text-brass">
+            <div className="rounded border border-brass/40 bg-brass-dim px-3 py-2 font-mono text-[13px] text-brass">
               {toast.map((n, i) => (
                 <div key={i}>• {n}</div>
               ))}
@@ -173,7 +173,7 @@ export function ProjectDetail() {
             key={t}
             onClick={() => setTab(t)}
             className={cx(
-              "whitespace-nowrap border-b-2 px-3 py-2 font-mono text-[11px] uppercase tracking-label transition-colors",
+              "whitespace-nowrap border-b-2 px-3 py-2 font-mono text-[13px] uppercase tracking-label transition-colors",
               tab === t ? "border-brass text-brass" : "border-transparent text-faint hover:text-dim",
             )}
           >
@@ -196,7 +196,7 @@ function KV({ label, value, tone }: { label: string; value: React.ReactNode; ton
     tone === "ok" ? "text-ok" : tone === "warn" ? "text-warn" : tone === "bad" ? "text-bad" : tone === "brass" ? "text-brass" : "text-ink";
   return (
     <div className="rounded border border-line bg-inset px-3 py-2">
-      <div className="font-mono text-[9px] uppercase tracking-wide text-faint">{label}</div>
+      <div className="font-mono text-[11px] uppercase tracking-wide text-faint">{label}</div>
       <div className={cx("font-mono text-sm", color)}>{value}</div>
     </div>
   );

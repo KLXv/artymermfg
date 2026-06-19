@@ -105,9 +105,9 @@ export function Settings() {
             />
           </div>
           {msg && (
-            <p className={"mt-3 font-mono text-[11px] " + (msg.tone === "ok" ? "text-ok" : "text-bad")}>{msg.text}</p>
+            <p className={"mt-3 font-mono text-[13px] " + (msg.tone === "ok" ? "text-ok" : "text-bad")}>{msg.text}</p>
           )}
-          <p className="mt-3 font-mono text-[10px] text-faint">
+          <p className="mt-3 font-mono text-[12px] text-faint">
             Import merges over current data (matching ids overwritten). Your old cockpit export drops straight in.
           </p>
           <div className="mt-4 border-t border-line pt-3">
@@ -126,7 +126,7 @@ export function Settings() {
         </Panel>
       </div>
 
-      <p className="mt-6 font-mono text-[10px] text-faint">
+      <p className="mt-6 font-mono text-[12px] text-faint">
         Data persists in this browser. Cloud sync arrives with authentication in a later phase; the JSON vehicle is the
         bridge until then.
       </p>

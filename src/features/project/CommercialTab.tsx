@@ -54,7 +54,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           <Stat label="Profit" value={money(fin.profit, "€")} tone={fin.profit >= 0 ? "ok" : "bad"} />
           <Stat label="Margin" value={`${fin.margin.toFixed(0)}%`} tone={fin.margin >= 30 ? "ok" : "warn"} />
         </div>
-        <div className="mt-2 font-mono text-[11px] text-dim">
+        <div className="mt-2 font-mono text-[13px] text-dim">
           Unit COGS {money(unitCOGS(p), "€")} · incl. tooling amortized over {num(p.qty) || 0} pc
         </div>
       </Panel>
@@ -100,7 +100,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
             </div>
           </div>
         </div>
-        <div className="mt-3 font-mono text-[12px]">
+        <div className="mt-3 font-mono text-[13px]">
           Outstanding on this project: <span className="text-warn">{money(owed(p, company), "€")}</span>
         </div>
       </Panel>

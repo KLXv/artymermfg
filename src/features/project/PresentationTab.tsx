@@ -95,7 +95,7 @@ export function PresentationTab({
             options={LANGS.map((l) => ({ value: l, label: I18N[l] ? l : l }))}
           />
         </div>
-        <p className="mt-2 font-mono text-[10px] text-faint">
+        <p className="mt-2 font-mono text-[12px] text-faint">
           {pl
             ? "PL: the client's brand leads; Artymer is the unnamed maker (small Σ mark only)."
             : "Commission: Σ leads; credited 'designed and directed by one person'."}
@@ -118,7 +118,7 @@ export function PresentationTab({
           rows={8}
           placeholder={I18N[p.lang]?.storyPlaceholder}
         />
-        {err && <p className="mt-2 font-mono text-[11px] text-warn">{err}</p>}
+        {err && <p className="mt-2 font-mono text-[13px] text-warn">{err}</p>}
         <TextArea
           label="Highlights (one per line)"
           value={p.highlights}
@@ -152,7 +152,7 @@ export function PresentationTab({
             {busy === "cert" ? "Rendering…" : "↓ Certificate PDF"}
           </Button>
         </div>
-        <p className="mt-2 font-mono text-[10px] text-faint">
+        <p className="mt-2 font-mono text-[12px] text-faint">
           Dark graphite cover → warm paper interior. The serif voice appears only here.
         </p>
       </Panel>

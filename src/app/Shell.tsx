@@ -6,6 +6,7 @@
  * the action queue, so the most-pressing work is visible from anywhere.
  */
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Sigma } from "@/ui/Sigma";
 import { cx } from "@/ui/kit";
 import { useDashboard } from "@/state/useDashboard";
@@ -32,16 +33,16 @@ function SyncFooter() {
   const { user } = useAuth();
   const status = useSyncStore((s) => s.status);
   if (!isSupabaseConfigured()) {
-    return <div className="px-2 font-mono text-[8px] uppercase tracking-wide text-faint">local only · no cloud</div>;
+    return <div className="px-2 font-mono text-[10px] uppercase tracking-wide text-faint">local only · no cloud</div>;
   }
   return (
     <div className="flex flex-col gap-1.5 px-2">
-      <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wide">
+      <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide">
         <span className={cx("h-1.5 w-1.5 rounded-full", status === "error" ? "bg-bad" : status === "synced" ? "bg-ok" : "bg-brass")} />
         <span className={SYNC_TONE[status]}>{SYNC_LABEL[status]}</span>
       </div>
       {user && (
-        <button onClick={signOut} className="text-left font-mono text-[9px] uppercase tracking-wide text-faint hover:text-dim">
+        <button onClick={signOut} className="text-left font-mono text-[11px] uppercase tracking-wide text-faint hover:text-dim">
           Sign out
         </button>
       )}
@@ -78,7 +79,7 @@ function NavLinks({ alerts, onNavigate }: { alerts: number; onNavigate?: () => v
           onClick={onNavigate}
           className={({ isActive }) =>
             cx(
-              "group flex items-center gap-2.5 rounded-md px-3 py-2 font-mono text-[11px] uppercase tracking-label transition-all",
+              "group flex items-center gap-2.5 rounded-md px-3 py-2 font-mono text-[13px] uppercase tracking-label transition-all",
               isActive
                 ? "bg-accent-grad text-brass shadow-[inset_2px_0_0_#57A9FF]"
                 : "text-dim hover:bg-white/[.04] hover:text-ink",
@@ -98,7 +99,7 @@ function NavLinks({ alerts, onNavigate }: { alerts: number; onNavigate?: () => v
               </span>
               <span>{item.label}</span>
               {item.to === "/" && alerts > 0 && (
-                <span className="ml-auto rounded-[20px] border border-brass/40 px-1.5 font-mono text-[9px] text-brass">
+                <span className="ml-auto rounded-[20px] border border-brass/40 px-1.5 font-mono text-[11px] text-brass">
                   {alerts}
                 </span>
               )}
@@ -113,8 +114,6 @@ function NavLinks({ alerts, onNavigate }: { alerts: number; onNavigate?: () => v
 export function Shell() {
   const { alerts } = useDashboard();
   const loc = useLocation();
-  // Close any future mobile drawer on route change is implicit (links re-render).
-  void loc;
 
   return (
     <div className="min-h-screen bg-ground text-ink">
@@ -124,7 +123,7 @@ export function Shell() {
           <Sigma size={26} />
           <div>
             <div className="font-disp text-[14px] font-semibold tracking-brand text-ink">ARTYMER</div>
-            <div className="font-mono text-[9px] uppercase tracking-wide text-faint">Cockpit</div>
+            <div className="font-mono text-[11px] uppercase tracking-wide text-faint">Cockpit</div>
           </div>
         </div>
         <NavLinks alerts={alerts} />
@@ -136,9 +135,9 @@ export function Shell() {
       {/* Mobile top bar */}
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur lg:hidden">
         <Sigma size={20} />
-        <span className="font-disp text-[11px] font-semibold tracking-brand">ARTYMER</span>
+        <span className="font-disp text-[13px] font-semibold tracking-brand">ARTYMER</span>
         {alerts > 0 && (
-          <span className="ml-auto rounded-[20px] border border-brass/40 px-1.5 font-mono text-[9px] text-brass">
+          <span className="ml-auto rounded-[20px] border border-brass/40 px-1.5 font-mono text-[11px] text-brass">
             {alerts} due
           </span>
         )}
@@ -154,7 +153,7 @@ export function Shell() {
               end={item.to === "/"}
               className={({ isActive }) =>
                 cx(
-                  "whitespace-nowrap rounded px-2.5 py-1 font-mono text-[10px] uppercase tracking-label",
+                  "whitespace-nowrap rounded px-2.5 py-1 font-mono text-[12px] uppercase tracking-label",
                   isActive ? "bg-brass-dim text-brass" : "text-dim",
                 )
               }
@@ -166,9 +165,15 @@ export function Shell() {
       </div>
 
       <main className="lg:pl-56">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <motion.div
+          key={loc.pathname}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8"
+        >
           <Outlet />
-        </div>
+        </motion.div>
       </main>
     </div>
   );

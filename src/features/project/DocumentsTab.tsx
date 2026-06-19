@@ -45,7 +45,7 @@ function DocBlock({ title, kicker, text, file }: { title: string; kicker: string
           </span>
         }
       />
-      <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded border border-line bg-inset p-3 font-mono text-[11px] leading-relaxed text-dim">
+      <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded border border-line bg-inset p-3 font-mono text-[13px] leading-relaxed text-dim">
         {text}
       </pre>
     </Panel>

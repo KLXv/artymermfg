@@ -97,20 +97,20 @@ export function Tasks() {
                     onClick={() => toggleTask(t.id)}
                     aria-label={t.done ? "Mark incomplete" : "Mark done"}
                     className={cx(
-                      "flex h-5 w-5 shrink-0 items-center justify-center rounded border font-mono text-[11px]",
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded border font-mono text-[13px]",
                       t.done ? "border-ok bg-[#6FB98F22] text-ok" : "border-line text-transparent hover:border-line2",
                     )}
                   >
                     ✓
                   </button>
                   <span className="min-w-0 flex-1">
-                    <span className={cx("block truncate text-[13px]", t.done ? "text-faint line-through" : "text-ink")}>
+                    <span className={cx("block truncate text-[14px]", t.done ? "text-faint line-through" : "text-ink")}>
                       {t.title || "Untitled task"}
                     </span>
                     {label && (
                       <button
                         onClick={() => path && navigate(path)}
-                        className="font-mono text-[10px] text-dim hover:text-brass"
+                        className="font-mono text-[12px] text-dim hover:text-brass"
                       >
                         {label} ↗
                       </button>
@@ -119,7 +119,7 @@ export function Tasks() {
                   {t.source === "stage" && <Tag tone={SOURCE_TONE.stage}>auto</Tag>}
                   <span
                     className={cx(
-                      "w-24 text-right font-mono text-[11px]",
+                      "w-24 text-right font-mono text-[13px]",
                       overdue ? "text-bad" : days === 0 ? "text-warn" : "text-faint",
                     )}
                   >

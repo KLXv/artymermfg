@@ -40,7 +40,7 @@ export function SectionHead({
   return (
     <div className={cx("mb-4 flex items-center gap-2.5 border-b border-line/80 pb-2.5", className)}>
       <h2 className="font-disp text-[15px] font-semibold tracking-tight text-ink">{title}</h2>
-      {kicker && <span className="font-mono text-[10px] uppercase tracking-label text-faint">{kicker}</span>}
+      {kicker && <span className="font-mono text-[12px] uppercase tracking-label text-faint">{kicker}</span>}
       {right && <span className="ml-auto">{right}</span>}
     </div>
   );
@@ -66,7 +66,7 @@ export const Button = forwardRef<
     <button
       ref={ref}
       className={cx(
-        "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-mono text-[11px] uppercase tracking-label transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40",
+        "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-mono text-[13px] uppercase tracking-label transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40",
         BTN[variant],
         className,
       )}
@@ -92,7 +92,7 @@ export function Tag({ children, tone = "neutral", className }: { children: React
   return (
     <span
       className={cx(
-        "inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-label",
+        "inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[12px] uppercase tracking-label",
         TONE[tone],
         className,
       )}
@@ -126,9 +126,9 @@ export function Stat({
   return (
     <div className="relative overflow-hidden rounded-lg border border-line bg-inset-grad p-3.5 shadow-inset">
       <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass/30 to-transparent" />
-      <div className="font-mono text-[10px] uppercase tracking-label text-faint">{label}</div>
+      <div className="font-mono text-[12px] uppercase tracking-label text-faint">{label}</div>
       <div className={cx("mt-1.5 font-mono text-[22px] font-medium leading-none", valueColor)}>{value}</div>
-      {sub && <div className="mt-1.5 text-[11px] text-dim">{sub}</div>}
+      {sub && <div className="mt-1.5 text-[13px] text-dim">{sub}</div>}
     </div>
   );
 }
@@ -137,14 +137,14 @@ export function Stat({
 
 export function Label({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1 block font-mono text-[10px] uppercase tracking-label text-faint">
+    <label htmlFor={htmlFor} className="mb-1 block font-mono text-[12px] uppercase tracking-label text-faint">
       {children}
     </label>
   );
 }
 
 const inputCls =
-  "w-full rounded-md border border-line bg-inset px-2.5 py-2 font-mono text-[13px] text-ink placeholder:text-faint transition-shadow focus:border-brass focus:shadow-focus focus:outline-none";
+  "w-full rounded-md border border-line bg-inset px-2.5 py-2 font-mono text-[14px] text-ink placeholder:text-faint transition-shadow focus:border-brass focus:shadow-focus focus:outline-none";
 
 export function Field({
   label,
@@ -256,7 +256,7 @@ export function Toggle({ label, checked, onChange }: { label: string; checked: b
           )}
         />
       </span>
-      <span className="font-mono text-[11px] text-dim">{label}</span>
+      <span className="font-mono text-[13px] text-dim">{label}</span>
     </button>
   );
 }
@@ -265,7 +265,7 @@ export function Toggle({ label, checked, onChange }: { label: string; checked: b
 
 export function Empty({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-line bg-white/[.015] p-8 text-center font-mono text-[12px] text-faint">
+    <div className="rounded-lg border border-dashed border-line bg-white/[.015] p-8 text-center font-mono text-[13px] text-faint">
       {children}
     </div>
   );

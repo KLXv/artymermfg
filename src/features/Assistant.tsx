@@ -214,7 +214,7 @@ export function Assistant() {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-[20px] border border-line px-3 py-1.5 text-left font-mono text-[11px] text-dim hover:border-brass hover:text-brass"
+                    className="rounded-[20px] border border-line px-3 py-1.5 text-left font-mono text-[13px] text-dim hover:border-brass hover:text-brass"
                   >
                     {s}
                   </button>
@@ -230,7 +230,7 @@ export function Assistant() {
                   <div key={ti} className={cx("flex flex-col gap-2", t.role === "user" ? "items-end" : "items-start")}>
                     <div
                       className={cx(
-                        "max-w-[80%] whitespace-pre-wrap rounded-md px-3.5 py-2.5 text-[13px] leading-relaxed",
+                        "max-w-[80%] whitespace-pre-wrap rounded-md px-3.5 py-2.5 text-[14px] leading-relaxed",
                         t.role === "user"
                           ? "border border-brass/30 bg-brass-dim text-ink"
                           : "border border-line bg-inset text-dim",
@@ -248,7 +248,7 @@ export function Assistant() {
                               key={ai}
                               className="flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-2"
                             >
-                              <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-ink">
+                              <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-ink">
                                 {describeAction(entry.action, nameOf)}
                               </span>
                               {entry.applied ? (
@@ -274,7 +274,7 @@ export function Assistant() {
           )}
         </div>
 
-        {err && <div className="border-t border-line px-4 py-2 font-mono text-[11px] text-warn">{err}</div>}
+        {err && <div className="border-t border-line px-4 py-2 font-mono text-[13px] text-warn">{err}</div>}
 
         <form
           onSubmit={(e) => {
@@ -287,7 +287,7 @@ export function Assistant() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Ask the assistant…"
-            className="flex-1 rounded border border-line bg-inset px-3 py-2 font-body text-[13px] text-ink placeholder:text-faint focus:border-brass focus:outline-none"
+            className="flex-1 rounded border border-line bg-inset px-3 py-2 font-body text-[14px] text-ink placeholder:text-faint focus:border-brass focus:outline-none"
           />
           <Button type="submit" variant="primary" disabled={streaming || !draft.trim()}>
             {streaming ? "…" : "Send"}

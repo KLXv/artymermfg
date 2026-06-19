@@ -46,8 +46,8 @@ export function SignIn() {
           <div className="mb-5 flex items-center gap-2.5">
             <Sigma size={20} />
             <div>
-              <div className="font-disp text-[12px] font-semibold tracking-brand">ARTYMER</div>
-              <div className="font-mono text-[9px] uppercase tracking-wide text-faint">
+              <div className="font-disp text-[13px] font-semibold tracking-brand">ARTYMER</div>
+              <div className="font-mono text-[11px] uppercase tracking-wide text-faint">
                 {mode === "in" ? "Sign in" : "Create account"}
               </div>
             </div>
@@ -67,19 +67,19 @@ export function SignIn() {
             </Button>
           </form>
 
-          {msg && <p className={"mt-3 font-mono text-[11px] " + (msg.tone === "ok" ? "text-ok" : "text-bad")}>{msg.text}</p>}
+          {msg && <p className={"mt-3 font-mono text-[13px] " + (msg.tone === "ok" ? "text-ok" : "text-bad")}>{msg.text}</p>}
 
           <button
             onClick={() => {
               setMode((m) => (m === "in" ? "up" : "in"));
               setMsg(null);
             }}
-            className="mt-4 font-mono text-[10px] uppercase tracking-label text-faint hover:text-dim"
+            className="mt-4 font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim"
           >
             {mode === "in" ? "Need an account? Create one" : "Have an account? Sign in"}
           </button>
         </Panel>
-        <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-wide text-faint">
+        <p className="mt-4 text-center font-mono text-[11px] uppercase tracking-wide text-faint">
           one operator · one workshop
         </p>
       </div>

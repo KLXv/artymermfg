@@ -77,11 +77,11 @@ export function Clients() {
                   <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink">{a.name || "Unnamed"}</span>
                   <Tag tone={STATUS_TONE[a.status] || "neutral"}>{a.status}</Tag>
                 </div>
-                <div className="mt-1 truncate text-[11px] text-dim">
+                <div className="mt-1 truncate text-[13px] text-dim">
                   {a.contactName || "—"}
                   {a.contactRole ? ` · ${a.contactRole}` : ""}
                 </div>
-                <div className="mt-3 flex items-center justify-between font-mono text-[10px] text-faint">
+                <div className="mt-3 flex items-center justify-between font-mono text-[12px] text-faint">
                   <span>
                     {a.servicePath === "Private label" ? "PL" : "Commission"} · {a.market}
                   </span>
