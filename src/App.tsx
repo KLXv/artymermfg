@@ -12,6 +12,7 @@ import { Tasks } from "./features/Tasks";
 import { Money } from "./features/Money";
 import { Assistant } from "./features/Assistant";
 import { Settings } from "./features/Settings";
+import { ShareDossier } from "./features/ShareDossier";
 import { isSupabaseConfigured } from "./data/supabase";
 import { useAuth } from "./state/useAuth";
 import { SyncProvider } from "./state/sync";
@@ -25,12 +26,10 @@ function Splash() {
   );
 }
 
-export default function App() {
+function Cockpit() {
   const { user, ready } = useAuth();
-
   if (!ready) return <Splash />;
   if (isSupabaseConfigured() && !user) return <SignIn />;
-
   return (
     <SyncProvider>
       <Routes>
@@ -50,5 +49,15 @@ export default function App() {
         </Route>
       </Routes>
     </SyncProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* Public, read-only dossier — no auth, no shell. */}
+      <Route path="/share" element={<ShareDossier />} />
+      <Route path="/*" element={<Cockpit />} />
+    </Routes>
   );
 }

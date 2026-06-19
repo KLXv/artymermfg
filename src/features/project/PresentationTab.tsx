@@ -8,6 +8,7 @@ import { useState } from "react";
 import { I18N, LANGS, type Account, type Company, type Project } from "@/domain";
 import { storyChoices, storySystemPrompt } from "@/domain/prompts";
 import { generate } from "@/data/ai";
+import { buildShareUrl, buildSharePayload } from "@/documents/shareLink";
 import { Button, Field, Panel, SectionHead, SelectField, TextArea, Tag } from "@/ui/kit";
 import { makeBind, type Patch } from "./bind";
 
@@ -33,8 +34,24 @@ export function PresentationTab({
   const f = makeBind(p, patch);
   const [busy, setBusy] = useState<null | "story" | "dossier" | "cert">(null);
   const [err, setErr] = useState("");
+  const [shared, setShared] = useState(false);
   const pl = (p.servicePath || account?.servicePath) === "Private label";
   const accounts = account ? { [account.id]: account } : {};
+
+  const shareUrl = () => {
+    const payload = buildSharePayload(p, account, company);
+    return buildShareUrl(payload);
+  };
+  const copyShare = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl());
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
+  const openShare = () => window.open(shareUrl(), "_blank");
 
   const writeStory = async () => {
     setErr("");
@@ -143,7 +160,7 @@ export function PresentationTab({
       </Panel>
 
       <Panel className="p-4">
-        <SectionHead title="Export" kicker="real PDF · client-facing" />
+        <SectionHead title="Export & share" kicker="client-facing" />
         <div className="flex flex-wrap gap-2">
           <Button variant="primary" onClick={exportDossier} disabled={!!busy}>
             {busy === "dossier" ? "Rendering…" : "↓ Dossier PDF"}
@@ -151,9 +168,16 @@ export function PresentationTab({
           <Button variant="ghost" onClick={exportCert} disabled={!!busy}>
             {busy === "cert" ? "Rendering…" : "↓ Certificate PDF"}
           </Button>
+          <Button variant="ghost" onClick={copyShare}>
+            {shared ? "Link copied ✓" : "⧉ Copy share link"}
+          </Button>
+          <Button variant="quiet" onClick={openShare}>
+            Preview ↗
+          </Button>
         </div>
         <p className="mt-2 font-mono text-[12px] text-faint">
-          Dark graphite cover → warm paper interior. The serif voice appears only here.
+          The PDF is dark cover → warm paper. The share link is a private web page of this dossier — send it to a
+          client to view in their browser, no app or login needed.
         </p>
       </Panel>
     </div>
