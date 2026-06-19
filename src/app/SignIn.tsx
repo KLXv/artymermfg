@@ -5,8 +5,7 @@
  */
 import { useState } from "react";
 import { supabase } from "@/data/supabase";
-import { STAGES } from "@/domain";
-import { IndexRing } from "@/ui/IndexRing";
+import { WatchDial } from "@/ui/WatchDial";
 import { Sigma } from "@/ui/Sigma";
 import { Button, Field, Panel } from "@/ui/kit";
 
@@ -40,7 +39,7 @@ export function SignIn() {
     <div className="flex min-h-screen items-center justify-center bg-ground px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
-          <IndexRing stages={STAGES} current={2} size={120} centerKicker="Artymer" centerLabel="Cockpit" />
+          <WatchDial size={188} mode="live" showConstruction showLogo />
         </div>
         <Panel className="p-6">
           <div className="mb-5 flex items-center gap-2.5">

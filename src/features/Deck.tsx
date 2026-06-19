@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { money } from "@/domain";
 import { Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
+import { WatchDial } from "@/ui/WatchDial";
 import { useDashboard } from "@/state/useDashboard";
 import { useStore } from "@/state/store";
 import { PageHeader } from "./PageHeader";
@@ -110,6 +111,11 @@ export function Deck() {
                 <span className="font-mono text-sm text-faint">{money(monthlyTarget, "€")}</span>
               </div>
             </div>
+          </Panel>
+
+          <Panel className="flex flex-col items-center p-4">
+            <WatchDial size={210} mode="live" showConstruction showLogo />
+            <div className="mt-2 font-mono text-[11px] uppercase tracking-label text-faint">Studio time</div>
           </Panel>
         </div>
       </div>

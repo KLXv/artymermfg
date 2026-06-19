@@ -6,6 +6,7 @@
  */
 import { type DialColor, type Project } from "@/domain";
 import { Button, Field, Panel, SectionHead, Label } from "@/ui/kit";
+import { WatchDial, type DialSpec } from "@/ui/WatchDial";
 import { makeBind, type Patch } from "./bind";
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
@@ -15,6 +16,51 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </Panel>
   );
+}
+
+function DialPreview({ p }: { p: Project }) {
+  const firstColor = p.colors.find((c) => c.ref || c.name);
+  const spec: DialSpec = {
+    caseDia: p.caseDia,
+    dialColor: firstColor?.ref || firstColor?.name,
+    texture: p.tex,
+    markers: p.marker,
+    hasDate: !!p.date && p.date !== "none",
+    engraving: p.engTxt,
+    lume: p.lume !== "none",
+    pieceName: p.pieceName || p.name,
+  };
+  return (
+    <Panel className="p-4">
+      <SectionHead title="Live dial" kicker="updates as you design · blueprint" />
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-6">
+        <div className="shrink-0 rounded-lg border border-line bg-inset-grad p-3 shadow-inset">
+          <WatchDial size={260} mode="preview" spec={spec} showConstruction showLogo />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-disp text-[18px] font-semibold text-ink">{p.pieceName || p.name || "Untitled piece"}</div>
+          <p className="mt-1 text-[13px] leading-relaxed text-dim">
+            A live technical rendering of the dial from your spec. Change the dial colour, texture, markers, date and
+            engraving below and watch it redraw. Indicative — for feel, not factory output.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {p.colors.filter((c) => c.name || c.ref).map((c, i) => (
+              <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/[.03] px-2 py-0.5 font-mono text-[11px] text-dim">
+                <span className="h-2.5 w-2.5 rounded-full border border-line2" style={{ background: parseSwatch(c.ref || c.name) }} />
+                {c.name || c.ref}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+// Reuse the dial's colour parsing for the swatch chips.
+function parseSwatch(s: string): string {
+  const hex = s.toLowerCase().match(/#?([0-9a-f]{6})\b/);
+  return hex ? "#" + hex[1] : "#2a3140";
 }
 
 export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
@@ -29,6 +75,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
 
   return (
     <div className="flex flex-col gap-5">
+      <DialPreview p={p} />
       <Group title="Case — selected, not designed">
         <Field label="Case ref" {...f("caseRef")} />
         <Field label="Material" {...f("caseMat")} />
