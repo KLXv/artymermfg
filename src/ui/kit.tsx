@@ -144,7 +144,7 @@ export function Label({ children, htmlFor }: { children: ReactNode; htmlFor?: st
 }
 
 const inputCls =
-  "w-full rounded-md border border-line bg-inset px-2.5 py-2 font-mono text-[14px] text-ink placeholder:text-faint transition-shadow focus:border-brass focus:shadow-focus focus:outline-none";
+  "w-full rounded-md border border-line bg-inset px-2.5 py-2 font-mono text-[14px] text-ink placeholder:text-faint transition-shadow [color-scheme:dark] focus:border-brass focus:shadow-focus focus:outline-none";
 
 export function Field({
   label,
