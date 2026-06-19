@@ -26,9 +26,13 @@ function DialPreview({ p }: { p: Project }) {
     texture: p.tex,
     markers: p.marker,
     hasDate: !!p.date && p.date !== "none",
-    engraving: p.engTxt,
-    lume: p.lume !== "none",
+    engraving: p.engLoc.toLowerCase().includes("dial") ? p.engTxt : "",
+    lume: p.lume !== "none" && p.lume !== "",
     pieceName: p.pieceName || p.name,
+    caseMaterial: p.caseMat,
+    caseFinish: p.caseFin,
+    handStyle: `${p.handRef} ${p.handFin}`,
+    crystalShape: p.crysShape,
   };
   return (
     <Panel className="p-4">
@@ -40,8 +44,9 @@ function DialPreview({ p }: { p: Project }) {
         <div className="min-w-0 flex-1">
           <div className="font-disp text-[18px] font-semibold text-ink">{p.pieceName || p.name || "Untitled piece"}</div>
           <p className="mt-1 text-[13px] leading-relaxed text-dim">
-            A live technical rendering of the dial from your spec. Change the dial colour, texture, markers, date and
-            engraving below and watch it redraw. Indicative — for feel, not factory output.
+            A live rendering from your spec — it reflects case metal &amp; finish, marker style (applied · Arabic ·
+            Roman · dots), dial texture (sunburst · concentric · guilloché · brushed), hand style, the date aperture,
+            and lume. Indicative, for feel — not factory output.
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {p.colors.filter((c) => c.name || c.ref).map((c, i) => (
@@ -142,6 +147,16 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
           {p.colors.map((c, i) => (
             <div key={i} className="flex items-end gap-2">
               <span className="pb-2 font-mono text-[12px] text-faint">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                {i === 0 && <Label>Swatch</Label>}
+                <input
+                  type="color"
+                  aria-label={`Colour ${i + 1} swatch`}
+                  value={parseSwatch(c.ref || c.name)}
+                  onChange={(e) => setColor(i, "ref", e.target.value)}
+                  className="h-[38px] w-11 cursor-pointer rounded-md border border-line bg-inset p-1 [color-scheme:dark]"
+                />
+              </div>
               <Field
                 label={i === 0 ? "Name" : undefined}
                 value={c.name}
@@ -149,7 +164,7 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
                 className="flex-1"
               />
               <Field
-                label={i === 0 ? "Reference" : undefined}
+                label={i === 0 ? "Reference / hex" : undefined}
                 value={c.ref}
                 onChange={(v) => setColor(i, "ref", v)}
                 className="flex-1"
@@ -160,6 +175,10 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
             </div>
           ))}
         </div>
+        <p className="mt-2 font-mono text-[11px] text-faint">
+          The first colour drives the live dial. Pick a swatch for an exact match, or type a hex / Pantone in the
+          reference.
+        </p>
       </Panel>
 
       <Group title="Engraving">
