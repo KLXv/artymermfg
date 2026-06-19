@@ -42,6 +42,7 @@ export function ProjectDetail() {
   const patchProject = useStore((s) => s.patchProject);
   const deleteProject = useStore((s) => s.deleteProject);
   const advanceProject = useStore((s) => s.advanceProject);
+  const cloneProject = useStore((s) => s.cloneProject);
   const [tab, setTab] = useState<TabId>("Build");
   const [toast, setToast] = useState<string[] | null>(null);
 
@@ -94,6 +95,11 @@ export function ProjectDetail() {
     }
   };
 
+  const duplicate = () => {
+    const newId = cloneProject(p.id);
+    if (newId) navigate(`/projects/${newId}`);
+  };
+
   return (
     <div>
       <button onClick={() => navigate("/projects")} className="mb-3 font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim">
@@ -107,6 +113,9 @@ export function ProjectDetail() {
           <>
             {pl && <Tag tone="pl">Private label</Tag>}
             <Toggle label="Lost" checked={p.lost} onChange={(v) => patch({ lost: v })} />
+            <Button variant="ghost" onClick={duplicate}>
+              ⧉ Repeat order
+            </Button>
             <Button variant="danger" onClick={remove}>
               Delete
             </Button>

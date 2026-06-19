@@ -24,6 +24,7 @@ import {
   migrateLegacy,
   parseBackup,
   planAdvance,
+  rid,
 } from "@/domain";
 
 export interface WorkspaceState {
@@ -47,6 +48,8 @@ export interface WorkspaceActions {
   deleteProject: (id: string) => void;
   /** Pipeline engine: advance one stage, applying its effects atomically. */
   advanceProject: (id: string) => string[];
+  /** Clone a project as a fresh repeat order; returns the new id. */
+  cloneProject: (id: string) => string | null;
 
   upsertSupplier: (s: Supplier) => void;
   patchSupplier: (id: string, patch: Partial<Supplier>) => void;
@@ -121,6 +124,29 @@ export const useStore = create<Store>()(
         const tasks = eff.newTask ? { ...s.tasks, [eff.newTask.id]: eff.newTask } : s.tasks;
         set({ projects, tasks });
         return eff.notes;
+      },
+
+      cloneProject: (id) => {
+        const s = get();
+        const p = s.projects[id];
+        if (!p) return null;
+        const copy: Project = {
+          ...p,
+          id: rid("p"),
+          name: `${p.name || "Untitled"} (repeat)`,
+          stage: "Proposal",
+          lost: false,
+          deadline: "",
+          depositExpected: "",
+          balanceExpected: "",
+          depositPaid: false,
+          depositDate: "",
+          balancePaid: false,
+          balanceDate: "",
+          qc: { received: false, results: {}, signed: false, signedDate: "" },
+        };
+        set({ projects: { ...s.projects, [copy.id]: copy } });
+        return copy.id;
       },
 
       upsertSupplier: (sup) => set((s) => ({ suppliers: { ...s.suppliers, [sup.id]: sup } })),
