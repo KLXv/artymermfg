@@ -1,25 +1,27 @@
 /**
- * Design tokens — brass on graphite. The custom layer over Tailwind.
- * Mirrors the Tailwind theme so raw CSS (PDF documents, signature components)
- * can reference the same values. See DECISIONS.md → Design.
+ * Design tokens — liquid chrome on black. Mirrors the Tailwind theme for raw
+ * CSS (PDFs, SVG signature components). The grounds are near-black with a cool
+ * tint and a living radial glow; the accent is electric chrome-blue; metal is a
+ * brushed-silver gradient for the Σ and headline values. See DECISIONS.md.
  */
 :root {
-  --ground: #15171c;
-  --panel: #1b1e25;
-  --panel2: #20242d;
-  --inset: #101216;
-  --line: #2b3039;
-  --line2: #3a4150;
-  --ink: #e8e8e8;
-  --dim: #9aa0ac;
-  --faint: #5e6470;
-  --brass: #c9a24b;
-  --brass-dim: rgba(201, 162, 75, 0.12);
-  --ok: #6fb98f;
-  --warn: #d08a45;
-  --bad: #c25b52;
-  --pl: #b9a6e0;
-  --pl-line: #6e5da8;
+  --ground: #090b10;
+  --panel: #161b24;
+  --panel2: #1c222c;
+  --inset: #0c0f15;
+  --line: #242b36;
+  --line2: #36404e;
+  --ink: #eef2f8;
+  --dim: #9da8b9;
+  --faint: #6c7688;
+  --brass: #57a9ff; /* accent (legacy name) */
+  --brass-dim: rgba(87, 169, 255, 0.14);
+  --brass-deep: #2f6bd0;
+  --ok: #3ddc97;
+  --warn: #f5b445;
+  --bad: #ff6b6b;
+  --pl: #c3b1f0;
+  --pl-line: #7a66be;
 
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --disp: "Space Grotesk", system-ui, sans-serif;
@@ -39,19 +41,60 @@ body,
 }
 
 body {
-  background: var(--ground);
+  background-color: var(--ground);
+  /* Living background: cool light pooling from the top, a deep base. */
+  background-image:
+    radial-gradient(70% 50% at 78% -5%, rgba(87, 169, 255, 0.14) 0%, rgba(87, 169, 255, 0) 60%),
+    radial-gradient(55% 45% at 8% 8%, rgba(61, 220, 151, 0.05) 0%, rgba(61, 220, 151, 0) 55%),
+    linear-gradient(180deg, #0b0e14 0%, #090b10 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--body);
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Brushed-silver metal — for the Σ mark and headline numbers. */
+.metal {
+  background: linear-gradient(165deg, #ffffff 0%, #d6dce6 38%, #939cab 70%, #c6cdd9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Electric accent text with a faint bloom. */
+.glow-text {
+  color: var(--brass);
+  text-shadow: 0 0 18px rgba(87, 169, 255, 0.45);
+}
+
+/* Thin custom scrollbars that match the dark surfaces. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2c3543 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2c3543;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #3a4555;
+  background-clip: content-box;
 }
 
 ::selection {
   background: var(--brass);
-  color: #15171c;
+  color: #04070c;
 }
 
-/* Quality floor: respect reduced motion everywhere. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -62,7 +105,6 @@ body {
   }
 }
 
-/* Visible keyboard focus, brass hairline. */
 :focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 2px;

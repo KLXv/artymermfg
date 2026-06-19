@@ -8,8 +8,8 @@
  */
 import { useNavigate } from "react-router-dom";
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -120,25 +120,39 @@ export function Deck() {
         {d.monthBuckets.length === 0 ? (
           <Empty>No scheduled deposits or balances yet.</Empty>
         ) : (
-          <div style={{ height: 200 }}>
+          <div style={{ height: 210 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={d.monthBuckets} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid stroke="#2B3039" vertical={false} />
-                <XAxis dataKey="name" stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} />
-                <YAxis stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} width={48} />
+              <AreaChart data={d.monthBuckets} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="inflowFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#57A9FF" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="#57A9FF" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#242B36" vertical={false} />
+                <XAxis dataKey="name" stroke="#6C7688" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} />
+                <YAxis stroke="#6C7688" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} width={48} />
                 <Tooltip
-                  cursor={{ fill: "rgba(201,162,75,.08)" }}
+                  cursor={{ stroke: "#57A9FF", strokeOpacity: 0.3 }}
                   contentStyle={{
-                    background: "#1B1E25",
-                    border: "1px solid #2B3039",
-                    borderRadius: 6,
+                    background: "#11151C",
+                    border: "1px solid #242B36",
+                    borderRadius: 10,
                     fontFamily: "var(--mono)",
                     fontSize: 11,
                   }}
                   formatter={(v: number) => [money(v, "€"), "inflow"]}
                 />
-                <Bar dataKey="inflow" fill="#C9A24B" radius={[2, 2, 0, 0]} />
-              </BarChart>
+                <Area
+                  type="monotone"
+                  dataKey="inflow"
+                  stroke="#7DC0FF"
+                  strokeWidth={2}
+                  fill="url(#inflowFill)"
+                  dot={{ r: 2.5, fill: "#57A9FF" }}
+                  activeDot={{ r: 4 }}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         )}

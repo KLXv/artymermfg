@@ -78,8 +78,10 @@ function NavLinks({ alerts, onNavigate }: { alerts: number; onNavigate?: () => v
           onClick={onNavigate}
           className={({ isActive }) =>
             cx(
-              "group flex items-center gap-2.5 rounded px-3 py-2 font-mono text-[11px] uppercase tracking-label transition-colors",
-              isActive ? "bg-brass-dim text-brass" : "text-dim hover:bg-inset hover:text-ink",
+              "group flex items-center gap-2.5 rounded-md px-3 py-2 font-mono text-[11px] uppercase tracking-label transition-all",
+              isActive
+                ? "bg-accent-grad text-brass shadow-[inset_2px_0_0_#57A9FF]"
+                : "text-dim hover:bg-white/[.04] hover:text-ink",
             )
           }
         >
@@ -117,12 +119,12 @@ export function Shell() {
   return (
     <div className="min-h-screen bg-ground text-ink">
       {/* Desktop rail */}
-      <aside className="fixed inset-y-0 left-0 hidden w-52 flex-col border-r border-line bg-panel px-3 py-5 lg:flex">
-        <div className="mb-7 flex items-center gap-2.5 px-2">
-          <Sigma size={22} />
+      <aside className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0E121A] to-[#0A0D12] px-3 py-5 lg:flex">
+        <div className="mb-8 flex items-center gap-3 px-2">
+          <Sigma size={26} />
           <div>
-            <div className="font-disp text-[11px] font-semibold tracking-brand">ARTYMER</div>
-            <div className="font-mono text-[8px] uppercase tracking-wide text-faint">Cockpit</div>
+            <div className="font-disp text-[14px] font-semibold tracking-brand text-ink">ARTYMER</div>
+            <div className="font-mono text-[9px] uppercase tracking-wide text-faint">Cockpit</div>
           </div>
         </div>
         <NavLinks alerts={alerts} />
@@ -163,7 +165,7 @@ export function Shell() {
         </div>
       </div>
 
-      <main className="lg:pl-52">
+      <main className="lg:pl-56">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
           <Outlet />
         </div>

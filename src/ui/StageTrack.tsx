@@ -23,14 +23,19 @@ export function StageTrack({
         const done = i < current;
         const cur = i === current;
         const h = cur ? height : done ? height * 0.7 : height * 0.5;
-        const color = cur ? "var(--brass)" : done ? "rgba(201,162,75,.5)" : "var(--line2)";
+        const color = cur ? "var(--brass)" : done ? "rgba(150,180,220,.6)" : "var(--line2)";
         return (
           <motion.span
             key={i}
             initial={false}
             animate={{ height: h, backgroundColor: color }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            style={{ width: cur ? 3 : 2, borderRadius: 2, display: "block" }}
+            style={{
+              width: cur ? 3 : 2,
+              borderRadius: 2,
+              display: "block",
+              boxShadow: cur ? "0 0 8px rgba(87,169,255,.7)" : "none",
+            }}
           />
         );
       })}
