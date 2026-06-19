@@ -11,6 +11,7 @@
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { CustomCommand } from "@/app/commands";
 import {
   type Account,
   type Company,
@@ -65,6 +66,11 @@ export interface WorkspaceActions {
   /** Merge a backup payload over current state, then run legacy migration. */
   importJSON: (raw: string) => { accounts: number; projects: number };
   resetAll: () => void;
+
+  /** User-defined palette commands (persisted locally, outside cloud sync). */
+  customCommands: CustomCommand[];
+  addCommand: (c: CustomCommand) => void;
+  deleteCommand: (id: string) => void;
 }
 
 export type Store = WorkspaceState & WorkspaceActions;
@@ -186,6 +192,10 @@ export const useStore = create<Store>()(
       },
 
       resetAll: () => set(emptyState()),
+
+      customCommands: [],
+      addCommand: (c) => set((s) => ({ customCommands: [...s.customCommands, c] })),
+      deleteCommand: (id) => set((s) => ({ customCommands: s.customCommands.filter((c) => c.id !== id) })),
     }),
     {
       name: "artymer-cockpit",

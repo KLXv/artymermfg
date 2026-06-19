@@ -9,6 +9,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sigma } from "@/ui/Sigma";
 import { cx } from "@/ui/kit";
+import { CommandPalette } from "./CommandPalette";
 import { useDashboard } from "@/state/useDashboard";
 import { useAuth, signOut } from "@/state/useAuth";
 import { useSyncStore } from "@/state/sync";
@@ -117,6 +118,7 @@ export function Shell() {
 
   return (
     <div className="min-h-screen bg-ground text-ink">
+      <CommandPalette />
       {/* Desktop rail */}
       <aside className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0E121A] to-[#0A0D12] px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2">
@@ -126,6 +128,14 @@ export function Shell() {
             <div className="font-mono text-[11px] uppercase tracking-wide text-faint">Cockpit</div>
           </div>
         </div>
+        <button
+          onClick={() => window.dispatchEvent(new Event("artymer:command"))}
+          className="mb-3 flex items-center gap-2.5 rounded-md border border-line bg-white/[.02] px-3 py-2 font-mono text-[12px] text-faint transition-colors hover:border-line2 hover:text-dim"
+        >
+          <span className="text-sm">⌘</span>
+          <span>Search & commands</span>
+          <span className="ml-auto rounded border border-line px-1.5 py-0.5 text-[10px]">⌘K</span>
+        </button>
         <NavLinks alerts={alerts} />
         <div className="mt-auto pt-4">
           <SyncFooter />
@@ -136,8 +146,15 @@ export function Shell() {
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur lg:hidden">
         <Sigma size={20} />
         <span className="font-disp text-[13px] font-semibold tracking-brand">ARTYMER</span>
+        <button
+          onClick={() => window.dispatchEvent(new Event("artymer:command"))}
+          aria-label="Search & commands"
+          className="ml-auto rounded-md border border-line px-2.5 py-1 font-mono text-[13px] text-dim"
+        >
+          ⌘K
+        </button>
         {alerts > 0 && (
-          <span className="ml-auto rounded-[20px] border border-brass/40 px-1.5 font-mono text-[11px] text-brass">
+          <span className="rounded-[20px] border border-brass/40 px-1.5 font-mono text-[11px] text-brass">
             {alerts} due
           </span>
         )}

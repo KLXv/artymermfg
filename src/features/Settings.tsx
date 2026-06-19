@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from "@/data/supabase";
 import { Button, Field, Panel, SectionHead, Tag } from "@/ui/kit";
 import { useStore } from "@/state/store";
 import { PageHeader } from "./PageHeader";
+import { CommandSettings } from "./CommandSettings";
 
 export function Settings() {
   const company = useStore((s) => s.company);
@@ -126,9 +127,11 @@ export function Settings() {
         </Panel>
       </div>
 
+      <CommandSettings />
+
       <p className="mt-6 font-mono text-[12px] text-faint">
-        Data persists in this browser. Cloud sync arrives with authentication in a later phase; the JSON vehicle is the
-        bridge until then.
+        Data persists in this browser; with cloud sync on, it follows you across devices. The JSON export is always your
+        portable backup.
       </p>
     </div>
   );
