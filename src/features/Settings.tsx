@@ -6,6 +6,7 @@
 import { useRef, useState } from "react";
 import { type Company } from "@/domain";
 import { isSupabaseConfigured } from "@/data/supabase";
+import { SEED_BACKUP } from "@/data/seed";
 import { Button, Field, Panel, SectionHead, Tag } from "@/ui/kit";
 import { useStore } from "@/state/store";
 import { PageHeader } from "./PageHeader";
@@ -111,7 +112,18 @@ export function Settings() {
           <p className="mt-3 font-mono text-[12px] text-faint">
             Import merges over current data (matching ids overwritten). Your old cockpit export drops straight in.
           </p>
-          <div className="mt-4 border-t border-line pt-3">
+          <div className="mt-4 border-t border-line pt-3 flex flex-wrap gap-2 items-start">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (confirm("Load demo data? This adds a sample client, supplier, and project (existing data is kept).")) {
+                  importJSON(JSON.stringify(SEED_BACKUP));
+                  setMsg({ tone: "ok", text: "Demo data loaded — see Projects and Clients." });
+                }
+              }}
+            >
+              Load demo data
+            </Button>
             <Button
               variant="danger"
               onClick={() => {
