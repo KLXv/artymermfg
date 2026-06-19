@@ -205,7 +205,7 @@ export function ProjectDetail() {
       </Panel>
 
       {/* Tabs */}
-      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-line">
+      <div className="mb-4 flex flex-wrap gap-1 border-b border-line">
         {TABS.map((t) => (
           <button
             key={t}
