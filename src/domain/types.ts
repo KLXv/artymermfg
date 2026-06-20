@@ -23,6 +23,8 @@ export interface Company {
   id: "company";
   migrated: boolean;
   brand: string;
+  logo: string; // brand logo URL (shown on the factory-doc letterhead)
+  letterhead: string; // free-text contact block under the brand name on docs
   fx: { RON: number; USD: number } & Record<string, number>;
   deposit: string;
   lotFail: string;

@@ -6,9 +6,11 @@
 import { useRef, useState } from "react";
 import { type Company } from "@/domain";
 import { isSupabaseConfigured } from "@/data/supabase";
+import { uploadAttachment, deleteAttachment } from "@/data/storage";
 import { SEED_BACKUP } from "@/data/seed";
-import { Button, Field, Panel, SectionHead, Tag } from "@/ui/kit";
+import { Button, Field, Label, Panel, SectionHead, Tag, TextArea } from "@/ui/kit";
 import { useStore } from "@/state/store";
+import { useAuth } from "@/state/useAuth";
 import { PageHeader } from "./PageHeader";
 import { CommandSettings } from "./CommandSettings";
 
@@ -18,8 +20,30 @@ export function Settings() {
   const exportJSON = useStore((s) => s.exportJSON);
   const importJSON = useStore((s) => s.importJSON);
   const resetAll = useStore((s) => s.resetAll);
+  const { user } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
+  const [logoBusy, setLogoBusy] = useState(false);
+
+  const configured = isSupabaseConfigured();
+  const uploadLogo = async (file: File) => {
+    setLogoBusy(true);
+    setMsg(null);
+    try {
+      const url = await uploadAttachment(file, user?.id ?? "local", "brand", "logo");
+      // cache-bust so the new logo shows immediately after a replace
+      setCompany({ logo: `${url}?v=${Date.now()}` });
+    } catch (e) {
+      setMsg({ tone: "bad", text: e instanceof Error ? e.message : "Logo upload failed." });
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+  const clearLogo = async () => {
+    if (company.logo) await deleteAttachment(company.logo).catch(() => {});
+    setCompany({ logo: "" });
+  };
 
   const set = (patch: Partial<Company>) => setCompany(patch);
   const f = (k: keyof Company) => ({ value: String(company[k] ?? ""), onChange: (v: string) => set({ [k]: v } as Partial<Company>) });
@@ -58,9 +82,58 @@ export function Settings() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel className="p-4">
-          <SectionHead title="Company" />
+          <SectionHead title="Company" kicker="brand identity on documents" />
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Brand" mono={false} {...f("brand")} className="sm:col-span-2" />
+
+            <div className="sm:col-span-2">
+              <Label>Brand logo</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line bg-inset">
+                  {company.logo ? (
+                    <img src={company.logo} alt="Brand logo" className="h-full w-full object-contain p-1" />
+                  ) : (
+                    <span className="font-disp text-2xl text-brass">Σ</span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex gap-2">
+                    <Button variant="ghost" onClick={() => logoRef.current?.click()} disabled={!configured || logoBusy}>
+                      {logoBusy ? "Uploading…" : company.logo ? "Replace" : "Upload logo"}
+                    </Button>
+                    {company.logo && (
+                      <Button variant="danger" onClick={clearLogo} disabled={logoBusy}>
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <span className="font-mono text-[11px] text-faint">
+                    {configured ? "PNG with transparency · shown on factory-doc PDFs" : "connect Supabase to upload"}
+                  </span>
+                </div>
+                <input
+                  ref={logoRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadLogo(file);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+            </div>
+
+            <TextArea
+              label="Letterhead (one line each: address, email, web)"
+              value={company.letterhead}
+              onChange={(v) => setCompany({ letterhead: v })}
+              rows={3}
+              className="sm:col-span-2"
+              placeholder={"Artymer · Bespoke watchmaking\nhello@artymer.com\nartymer.com"}
+            />
+
             <Field label="FX · RON → EUR" value={String(company.fx.RON)} onChange={(v) => setFx("RON", v)} />
             <Field label="FX · USD → EUR" value={String(company.fx.USD)} onChange={(v) => setFx("USD", v)} />
           </div>

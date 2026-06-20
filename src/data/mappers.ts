@@ -212,6 +212,8 @@ export const companyToRow = (c: Company, ownerId: string): Row => ({
   id: "company",
   owner_id: ownerId,
   brand: c.brand,
+  logo: c.logo,
+  letterhead: c.letterhead,
   fx: c.fx,
   deposit: c.deposit,
   lot_fail: c.lotFail,
@@ -226,6 +228,8 @@ export const companyToRow = (c: Company, ownerId: string): Row => ({
 export const rowToCompany = (row: Row): Company => ({
   ...blankCompany(),
   brand: (row.brand as string) ?? "Artymer",
+  logo: (row.logo as string) ?? "",
+  letterhead: (row.letterhead as string) ?? "",
   fx: (row.fx as Company["fx"]) ?? blankCompany().fx,
   deposit: (row.deposit as string) ?? "",
   lotFail: (row.lot_fail as string) ?? "",
