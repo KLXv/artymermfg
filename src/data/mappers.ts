@@ -154,6 +154,7 @@ export const rowToAccount = (row: Row): Account => {
 const SUPPLIER_COLUMNS: Record<string, keyof Supplier> = {
   name: "name", status: "status", platform: "platform", lead_time: "leadTime",
   moq: "moq", contact: "contact", golden_samples: "goldenSamples", notes: "notes",
+  quality: "quality", communication: "communication", price: "price", capabilities: "capabilities",
 };
 
 export const supplierToRow = (s: Supplier, ownerId: string): Row => {

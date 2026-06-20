@@ -51,6 +51,10 @@ export const blankSupplier = (): Supplier => ({
   contact: "",
   goldenSamples: "",
   notes: "",
+  quality: "",
+  communication: "",
+  price: "",
+  capabilities: "",
 });
 
 export const blankTask = (link: { type?: string; id?: string } = {}): Task => ({

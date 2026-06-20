@@ -64,6 +64,11 @@ export interface Supplier {
   contact: string;
   goldenSamples: string;
   notes: string;
+  // ranking attributes (1–5; price 5 = most competitive)
+  quality: string;
+  communication: string;
+  price: string;
+  capabilities: string; // comma-separated tags: dials, cases, engraving…
 }
 
 export interface Task {

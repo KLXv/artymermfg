@@ -6,6 +6,7 @@ export * from "./format";
 export * from "./i18n";
 export * from "./finance";
 export * from "./qc";
+export * from "./suppliers";
 export * from "./documents";
 export * from "./documents-zh";
 export * from "./dashboard";

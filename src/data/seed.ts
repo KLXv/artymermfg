@@ -7,6 +7,7 @@ import { blankCompany } from "@/domain";
 import type { Backup } from "@/domain/migrate";
 
 const SUP = "seed_sup1";
+const SUP2 = "seed_sup2";
 const ACC = "seed_acc1";
 const PRJ = "seed_prj1";
 
@@ -20,6 +21,26 @@ const supplier: Supplier = {
   contact: "David Chen · david@shengda-watch.com",
   goldenSamples: "2",
   notes: "Reliable brass-case supplier. Good surface finish on brushed lugs. Lead time extends 90–120 days in Q3–Q4.",
+  quality: "5",
+  communication: "4",
+  price: "3",
+  capabilities: "dials, cases, assembly, engraving",
+};
+
+const supplier2: Supplier = {
+  id: SUP2,
+  name: "Guangzhou Aurora Components",
+  status: "Backup",
+  platform: "Alibaba",
+  leadTime: "55",
+  moq: "50",
+  contact: "Lily Wu · lily@aurora-watch.cn",
+  goldenSamples: "0",
+  notes: "Faster turnaround and sharper pricing, but quality is less consistent — needs tight first-off control.",
+  quality: "3",
+  communication: "5",
+  price: "5",
+  capabilities: "dials, hands, PVD/coating, straps, packaging",
 };
 
 const account: Account = {
@@ -201,7 +222,7 @@ export const SEED_BACKUP: Backup = {
   exported: "2026-06-19",
   accounts: { [ACC]: account },
   projects: { [PRJ]: project },
-  suppliers: { [SUP]: supplier },
+  suppliers: { [SUP]: supplier, [SUP2]: supplier2 },
   tasks: Object.fromEntries(tasks.map((t) => [t.id, t])),
   expenses: [],
   company: { ...blankCompany(), migrated: true },

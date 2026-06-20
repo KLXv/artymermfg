@@ -163,8 +163,9 @@ export function Guide() {
             Your accounts. Contacts, market, history, testimonials, and the next-action date that feeds the Deck.
           </Area>
           <Area glyph="⛭" name="Suppliers">
-            Your factories. Lead time, MOQ, golden-sample count, status (primary / backup / warming), and notes — so you
-            always know who can build what, and how fast.
+            Your factories. Lead time, MOQ, golden samples, status, and 1–5 ratings for quality, communication and
+            value, plus capability tags. The ranking panel then scores them and tells you who's best overall, best
+            quality, fastest, best value, lowest MOQ — and you can filter "best for" a capability like engraving.
           </Area>
           <Area glyph="✓" name="Tasks">
             A flat to-do list, optionally linked to a project or client. Things that don't fit the stage flow live here.
