@@ -226,6 +226,15 @@ export function Guide() {
             <Kbd>⌘K</Kbd> <span className="ml-1">opens the command palette — jump to any screen or run an action from the keyboard.</span>
           </li>
           <li>
+            <span className="text-ink">Talk to your co-founder</span> — the mic button (bottom-right) is a voice partner
+            that knows your live numbers. Ask "what should I do today?", "how's the money?", or "catch me up." Free to
+            use; it gets even smarter if you ever add an AI key.
+          </li>
+          <li>
+            <span className="text-ink">See money in your currency</span> — the Money screen has an EUR / RON / USD
+            toggle. Set your exchange rates in Settings; lei is computed from them.
+          </li>
+          <li>
             <span className="text-ink">Share a client dossier</span> — the Presentation tab produces a public, read-only
             link (no login) you can send a client. It carries the hero render, story and key specs.
           </li>

@@ -13,4 +13,5 @@ export * from "./pipeline";
 export * from "./money";
 export * from "./prompts";
 export * from "./operator";
+export * from "./cofounder";
 export * from "./migrate";

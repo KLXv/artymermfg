@@ -15,19 +15,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useState } from "react";
 import {
+  CCY,
   acctName,
   bal,
   cashFlowForecast,
   committed,
   dep,
+  fmtCcy,
+  fromEur,
   marginAnalysis,
-  money,
+  moneyIn,
   monthlyBurn,
   num,
   owed,
   projFin,
   receivablesAging,
+  type Ccy,
   type Expense,
   type Project,
 } from "@/domain";
@@ -35,6 +40,8 @@ import { Button, Empty, Field, Panel, SectionHead, Stat, Tag, cx } from "@/ui/ki
 import { useStore } from "@/state/store";
 import { useDashboard } from "@/state/useDashboard";
 import { PageHeader } from "./PageHeader";
+
+const CCY_KEY = "artymer:money-ccy";
 
 export function Money() {
   const d = useDashboard();
@@ -44,7 +51,21 @@ export function Money() {
   const setExpenses = useStore((s) => s.setExpenses);
   const patchProject = useStore((s) => s.patchProject);
 
-  const forecast = cashFlowForecast(d.projList, expenses, company, 6);
+  // Display currency (a UI preference, persisted locally — base figures stay EUR).
+  const [ccy, setCcy] = useState<Ccy>(() => (localStorage.getItem(CCY_KEY) as Ccy) || "EUR");
+  const pickCcy = (c: Ccy) => {
+    setCcy(c);
+    localStorage.setItem(CCY_KEY, c);
+  };
+  const m = (eur: number) => moneyIn(eur, ccy, company.fx);
+  const conv = (eur: number) => fromEur(eur, ccy, company.fx);
+
+  const forecast = cashFlowForecast(d.projList, expenses, company, 6).map((row) => ({
+    ...row,
+    inflow: Math.round(conv(row.inflow)),
+    outflow: Math.round(conv(row.outflow)),
+    cumulative: Math.round(conv(row.cumulative)),
+  }));
   const aging = receivablesAging(d.projList, company);
   const margin = marginAnalysis(d.projList, company);
   const burn = monthlyBurn(expenses);
@@ -56,17 +77,47 @@ export function Money() {
   const addExp = () => setExpenses([...expenses, { label: "", amount: "" }]);
   const removeExp = (i: number) => setExpenses(expenses.filter((_, idx) => idx !== i));
 
+  const fxNote =
+    ccy === "EUR"
+      ? "base currency"
+      : ccy === "RON"
+        ? `1 lei = €${company.fx.RON} · set in Settings`
+        : `1 $ = €${company.fx.USD} · set in Settings`;
+
   return (
     <div>
-      <PageHeader title="Money" kicker="cash · receivables · margin" />
+      <PageHeader
+        title="Money"
+        kicker="cash · receivables · margin"
+        actions={
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex gap-1">
+              {CCY.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => pickCcy(c)}
+                  className={cx(
+                    "rounded-md border px-2.5 py-1 font-mono text-[12px] transition-colors",
+                    ccy === c ? "border-brass bg-brass-dim text-brass" : "border-line text-dim hover:border-line2 hover:text-ink",
+                  )}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            <span className="font-mono text-[10px] uppercase tracking-label text-faint">{fxNote}</span>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        <Stat label="Revenue" value={money(d.totRev, "€")} tone="brass" />
-        <Stat label="Net" value={money(d.net, "€")} tone={d.net >= 0 ? "ok" : "bad"} />
+        <Stat label="Revenue" value={m(d.totRev)} tone="brass" />
+        <Stat label="Net" value={m(d.net)} tone={d.net >= 0 ? "ok" : "bad"} />
         <Stat label="Blended margin" value={`${margin.blendedMargin.toFixed(0)}%`} tone={margin.blendedMargin >= 30 ? "ok" : "warn"} />
-        <Stat label="Outstanding" value={money(d.outstanding, "€")} tone="warn" />
-        <Stat label="Overdue" value={money(aging.totalOverdue, "€")} tone={aging.totalOverdue ? "bad" : undefined} />
-        <Stat label="Monthly burn" value={money(burn, "€")} />
+        <Stat label="Outstanding" value={m(d.outstanding)} tone="warn" />
+        <Stat label="Overdue" value={m(aging.totalOverdue)} tone={aging.totalOverdue ? "bad" : undefined} />
+        <Stat label="Monthly burn" value={m(burn)} />
       </div>
 
       {/* Cash-flow forecast */}
@@ -77,7 +128,7 @@ export function Money() {
           right={
             <span className="font-mono text-[13px]">
               <span className="text-faint">ending position </span>
-              <span className={endingPosition >= 0 ? "text-ok" : "text-bad"}>{money(endingPosition, "€")}</span>
+              <span className={endingPosition >= 0 ? "text-ok" : "text-bad"}>{fmtCcy(endingPosition, ccy)}</span>
             </span>
           }
         />
@@ -100,7 +151,7 @@ export function Money() {
                     fontFamily: "var(--mono)",
                     fontSize: 11,
                   }}
-                  formatter={(v: number, name) => [money(v, "€"), name]}
+                  formatter={(v: number, name) => [fmtCcy(v, ccy), name]}
                 />
                 <Bar dataKey="inflow" name="inflow" fill="#C9A24B" radius={[2, 2, 0, 0]} maxBarSize={36} />
                 <Bar dataKey="outflow" name="burn" fill="#3A4150" radius={[2, 2, 0, 0]} maxBarSize={36} />
@@ -119,13 +170,13 @@ export function Money() {
             <Empty>No outstanding receivables.</Empty>
           ) : (
             <div className="flex flex-col gap-2">
-              <AgeRow label="Not yet due" bucket={aging.notDue} tone="neutral" />
-              <AgeRow label="Overdue 0–30d" bucket={aging.d0_30} tone="warn" />
-              <AgeRow label="Overdue 31–60d" bucket={aging.d31_60} tone="warn" />
-              <AgeRow label="Overdue 60d+" bucket={aging.d60plus} tone="bad" />
+              <AgeRow label="Not yet due" bucket={aging.notDue} tone="neutral" fmt={m} />
+              <AgeRow label="Overdue 0–30d" bucket={aging.d0_30} tone="warn" fmt={m} />
+              <AgeRow label="Overdue 31–60d" bucket={aging.d31_60} tone="warn" fmt={m} />
+              <AgeRow label="Overdue 60d+" bucket={aging.d60plus} tone="bad" fmt={m} />
               <div className="mt-1 flex items-center justify-between border-t border-line pt-2 font-mono text-[13px]">
                 <span className="text-dim">Total outstanding</span>
-                <span className="text-brass">{money(aging.total, "€")}</span>
+                <span className="text-brass">{m(aging.total)}</span>
               </div>
             </div>
           )}
@@ -145,7 +196,7 @@ export function Money() {
               {margin.rows.slice(0, 6).map((r) => (
                 <li key={r.project.id} className="flex items-center gap-3 py-2">
                   <span className="min-w-0 flex-1 truncate text-[13px]">{r.project.name || "Untitled"}</span>
-                  <span className="font-mono text-[13px] text-faint">{money(r.profit, "€")}</span>
+                  <span className="font-mono text-[13px] text-faint">{m(r.profit)}</span>
                   <span
                     className={cx(
                       "w-12 text-right font-mono text-[13px]",
@@ -188,7 +239,7 @@ export function Money() {
           </div>
         )}
         <div className="mt-2 text-right font-mono text-[13px] text-dim">
-          Total {money(expenses.reduce((a, e) => a + num(e.amount), 0), "€")}
+          Total {m(expenses.reduce((a, e) => a + num(e.amount), 0))}
         </div>
       </Panel>
 
@@ -219,13 +270,14 @@ export function Money() {
                         <div className="truncate text-[12px] text-faint">{acctName(p, accounts)}</div>
                       </td>
                       <td className="px-2 py-1.5 text-right font-mono text-[13px] text-brass">
-                        {money(projFin(p, company).rev, "€")}
+                        {m(projFin(p, company).rev)}
                       </td>
                       <td className="px-2 py-1.5 text-center">
                         <PayLeg
                           paid={p.depositPaid}
                           amount={dep(p, company)}
                           disabled={!com}
+                          fmt={m}
                           onToggle={() => patchProject(p.id, { depositPaid: !p.depositPaid })}
                         />
                       </td>
@@ -234,11 +286,12 @@ export function Money() {
                           paid={p.balancePaid}
                           amount={bal(p, company)}
                           disabled={!com}
+                          fmt={m}
                           onToggle={() => patchProject(p.id, { balancePaid: !p.balancePaid })}
                         />
                       </td>
                       <td className="px-2 py-1.5 text-right font-mono text-[13px] text-warn">
-                        {owed(p, company) > 0 ? money(owed(p, company), "€") : "—"}
+                        {owed(p, company) > 0 ? m(owed(p, company)) : "—"}
                       </td>
                     </tr>
                   );
@@ -252,19 +305,19 @@ export function Money() {
   );
 }
 
-function AgeRow({ label, bucket, tone }: { label: string; bucket: { amount: number; count: number }; tone: "neutral" | "warn" | "bad" }) {
+function AgeRow({ label, bucket, tone, fmt }: { label: string; bucket: { amount: number; count: number }; tone: "neutral" | "warn" | "bad"; fmt: (n: number) => string }) {
   const color = tone === "bad" ? "text-bad" : tone === "warn" ? "text-warn" : "text-dim";
   return (
     <div className="flex items-center justify-between">
       <span className="text-[13px] text-dim">
         {label} {bucket.count > 0 && <span className="font-mono text-[12px] text-faint">· {bucket.count}</span>}
       </span>
-      <span className={cx("font-mono text-[13px]", bucket.amount > 0 ? color : "text-faint")}>{money(bucket.amount, "€")}</span>
+      <span className={cx("font-mono text-[13px]", bucket.amount > 0 ? color : "text-faint")}>{fmt(bucket.amount)}</span>
     </div>
   );
 }
 
-function PayLeg({ paid, amount, disabled, onToggle }: { paid: boolean; amount: number; disabled: boolean; onToggle: () => void }) {
+function PayLeg({ paid, amount, disabled, fmt, onToggle }: { paid: boolean; amount: number; disabled: boolean; fmt: (n: number) => string; onToggle: () => void }) {
   if (disabled) return <span className="font-mono text-[13px] text-faint">—</span>;
   return (
     <button
@@ -274,7 +327,7 @@ function PayLeg({ paid, amount, disabled, onToggle }: { paid: boolean; amount: n
         paid ? "border-[#6FB98F66] bg-[#6FB98F22] text-ok" : "border-line text-warn hover:border-brass",
       )}
     >
-      {paid ? "✓ paid" : money(amount, "€")}
+      {paid ? "✓ paid" : fmt(amount)}
     </button>
   );
 }

@@ -6,6 +6,28 @@ export const num = (x: unknown): number => parseFloat(x as string) || 0;
 export const money = (n: number, c?: string): string =>
   (c || "€") + Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
 
+/* ---- multi-currency display ------------------------------------------- */
+/** Currencies the cockpit can display. EUR is the base every figure is stored in. */
+export type Ccy = "EUR" | "RON" | "USD";
+export const CCY: Ccy[] = ["EUR", "RON", "USD"];
+
+/**
+ * Convert a base-EUR amount into `ccy`. The company FX map stores each unit's
+ * value in EUR (e.g. RON 0.2 = 1 lei is €0.20), so EUR → ccy divides by the rate.
+ */
+export const fromEur = (eur: number, ccy: Ccy, fx: Record<string, number>): number =>
+  ccy === "EUR" ? eur : eur / (fx[ccy] || 1);
+
+/** Format an already-converted amount with the right symbol/placement (lei trails). */
+export const fmtCcy = (v: number, ccy: Ccy): string => {
+  const s = Math.round(v).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  return ccy === "RON" ? `${s} lei` : (ccy === "USD" ? "$" : "€") + s;
+};
+
+/** Format a base-EUR amount directly in the chosen currency. */
+export const moneyIn = (eur: number, ccy: Ccy, fx: Record<string, number>): string =>
+  fmtCcy(fromEur(eur, ccy, fx), ccy);
+
 /** Spec placeholder: a present value, or an underscored blank. */
 export const V = (x: unknown): string => (x && String(x).trim() ? String(x) : "________");
 
