@@ -199,9 +199,10 @@ export function Guide() {
             Quantity, unit price, and the full cost build-up (movement, case, dial, assembly, freight, duty, channel
             fee). It computes per-unit profit, margin, break-even and a what-if — so you price with eyes open.
           </TabDoc>
-          <TabDoc name="QC" kicker="inspect → verdict → sign-off">
-            A per-unit checklist (toggle off checks that don't apply). Each unit passes only when every check passes; the
-            lot is rejected above your fail threshold. Sign-off unlocks the balance step — and is gated on an ACCEPT.
+          <TabDoc name="QC" kicker="sample → inspect → sign-off">
+            Approve the first-off sample (from the factory's video/photos) before the run — that gate shows on your Deck.
+            Then the per-unit checklist: each unit passes only when every check passes; the lot is rejected above your
+            fail threshold. Final sign-off unlocks the balance step and is gated on an ACCEPT.
           </TabDoc>
           <TabDoc name="Presentation" kicker="the client story">
             The dossier + certificate copy: piece name, edition, the story (write it or generate with AI), highlights,

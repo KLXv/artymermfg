@@ -13,10 +13,14 @@ import {
   type Company,
   type Project,
   type QcUnitResult,
+  type SampleApproval,
 } from "@/domain";
-import { Button, Empty, Panel, SectionHead, Stat, Tag, Toggle, cx } from "@/ui/kit";
+import { Button, Empty, Field, Panel, SectionHead, Stat, Tag, TextArea, Toggle, cx } from "@/ui/kit";
 import { useStore } from "@/state/store";
+import { OPERATOR } from "@/ui/companion";
 import type { Patch } from "./bind";
+
+const BLANK_SAMPLE: SampleApproval = { decision: "", date: "", reviewer: "", notes: "", media: "" };
 
 const CELL: Record<string, string> = {
   pass: "border-[#6FB98F66] bg-[#6FB98F22] text-ok",
@@ -64,8 +68,83 @@ export function QcTab({ p, patch, company }: { p: Project; patch: Patch; company
 
   const signOff = () => patch({ qc: { ...p.qc, signed: true, signedDate: today() } });
 
+  const sample = p.qc.sample ?? BLANK_SAMPLE;
+  const decideSample = (decision: SampleApproval["decision"]) =>
+    patch({
+      qc: {
+        ...p.qc,
+        sample: { ...sample, decision, date: decision ? today() : "", reviewer: decision ? OPERATOR : "" },
+      },
+    });
+  const setSample = (patchS: Partial<SampleApproval>) =>
+    patch({ qc: { ...p.qc, sample: { ...sample, ...patchS } } });
+  const SAMPLE_OPTS: { v: SampleApproval["decision"]; label: string; tone: string }[] = [
+    { v: "", label: "Pending", tone: "border-line text-dim" },
+    { v: "approved", label: "✓ Approved", tone: "border-[#6FB98F66] bg-[#6FB98F22] text-ok" },
+    { v: "revise", label: "↺ Needs revision", tone: "border-[#C25B5266] bg-[#C25B5222] text-bad" },
+  ];
+
   return (
     <div className="flex flex-col gap-5">
+      {/* First-off sample gate — reviewed from the factory's media. */}
+      <Panel className="p-4">
+        <SectionHead
+          title="First-off sample"
+          kicker="approve before full production"
+          right={
+            sample.decision === "approved" ? (
+              <Tag tone="ok">approved {sample.date}</Tag>
+            ) : sample.decision === "revise" ? (
+              <Tag tone="bad">revision requested</Tag>
+            ) : (
+              <Tag tone="warn">pending</Tag>
+            )
+          }
+        />
+        <div className="flex flex-wrap gap-1.5">
+          {SAMPLE_OPTS.map((o) => (
+            <button
+              key={o.label}
+              onClick={() => decideSample(o.v)}
+              className={cx(
+                "rounded-md border px-2.5 py-1.5 font-mono text-[12px] transition-colors",
+                sample.decision === o.v ? o.tone : "border-line text-faint hover:border-line2 hover:text-dim",
+              )}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+        <Field
+          label="Sample media link"
+          value={sample.media}
+          onChange={(v) => setSample({ media: v })}
+          placeholder="paste the video / photo link the factory sent (or upload on Attachments)"
+          className="mt-3"
+        />
+        <TextArea
+          label="Review notes"
+          value={sample.notes}
+          onChange={(v) => setSample({ notes: v })}
+          rows={2}
+          className="mt-3"
+          placeholder="what's approved · or exactly what to fix before production"
+        />
+        {sample.decision === "approved" && p.stage === "First-off" && (
+          <div className="mt-3 flex items-center gap-3">
+            <Button variant="primary" onClick={() => patch({ stage: "Production" })}>
+              Advance to Production →
+            </Button>
+            <span className="font-mono text-[13px] text-faint">sample is approved — start the run</span>
+          </div>
+        )}
+        {sample.decision === "revise" && (
+          <p className="mt-3 font-mono text-[12px] text-warn">
+            Send the notes back to the factory. Re-review the next sample before approving.
+          </p>
+        )}
+      </Panel>
+
       <Panel className="p-4">
         <SectionHead
           title="Verdict"

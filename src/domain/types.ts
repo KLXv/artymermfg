@@ -104,6 +104,15 @@ export interface QcUnitResult {
   [checkId: string]: "pass" | "fail" | "";
 }
 
+/** First-off / golden-sample approval — the gate before full production. */
+export interface SampleApproval {
+  decision: "" | "approved" | "revise";
+  date: string;
+  reviewer: string;
+  notes: string;
+  media: string; // link to the QC video / photos the factory sent
+}
+
 export interface ProjectQc {
   received: boolean;
   results: Record<string | number, QcUnitResult>;
@@ -111,6 +120,8 @@ export interface ProjectQc {
   signedDate: string;
   /** Check ids switched off for this project (excluded from the verdict). */
   disabled?: string[];
+  /** First-off sample sign-off, reviewed from the factory's media. */
+  sample?: SampleApproval;
 }
 
 export interface Project {

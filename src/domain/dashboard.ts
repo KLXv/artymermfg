@@ -10,7 +10,7 @@
 import { NEXT, PIPE, PROD, STAGES } from "./constants";
 import { acctName, bal, committed, dep, owed, projFin, stageIdx } from "./finance";
 import { dAgo, dFromNow, money, num } from "./format";
-import { projVerdict } from "./qc";
+import { projVerdict, sampleApproved } from "./qc";
 import type { Account, CockpitState, Project, Task } from "./types";
 
 export type QueueTarget =
@@ -140,6 +140,15 @@ export const buildDashboard = (state: CockpitState): Dashboard => {
         lbl: `Sign off QC — ${pr.name || "Untitled"}`,
         sub: "Batch passed · release balance next",
         tag: "QC",
+        target: { kind: "project", id: pr.id },
+      });
+    if (committed(pr) && pr.stage === "First-off" && !sampleApproved(pr))
+      queue.push({
+        w: 2,
+        cls: "go",
+        lbl: `Approve first-off sample — ${pr.name || "Untitled"}`,
+        sub: pr.qc?.sample?.decision === "revise" ? "marked for revision · re-review" : "review the factory's sample media",
+        tag: "Sample",
         target: { kind: "project", id: pr.id },
       });
     if (committed(pr) && !pr.depositPaid)

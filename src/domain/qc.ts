@@ -25,6 +25,9 @@ export interface ProjVerdict {
   statusOf: (n: number) => UnitStatus;
 }
 
+/** Whether the first-off sample has been approved (gates full production). */
+export const sampleApproved = (pr: Project): boolean => pr.qc?.sample?.decision === "approved";
+
 export const projVerdict = (pr: Project, company: Company): ProjVerdict => {
   const qtyN = Math.max(0, parseInt(pr.qty) || 0);
   const results = pr.qc?.results || {};

@@ -167,5 +167,12 @@ export const blankProject = (accountId = ""): Project => ({
   depositDate: "",
   balancePaid: false,
   balanceDate: "",
-  qc: { received: false, results: {}, signed: false, signedDate: "", disabled: [] },
+  qc: {
+    received: false,
+    results: {},
+    signed: false,
+    signedDate: "",
+    disabled: [],
+    sample: { decision: "", date: "", reviewer: "", notes: "", media: "" },
+  },
 });

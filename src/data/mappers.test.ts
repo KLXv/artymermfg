@@ -37,7 +37,14 @@ describe("project mapper", () => {
       images: { hero: "https://x/h.jpg", dial: "", caseImg: "", back: "", clientLogo: "", movementImg: "" },
       depositPaid: true,
       depositDate: "2026-06-01",
-      qc: { received: true, results: { 1: { caliber: "pass" } }, signed: false, signedDate: "", disabled: [] },
+      qc: {
+        received: true,
+        results: { 1: { caliber: "pass" } },
+        signed: false,
+        signedDate: "",
+        disabled: [],
+        sample: { decision: "approved", date: "2026-06-10", reviewer: "Bence", notes: "looks clean", media: "https://x/v.mp4" },
+      },
     };
     const back = rowToProject(projectToRow(p, OWNER));
     expect(back).toEqual(p);
