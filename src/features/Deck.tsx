@@ -6,6 +6,7 @@
  * and near deadlines sit alongside. Nothing here decides anything new — it is a
  * faithful surface over `buildDashboard`.
  */
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Area,
@@ -16,9 +17,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { money } from "@/domain";
-import { Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
-import { deckGreeting, deckSubline } from "@/ui/companion";
+import { blankTask, coFounderBriefing, money, today } from "@/domain";
+import { Button, Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
+import { deckGreeting, deckSubline, OPERATOR } from "@/ui/companion";
 import { WatchDial } from "@/ui/WatchDial";
 import { useDashboard } from "@/state/useDashboard";
 import { useStore } from "@/state/store";
@@ -30,8 +31,18 @@ const QUEUE_TONE = { hot: "bad", go: "ok", "": "neutral" } as const;
 export function Deck() {
   const d = useDashboard();
   const company = useStore((s) => s.company);
+  const upsertTask = useStore((s) => s.upsertTask);
   const navigate = useNavigate();
   const monthlyTarget = parseFloat(company.monthlyRevenue) || 0;
+
+  const summary = coFounderBriefing(d, OPERATOR);
+  const [taskTitle, setTaskTitle] = useState("");
+  const addQuickTask = () => {
+    const t = taskTitle.trim();
+    if (!t) return;
+    upsertTask({ ...blankTask(), title: t, due: today() });
+    setTaskTitle("");
+  };
 
   return (
     <div>
@@ -42,6 +53,28 @@ export function Deck() {
           <Tag tone={d.alerts ? "warn" : "ok"}>{d.alerts ? `${d.alerts} open` : "all clear"}</Tag>
         }
       />
+
+      {/* Morning summary — the co-founder's read of the day, plus a quick capture. */}
+      <Panel className="mb-6 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1">
+            <div className="font-mono text-[11px] uppercase tracking-label text-brass">Today</div>
+            <p className="mt-1 text-[14px] leading-relaxed text-dim">{summary}</p>
+          </div>
+          <div className="flex items-center gap-1.5 lg:w-80">
+            <input
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addQuickTask()}
+              placeholder="Quick add a task…"
+              className="min-w-0 flex-1 rounded-md border border-line bg-inset px-2.5 py-2 font-body text-[14px] text-ink placeholder:text-faint focus:border-brass focus:outline-none"
+            />
+            <Button variant="primary" onClick={addQuickTask} disabled={!taskTitle.trim()}>
+              Add
+            </Button>
+          </div>
+        </div>
+      </Panel>
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         {/* Action queue */}

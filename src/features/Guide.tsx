@@ -148,8 +148,9 @@ export function Guide() {
         <SectionHead title="Every section, in one line" kicker="the left rail" />
         <div>
           <Area glyph="◎" name="Deck">
-            Your start-of-day screen. The action queue: overdue follow-ups, deposits to chase, QC to review, deadlines
-            closing in — ranked by urgency. Clear the Deck and the business is on track. The badge counts open items.
+            Your start-of-day screen. A one-line "Today" summary reads the whole board at a glance, with a quick-add task
+            box. Below it, the action queue: overdue follow-ups, deposits to chase, samples + QC to review, deadlines
+            closing in — ranked by urgency. Clear the Deck and the business is on track.
           </Area>
           <Area glyph="⇶" name="Pipeline">
             Every live deal as a board across the stages. See where momentum is stalling and what's about to close.
