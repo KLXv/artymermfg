@@ -11,6 +11,7 @@ import { Suppliers } from "./features/Suppliers";
 import { Tasks } from "./features/Tasks";
 import { Money } from "./features/Money";
 import { Assistant } from "./features/Assistant";
+import { Guide } from "./features/Guide";
 import { Settings } from "./features/Settings";
 import { ShareDossier } from "./features/ShareDossier";
 import { isSupabaseConfigured } from "./data/supabase";
@@ -44,6 +45,7 @@ function Cockpit() {
           <Route path="tasks" element={<Tasks />} />
           <Route path="money" element={<Money />} />
           <Route path="assistant" element={<Assistant />} />
+          <Route path="guide" element={<Guide />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

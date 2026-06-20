@@ -67,6 +67,7 @@ const NAV: NavItem[] = [
   { to: "/tasks", label: "Tasks", glyph: "✓" },
   { to: "/money", label: "Money", glyph: "€" },
   { to: "/assistant", label: "Assistant", glyph: "✺" },
+  { to: "/guide", label: "Manual", glyph: "▤" },
   { to: "/settings", label: "Settings", glyph: "⚙" },
 ];
 

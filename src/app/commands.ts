@@ -41,6 +41,7 @@ export const NAV_TARGETS: { value: string; label: string }[] = [
   { value: "/tasks", label: "Tasks" },
   { value: "/money", label: "Money" },
   { value: "/assistant", label: "Assistant" },
+  { value: "/guide", label: "Manual" },
   { value: "/settings", label: "Settings" },
 ];
 
