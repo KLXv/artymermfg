@@ -21,9 +21,7 @@ export function Panel({
   className?: string;
   as?: keyof JSX.IntrinsicElements;
 }) {
-  return (
-    <As className={cx("rounded-lg border border-line bg-panel-grad shadow-card", className)}>{children}</As>
-  );
+  return <As className={cx("glass rounded-lg", className)}>{children}</As>;
 }
 
 export function SectionHead({
@@ -38,7 +36,11 @@ export function SectionHead({
   className?: string;
 }) {
   return (
-    <div className={cx("mb-4 flex items-center gap-2.5 border-b border-line/80 pb-2.5", className)}>
+    <div className={cx("mb-4 flex items-center gap-2.5 border-b border-line/70 pb-2.5", className)}>
+      <span
+        className="h-3.5 w-[3px] shrink-0 rounded-full bg-gradient-to-b from-brass to-brass-deep shadow-glow-sm"
+        aria-hidden
+      />
       <h2 className="font-disp text-[15px] font-semibold tracking-tight text-ink">{title}</h2>
       {kicker && <span className="font-mono text-[12px] uppercase tracking-label text-faint">{kicker}</span>}
       {right && <span className="ml-auto">{right}</span>}
@@ -127,7 +129,7 @@ export function Stat({
     <div className="relative overflow-hidden rounded-lg border border-line bg-inset-grad p-3.5 shadow-inset">
       <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass/55 to-transparent" />
       <div className="font-mono text-[12px] uppercase tracking-label text-faint">{label}</div>
-      <div className={cx("mt-1.5 font-mono text-[22px] font-medium leading-none", valueColor)}>{value}</div>
+      <div className={cx("tnum mt-1.5 font-mono text-[23px] font-medium leading-none", valueColor)}>{value}</div>
       {sub && <div className="mt-1.5 text-[13px] text-dim">{sub}</div>}
     </div>
   );

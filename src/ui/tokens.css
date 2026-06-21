@@ -70,6 +70,102 @@ body {
   text-shadow: 0 0 18px rgba(47, 232, 172, 0.5);
 }
 
+/* ---- Premium surface system ---------------------------------------- */
+
+/* Instrument glass: a gradient hairline bezel (bright at the top edge, like
+   light on a chamfer), a specular highlight, and layered depth. */
+.glass {
+  background:
+    linear-gradient(180deg, #141c24 0%, #0b1117 100%) padding-box,
+    linear-gradient(
+        160deg,
+        rgba(47, 232, 172, 0.32) 0%,
+        rgba(160, 255, 224, 0.1) 14%,
+        rgba(255, 255, 255, 0.04) 34%,
+        rgba(0, 0, 0, 0) 64%
+      )
+      border-box;
+  border: 1px solid transparent;
+  box-shadow:
+    0 24px 54px -28px rgba(0, 0, 0, 0.95),
+    0 2px 8px -4px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* Tabular figures for every number that should sit in a column / readout. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ---- Ambient field ------------------------------------------------- */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-grid {
+  position: absolute;
+  inset: -2px;
+  background-image:
+    linear-gradient(rgba(47, 232, 172, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(47, 232, 172, 0.055) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(125% 85% at 50% -5%, #000 28%, transparent 80%);
+  mask-image: radial-gradient(125% 85% at 50% -5%, #000 28%, transparent 80%);
+  opacity: 0.6;
+}
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(75px);
+  opacity: 0.42;
+  will-change: transform;
+}
+.aurora-a {
+  width: 48vw;
+  height: 48vw;
+  left: 58%;
+  top: -14%;
+  background: radial-gradient(circle, rgba(47, 232, 172, 0.5) 0%, rgba(47, 232, 172, 0) 70%);
+  animation: aurora-a 26s ease-in-out infinite;
+}
+.aurora-b {
+  width: 42vw;
+  height: 42vw;
+  left: -14%;
+  top: 52%;
+  background: radial-gradient(circle, rgba(34, 211, 197, 0.42) 0%, rgba(34, 211, 197, 0) 70%);
+  animation: aurora-b 34s ease-in-out infinite;
+}
+.ambient-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes aurora-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-7%, 6%) scale(1.18);
+  }
+}
+@keyframes aurora-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(8%, -6%) scale(1.14);
+  }
+}
+
 /* Thin custom scrollbars that match the dark surfaces. */
 * {
   scrollbar-width: thin;

@@ -130,11 +130,18 @@ export function Shell() {
 
   return (
     <div className="min-h-screen bg-ground text-ink">
+      {/* Ambient field — technical grid, drifting aurora, fine grain. */}
+      <div className="ambient" aria-hidden>
+        <div className="ambient-grid" />
+        <div className="aurora aurora-a" />
+        <div className="aurora aurora-b" />
+        <div className="ambient-noise" />
+      </div>
       <CommandPalette />
       <Companion />
       <CoFounder />
       {/* Desktop rail */}
-      <aside className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0E121A] to-[#0A0D12] px-3 py-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0C1014] to-[#07090C] px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2">
           <Sigma size={26} />
           <div>
@@ -195,7 +202,7 @@ export function Shell() {
         </div>
       </div>
 
-      <main className="lg:pl-56">
+      <main className="relative z-10 lg:pl-56">
         <motion.div
           key={loc.pathname}
           initial={{ opacity: 0, y: 10 }}
