@@ -87,7 +87,7 @@ function NavLinks({ alerts, onNavigate }: { alerts: number; onNavigate?: () => v
             cx(
               "group flex items-center gap-2.5 rounded-md px-3 py-2 font-mono text-[13px] uppercase tracking-label transition-all",
               isActive
-                ? "bg-accent-grad text-brass shadow-[inset_2px_0_0_#57A9FF]"
+                ? "bg-accent-grad text-brass shadow-[inset_2px_0_0_#2FE8AC]"
                 : "text-dim hover:bg-white/[.04] hover:text-ink",
             )
           }

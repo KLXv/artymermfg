@@ -130,7 +130,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
             max={Math.max(50, Math.round(num(p.unitPrice) * 2.5))}
             value={previewPrice}
             onChange={(e) => setWhatIf(Number(e.target.value))}
-            className="flex-1 accent-[#57A9FF]"
+            className="flex-1 accent-[#2FE8AC]"
           />
           <div className="w-44 text-right font-mono text-[13px]">
             <span className="text-ink">{money(previewPrice, cur === "EUR" ? "€" : "")} {cur !== "EUR" ? cur : ""}</span>

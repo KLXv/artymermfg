@@ -232,7 +232,7 @@ export function CoFounder() {
               <button
                 onClick={() => respond(typed)}
                 disabled={!typed.trim()}
-                className="shrink-0 rounded-md border border-brass/50 bg-accent-grad px-2.5 py-1.5 font-mono text-[12px] text-[#D6EBFF] disabled:opacity-40"
+                className="shrink-0 rounded-md border border-brass/50 bg-accent-grad px-2.5 py-1.5 font-mono text-[12px] text-[#CFF8EC] disabled:opacity-40"
               >
                 Ask
               </button>

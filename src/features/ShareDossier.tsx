@@ -260,7 +260,7 @@ function ApprovalSection({
           <button
             onClick={() => submit("approved")}
             disabled={!!busy}
-            className="flex-1 rounded-md border border-brass/50 bg-accent-grad px-4 py-2.5 font-mono text-[13px] uppercase tracking-label text-[#D6EBFF] transition-all hover:shadow-glow-sm disabled:opacity-50"
+            className="flex-1 rounded-md border border-brass/50 bg-accent-grad px-4 py-2.5 font-mono text-[13px] uppercase tracking-label text-[#CFF8EC] transition-all hover:shadow-glow-sm disabled:opacity-50"
           >
             {busy === "approved" ? "Recording…" : "✓ Approve design"}
           </button>

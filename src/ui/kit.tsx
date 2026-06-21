@@ -52,7 +52,7 @@ type BtnVariant = "primary" | "ghost" | "danger" | "quiet";
 
 const BTN: Record<BtnVariant, string> = {
   primary:
-    "border-brass/50 bg-accent-grad text-[#D6EBFF] hover:border-brass hover:shadow-glow-sm active:translate-y-px",
+    "border-brass/50 bg-accent-grad text-[#CFF8EC] shadow-[0_0_22px_-12px_rgba(47,232,172,.8)] hover:border-brass hover:shadow-glow-sm active:translate-y-px",
   ghost: "border-line bg-white/[.02] text-dim hover:border-line2 hover:text-ink hover:bg-white/[.04]",
   danger: "border-line bg-white/[.02] text-bad hover:border-bad hover:bg-[rgba(255,107,107,.08)]",
   quiet: "border-transparent text-faint hover:text-ink",
@@ -125,7 +125,7 @@ export function Stat({
             : "metal";
   return (
     <div className="relative overflow-hidden rounded-lg border border-line bg-inset-grad p-3.5 shadow-inset">
-      <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass/30 to-transparent" />
+      <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass/55 to-transparent" />
       <div className="font-mono text-[12px] uppercase tracking-label text-faint">{label}</div>
       <div className={cx("mt-1.5 font-mono text-[22px] font-medium leading-none", valueColor)}>{value}</div>
       {sub && <div className="mt-1.5 text-[13px] text-dim">{sub}</div>}

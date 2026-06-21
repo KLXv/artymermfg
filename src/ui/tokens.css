@@ -1,22 +1,22 @@
 /**
- * Design tokens — liquid chrome on black. Mirrors the Tailwind theme for raw
- * CSS (PDFs, SVG signature components). The grounds are near-black with a cool
- * tint and a living radial glow; the accent is electric chrome-blue; metal is a
- * brushed-silver gradient for the Σ and headline values. See DECISIONS.md.
+ * Design tokens — emerald neon on black. Mirrors the Tailwind theme for raw
+ * CSS (PDFs, SVG signature components). Near-black grounds with a living
+ * mint-green glow; the accent is a vivid spring-mint; metal is a brushed-silver
+ * gradient for the Σ and headline values. See DECISIONS.md.
  */
 :root {
-  --ground: #090b10;
-  --panel: #161b24;
-  --panel2: #1c222c;
-  --inset: #0c0f15;
-  --line: #242b36;
-  --line2: #36404e;
-  --ink: #eef2f8;
-  --dim: #9da8b9;
-  --faint: #6c7688;
-  --brass: #57a9ff; /* accent (legacy name) */
-  --brass-dim: rgba(87, 169, 255, 0.14);
-  --brass-deep: #2f6bd0;
+  --ground: #06090c;
+  --panel: #0f151c;
+  --panel2: #151c25;
+  --inset: #090d12;
+  --line: #1e2730;
+  --line2: #2e3a44;
+  --ink: #ecf3f1;
+  --dim: #9aa9a6;
+  --faint: #67756f;
+  --brass: #2fe8ac; /* accent — emerald mint (legacy name kept) */
+  --brass-dim: rgba(47, 232, 172, 0.14);
+  --brass-deep: #15b98c;
   --ok: #3ddc97;
   --warn: #f5b445;
   --bad: #ff6b6b;
@@ -42,11 +42,11 @@ body,
 
 body {
   background-color: var(--ground);
-  /* Living background: cool light pooling from the top, a deep base. */
+  /* Living background: mint light pooling top-right, a faint glow bottom-left. */
   background-image:
-    radial-gradient(70% 50% at 78% -5%, rgba(87, 169, 255, 0.14) 0%, rgba(87, 169, 255, 0) 60%),
-    radial-gradient(55% 45% at 8% 8%, rgba(61, 220, 151, 0.05) 0%, rgba(61, 220, 151, 0) 55%),
-    linear-gradient(180deg, #0b0e14 0%, #090b10 100%);
+    radial-gradient(60% 50% at 82% -8%, rgba(47, 232, 172, 0.16) 0%, rgba(47, 232, 172, 0) 60%),
+    radial-gradient(50% 45% at 2% 102%, rgba(47, 232, 172, 0.08) 0%, rgba(47, 232, 172, 0) 60%),
+    linear-gradient(180deg, #070b0e 0%, #05080a 100%);
   background-attachment: fixed;
   color: var(--ink);
   font-family: var(--body);
@@ -67,32 +67,32 @@ body {
 /* Electric accent text with a faint bloom. */
 .glow-text {
   color: var(--brass);
-  text-shadow: 0 0 18px rgba(87, 169, 255, 0.45);
+  text-shadow: 0 0 18px rgba(47, 232, 172, 0.5);
 }
 
 /* Thin custom scrollbars that match the dark surfaces. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2c3543 transparent;
+  scrollbar-color: #2a3a36 transparent;
 }
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #2c3543;
+  background: #2a3a36;
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #3a4555;
+  background: #37514a;
   background-clip: content-box;
 }
 
 ::selection {
   background: var(--brass);
-  color: #04070c;
+  color: #04110c;
 }
 
 @media (prefers-reduced-motion: reduce) {

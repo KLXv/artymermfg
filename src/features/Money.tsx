@@ -138,24 +138,24 @@ export function Money() {
           <div style={{ height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={forecast} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid stroke="#2B3039" vertical={false} />
+                <CartesianGrid stroke="#1B2A28" vertical={false} />
                 <XAxis dataKey="month" stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} />
                 <YAxis stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} width={52} />
                 <ReferenceLine y={0} stroke="#5E6470" />
                 <Tooltip
-                  cursor={{ fill: "rgba(201,162,75,.06)" }}
+                  cursor={{ fill: "rgba(47,232,172,.07)" }}
                   contentStyle={{
-                    background: "#1B1E25",
-                    border: "1px solid #2B3039",
+                    background: "#0B1117",
+                    border: "1px solid #1E2730",
                     borderRadius: 6,
                     fontFamily: "var(--mono)",
                     fontSize: 11,
                   }}
                   formatter={(v: number, name) => [fmtCcy(v, ccy), name]}
                 />
-                <Bar dataKey="inflow" name="inflow" fill="#C9A24B" radius={[2, 2, 0, 0]} maxBarSize={36} />
-                <Bar dataKey="outflow" name="burn" fill="#3A4150" radius={[2, 2, 0, 0]} maxBarSize={36} />
-                <Line dataKey="cumulative" name="position" stroke="#6FB98F" strokeWidth={2} dot={{ r: 2 }} />
+                <Bar dataKey="inflow" name="inflow" fill="#2FE8AC" radius={[2, 2, 0, 0]} maxBarSize={36} />
+                <Bar dataKey="outflow" name="burn" fill="#2A3A44" radius={[2, 2, 0, 0]} maxBarSize={36} />
+                <Line dataKey="cumulative" name="position" stroke="#5FF5C8" strokeWidth={2} dot={{ r: 2 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

@@ -142,7 +142,7 @@ export function WatchDial({
   const lume = !!spec.lume;
   const lumeC = "#BFF7CE";
   const markerFill = lume ? lumeC : `url(#${uid}-metal)`;
-  const blue = "#57A9FF";
+  const blue = "#2FE8AC";
 
   const tx = (spec.texture || "").toLowerCase();
   const mk = (spec.markers || "").toLowerCase();
