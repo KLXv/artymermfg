@@ -13,7 +13,10 @@ import { coFounderAnswer, coFounderBriefing, coFounderSystem } from "@/domain";
 import { generate } from "@/data/ai";
 import { useDashboard } from "@/state/useDashboard";
 import { OPERATOR } from "./companion";
+import { rankEnglishVoices, splitSentences, voiceLabel } from "./voice";
 import { cx } from "./kit";
+
+const VOICE_KEY = "artymer:cofounder-voice";
 
 /* Web Speech API isn't in the TS DOM lib — accessed defensively. */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -46,19 +49,53 @@ export function CoFounder() {
   const [youSaid, setYouSaid] = useState("");
   const [reply, setReply] = useState("");
   const [typed, setTyped] = useState("");
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceURI, setVoiceURI] = useState<string>(() => localStorage.getItem(VOICE_KEY) || "");
   const recRef = useRef<any>(null);
   const greeted = useRef(false);
+  const keepAlive = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load the platform's voices (async on most browsers) and rank the best one.
+  useEffect(() => {
+    if (!canSpeak) return;
+    const refresh = () => {
+      const ranked = rankEnglishVoices(window.speechSynthesis.getVoices());
+      setVoices(ranked);
+      setVoiceURI((cur) => cur || ranked[0]?.voiceURI || "");
+    };
+    refresh();
+    window.speechSynthesis.addEventListener("voiceschanged", refresh);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", refresh);
+  }, []);
+
+  const pickVoice = (): SpeechSynthesisVoice | undefined => {
+    const all = window.speechSynthesis.getVoices();
+    return all.find((v) => v.voiceURI === voiceURI) || rankEnglishVoices(all)[0];
+  };
 
   const speak = (text: string) => {
     if (!canSpeak || muted || !text) return;
     try {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.03;
-      const voices = window.speechSynthesis.getVoices();
-      const pref = voices.find((v) => /en-GB/i.test(v.lang)) || voices.find((v) => /^en/i.test(v.lang));
-      if (pref) u.voice = pref;
-      window.speechSynthesis.speak(u);
+      const voice = pickVoice();
+      // Sentence-by-sentence: natural cadence, and avoids Chrome's ~15s cut-off.
+      splitSentences(text).forEach((sentence) => {
+        const u = new SpeechSynthesisUtterance(sentence);
+        if (voice) u.voice = voice;
+        u.rate = 0.97; // a touch measured — reads as considered, not rushed
+        u.pitch = 1.0;
+        u.volume = 1;
+        window.speechSynthesis.speak(u);
+      });
+      // Keep the queue from stalling (a long-standing Chrome bug).
+      if (keepAlive.current) clearInterval(keepAlive.current);
+      keepAlive.current = setInterval(() => {
+        if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
+        else if (keepAlive.current) {
+          clearInterval(keepAlive.current);
+          keepAlive.current = null;
+        }
+      }, 6000);
     } catch {
       /* tts blocked */
     }
@@ -68,6 +105,24 @@ export function CoFounder() {
       if (canSpeak) window.speechSynthesis.cancel();
     } catch {
       /* noop */
+    }
+    if (keepAlive.current) {
+      clearInterval(keepAlive.current);
+      keepAlive.current = null;
+    }
+  };
+
+  const changeVoice = (uri: string) => {
+    setVoiceURI(uri);
+    localStorage.setItem(VOICE_KEY, uri);
+    // Let the operator hear the pick immediately.
+    const v = window.speechSynthesis.getVoices().find((x) => x.voiceURI === uri);
+    if (v && !muted) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance("Right then — ready when you are.");
+      u.voice = v;
+      u.rate = 0.97;
+      window.speechSynthesis.speak(u);
     }
   };
 
@@ -169,7 +224,20 @@ export function CoFounder() {
             {/* header */}
             <div className="flex items-center gap-2 border-b border-line/80 px-3 py-2.5">
               <span className="font-disp text-[14px] font-semibold text-ink">Co-founder</span>
-              <span className="font-mono text-[10px] uppercase tracking-label text-faint">voice · free</span>
+              {canSpeak && voices.length > 0 && (
+                <select
+                  value={voiceURI}
+                  onChange={(e) => changeVoice(e.target.value)}
+                  aria-label="Voice"
+                  className="max-w-[120px] rounded border border-line bg-inset px-1.5 py-0.5 font-mono text-[11px] text-dim focus:border-brass focus:outline-none [color-scheme:dark]"
+                >
+                  {voices.map((v) => (
+                    <option key={v.voiceURI} value={v.voiceURI} className="bg-panel">
+                      {voiceLabel(v)}
+                    </option>
+                  ))}
+                </select>
+              )}
               <span className="ml-auto flex items-center gap-1">
                 <button
                   onClick={() => {
