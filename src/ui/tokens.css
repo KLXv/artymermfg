@@ -72,20 +72,23 @@ body {
 
 /* ---- Premium surface system ---------------------------------------- */
 
-/* Instrument glass: a gradient hairline bezel (bright at the top edge, like
-   light on a chamfer), a specular highlight, and layered depth. */
+/* Instrument glass: frosted, translucent panes over the living field so the
+   aurora + cursor light glow through, with a gradient hairline bezel (bright at
+   the top edge, like light on a chamfer) and layered depth. */
 .glass {
   background:
-    linear-gradient(180deg, #141c24 0%, #0b1117 100%) padding-box,
+    linear-gradient(180deg, rgba(19, 27, 35, 0.74) 0%, rgba(10, 16, 22, 0.8) 100%) padding-box,
     linear-gradient(
         160deg,
-        rgba(47, 232, 172, 0.32) 0%,
+        rgba(47, 232, 172, 0.34) 0%,
         rgba(160, 255, 224, 0.1) 14%,
-        rgba(255, 255, 255, 0.04) 34%,
+        rgba(255, 255, 255, 0.05) 34%,
         rgba(0, 0, 0, 0) 64%
       )
       border-box;
   border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(13px) saturate(128%);
+  backdrop-filter: blur(13px) saturate(128%);
   box-shadow:
     0 24px 54px -28px rgba(0, 0, 0, 0.95),
     0 2px 8px -4px rgba(0, 0, 0, 0.6),
@@ -106,16 +109,26 @@ body {
   overflow: hidden;
   pointer-events: none;
 }
-.ambient-grid {
+/* Guilloché — the engine-turned texture of a fine dial: fine concentric rings
+   crossed by a radial sunburst, struck from a point up high. The brand's
+   signature, not a generic grid. */
+.ambient-guilloche {
   position: absolute;
-  inset: -2px;
+  inset: 0;
   background-image:
-    linear-gradient(rgba(47, 232, 172, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(47, 232, 172, 0.055) 1px, transparent 1px);
-  background-size: 48px 48px;
-  -webkit-mask-image: radial-gradient(125% 85% at 50% -5%, #000 28%, transparent 80%);
-  mask-image: radial-gradient(125% 85% at 50% -5%, #000 28%, transparent 80%);
-  opacity: 0.6;
+    repeating-radial-gradient(circle at 50% 28%, rgba(47, 232, 172, 0.05) 0 1px, transparent 1px 10px),
+    repeating-conic-gradient(from 0deg at 50% 28%, rgba(47, 232, 172, 0.045) 0 0.5deg, transparent 0.5deg 3deg);
+  -webkit-mask-image: radial-gradient(90% 80% at 50% 24%, #000 18%, transparent 72%);
+  mask-image: radial-gradient(90% 80% at 50% 24%, #000 18%, transparent 72%);
+  opacity: 0.55;
+}
+
+/* A soft light that follows the cursor — the scene is lit by a movable source;
+   the frosted panels catch it as it passes. Defaults to the top-centre. */
+.ambient-spot {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(420px 420px at var(--lx, 50%) var(--ly, 16%), rgba(47, 232, 172, 0.12), rgba(47, 232, 172, 0) 70%);
 }
 .aurora {
   position: absolute;

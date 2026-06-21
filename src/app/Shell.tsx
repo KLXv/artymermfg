@@ -5,7 +5,7 @@
  * the Σ mark and the cockpit's sections. The Deck link wears a live count of
  * the action queue, so the most-pressing work is visible from anywhere.
  */
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sigma } from "@/ui/Sigma";
@@ -122,19 +122,41 @@ export function Shell() {
   const loc = useLocation();
   const { user } = useAuth();
   const loadShares = useSharesStore((s) => s.load);
+  const ambientRef = useRef<HTMLDivElement>(null);
 
   // Pull the owner's published shares so client responses reach the queue.
   useEffect(() => {
     if (user) loadShares();
   }, [user, loadShares, loc.pathname]);
 
+  // The cursor lights the scene: a soft source the frosted panels catch.
+  useEffect(() => {
+    const el = ambientRef.current;
+    if (!el || !window.matchMedia("(pointer: fine)").matches) return;
+    let raf = 0;
+    const onMove = (e: PointerEvent) => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        el.style.setProperty("--lx", `${e.clientX}px`);
+        el.style.setProperty("--ly", `${e.clientY}px`);
+        raf = 0;
+      });
+    };
+    window.addEventListener("pointermove", onMove);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-ground text-ink">
-      {/* Ambient field — technical grid, drifting aurora, fine grain. */}
-      <div className="ambient" aria-hidden>
-        <div className="ambient-grid" />
+      {/* Ambient field — guilloché texture, drifting aurora, cursor light, grain. */}
+      <div className="ambient" aria-hidden ref={ambientRef}>
+        <div className="ambient-guilloche" />
         <div className="aurora aurora-a" />
         <div className="aurora aurora-b" />
+        <div className="ambient-spot" />
         <div className="ambient-noise" />
       </div>
       <CommandPalette />
