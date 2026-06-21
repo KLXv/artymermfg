@@ -238,8 +238,10 @@ export function Guide() {
             toggle. Set your exchange rates in Settings; lei is computed from them.
           </li>
           <li>
-            <span className="text-ink">Share a client dossier</span> — the Presentation tab produces a public, read-only
-            link (no login) you can send a client. It carries the hero render, story and key specs.
+            <span className="text-ink">Publish a client portal</span> — the Presentation tab publishes a private web
+            page (no login) with the hero render, story and specs, where the client can <span className="text-ink">approve
+            the design or request changes</span>. Their decision lands right back on the project — approvals, signer and
+            note included.
           </li>
           <li>
             <span className="text-ink">Bilingual factory docs</span> — switch the Documents tab to 简体中文 to hand the

@@ -4,11 +4,20 @@
  * certificate PDFs. The story generator obeys the Private-Label voice rule via
  * the domain prompt (Artymer unnamed in PL mode).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { I18N, LANGS, type Account, type Company, type Project } from "@/domain";
 import { storyChoices, storySystemPrompt } from "@/domain/prompts";
 import { generate } from "@/data/ai";
 import { buildShareUrl, buildSharePayload } from "@/documents/shareLink";
+import {
+  loadProjectShares,
+  publishShare,
+  revokeShare,
+  shareUrlFor,
+  sharesEnabled,
+  type ShareRecord,
+} from "@/data/shares";
+import { useAuth } from "@/state/useAuth";
 import { Button, Field, Panel, SectionHead, SelectField, TextArea, Tag } from "@/ui/kit";
 import { makeBind, type Patch } from "./bind";
 
@@ -32,11 +41,47 @@ export function PresentationTab({
   company: Company;
 }) {
   const f = makeBind(p, patch);
+  const { user } = useAuth();
   const [busy, setBusy] = useState<null | "story" | "dossier" | "cert">(null);
   const [err, setErr] = useState("");
   const [shared, setShared] = useState(false);
+  const [shares, setShares] = useState<ShareRecord[]>([]);
+  const [publishing, setPublishing] = useState(false);
+  const [copiedToken, setCopiedToken] = useState("");
   const pl = (p.servicePath || account?.servicePath) === "Private label";
   const accounts = account ? { [account.id]: account } : {};
+  const portalOn = sharesEnabled() && !!user;
+
+  const refreshShares = async () => {
+    if (portalOn) setShares(await loadProjectShares(p.id));
+  };
+  useEffect(() => {
+    refreshShares();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.id, user]);
+
+  const publish = async () => {
+    if (!user) return;
+    setPublishing(true);
+    try {
+      const token = await publishShare(p.id, user.id, buildSharePayload(p, account, company));
+      await navigator.clipboard.writeText(shareUrlFor(token)).catch(() => {});
+      setCopiedToken(token);
+      setTimeout(() => setCopiedToken(""), 2000);
+      await refreshShares();
+    } finally {
+      setPublishing(false);
+    }
+  };
+  const copyLink = async (token: string) => {
+    await navigator.clipboard.writeText(shareUrlFor(token)).catch(() => {});
+    setCopiedToken(token);
+    setTimeout(() => setCopiedToken(""), 2000);
+  };
+  const revoke = async (token: string) => {
+    await revokeShare(token);
+    await refreshShares();
+  };
 
   const shareUrl = () => {
     const payload = buildSharePayload(p, account, company);
@@ -160,7 +205,7 @@ export function PresentationTab({
       </Panel>
 
       <Panel className="p-4">
-        <SectionHead title="Export & share" kicker="client-facing" />
+        <SectionHead title="Export" kicker="PDF" />
         <div className="flex flex-wrap gap-2">
           <Button variant="primary" onClick={exportDossier} disabled={!!busy}>
             {busy === "dossier" ? "Rendering…" : "↓ Dossier PDF"}
@@ -168,17 +213,92 @@ export function PresentationTab({
           <Button variant="ghost" onClick={exportCert} disabled={!!busy}>
             {busy === "cert" ? "Rendering…" : "↓ Certificate PDF"}
           </Button>
-          <Button variant="ghost" onClick={copyShare}>
-            {shared ? "Link copied ✓" : "⧉ Copy share link"}
-          </Button>
-          <Button variant="quiet" onClick={openShare}>
-            Preview ↗
-          </Button>
         </div>
-        <p className="mt-2 font-mono text-[12px] text-faint">
-          The PDF is dark cover → warm paper. The share link is a private web page of this dossier — send it to a
-          client to view in their browser, no app or login needed.
-        </p>
+        <p className="mt-2 font-mono text-[12px] text-faint">The PDF is dark cover → warm paper.</p>
+      </Panel>
+
+      <Panel className="p-4">
+        <SectionHead
+          title="Client portal"
+          kicker="share · collect approval"
+          right={
+            portalOn ? (
+              <Button variant="primary" onClick={publish} disabled={publishing}>
+                {publishing ? "Publishing…" : "Publish link"}
+              </Button>
+            ) : undefined
+          }
+        />
+        {portalOn ? (
+          shares.length === 0 ? (
+            <p className="font-mono text-[13px] text-faint">
+              Publish a private web page of this dossier. The client opens it in their browser — no login — reads the
+              piece, and approves the design or requests changes. Their decision lands back here.
+            </p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-line">
+              {shares.map((s) => {
+                const a = s.approval;
+                const tone = s.revoked
+                  ? "neutral"
+                  : a?.decision === "approved"
+                    ? "ok"
+                    : a?.decision === "changes"
+                      ? "warn"
+                      : "neutral";
+                const label = s.revoked
+                  ? "Revoked"
+                  : a?.decision === "approved"
+                    ? "Approved"
+                    : a?.decision === "changes"
+                      ? "Changes requested"
+                      : "Awaiting response";
+                return (
+                  <li key={s.id} className="flex flex-col gap-1.5 py-3 first:pt-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Tag tone={tone}>{label}</Tag>
+                      <span className="font-mono text-[12px] text-faint">{new Date(s.created_at).toLocaleDateString()}</span>
+                      <span className="ml-auto flex gap-2">
+                        <Button variant="ghost" onClick={() => copyLink(s.id)}>
+                          {copiedToken === s.id ? "Copied ✓" : "⧉ Copy"}
+                        </Button>
+                        <Button variant="quiet" onClick={() => window.open(shareUrlFor(s.id), "_blank")}>
+                          Preview ↗
+                        </Button>
+                        {!s.revoked && (
+                          <Button variant="danger" onClick={() => revoke(s.id)}>
+                            Revoke
+                          </Button>
+                        )}
+                      </span>
+                    </div>
+                    {a && (
+                      <p className="text-[13px] text-dim">
+                        <span className="text-ink">{a.signer || "Client"}</span>
+                        {a.note ? ` — "${a.note}"` : ""}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        ) : (
+          <div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="ghost" onClick={copyShare}>
+                {shared ? "Link copied ✓" : "⧉ Copy instant link"}
+              </Button>
+              <Button variant="quiet" onClick={openShare}>
+                Preview ↗
+              </Button>
+            </div>
+            <p className="mt-2 font-mono text-[12px] text-faint">
+              This instant link works with no backend, but can't collect approval. Sign in with cloud sync to publish a
+              link that captures the client's sign-off.
+            </p>
+          </div>
+        )}
       </Panel>
     </div>
   );
