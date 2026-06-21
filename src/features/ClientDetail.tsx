@@ -6,9 +6,9 @@ import {
   MARKETS,
   SERVICE,
   STAGES,
+  baseMoney,
   blankProject,
   dAgo,
-  money,
   owed,
   projFin,
   stageIdx,
@@ -145,9 +145,9 @@ export function ClientDetail() {
                   <span className="min-w-0 flex-1 truncate text-[14px]">{p.name || "Untitled"}</span>
                   <StageTrack count={STAGES.length} current={stageIdx(p)} height={14} />
                   <Tag>{p.stage}</Tag>
-                  <span className="w-20 text-right font-mono text-[13px] text-brass">{money(projFin(p, company).rev, "€")}</span>
+                  <span className="w-20 text-right font-mono text-[13px] text-brass">{baseMoney(projFin(p, company).rev, company)}</span>
                   {owed(p, company) > 0 && (
-                    <span className="w-16 text-right font-mono text-[13px] text-warn">{money(owed(p, company), "€")}</span>
+                    <span className="w-16 text-right font-mono text-[13px] text-warn">{baseMoney(owed(p, company), company)}</span>
                   )}
                 </button>
               </li>

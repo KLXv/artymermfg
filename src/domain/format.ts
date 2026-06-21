@@ -1,5 +1,6 @@
 /** Small formatting + date helpers — ported verbatim from ArtymerCockpit.jsx. */
 import { today } from "./factories";
+import type { Company } from "./types";
 
 export const num = (x: unknown): number => parseFloat(x as string) || 0;
 
@@ -27,6 +28,17 @@ export const fmtCcy = (v: number, ccy: Ccy): string => {
 /** Format a base-EUR amount directly in the chosen currency. */
 export const moneyIn = (eur: number, ccy: Ccy, fx: Record<string, number>): string =>
   fmtCcy(fromEur(eur, ccy, fx), ccy);
+
+/** Value of one unit of `ccy` in EUR (the FX pivot). EUR = 1. */
+const eurRate = (ccy: Ccy, fx: Record<string, number>): number => (ccy === "EUR" ? 1 : fx[ccy] || 1);
+
+/** Convert an amount between any two currencies via the EUR pivot. */
+export const convertCcy = (amount: number, from: Ccy, to: Ccy, fx: Record<string, number>): number =>
+  from === to ? amount : (amount * eurRate(from, fx)) / eurRate(to, fx);
+
+/** Format an amount that is already in the company's base currency. */
+export const baseMoney = (amount: number, company: Company): string =>
+  fmtCcy(amount, (company.baseCurrency as Ccy) || "EUR");
 
 /** Spec placeholder: a present value, or an underscored blank. */
 export const V = (x: unknown): string => (x && String(x).trim() ? String(x) : "________");

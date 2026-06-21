@@ -8,9 +8,9 @@ import {
   NEXT,
   STAGES,
   acctName,
+  baseMoney,
   blankProject,
   contactsDue,
-  money,
   owed,
   pipelineMetrics,
   projFin,
@@ -46,9 +46,9 @@ function Card({ p }: { p: Project }) {
       <StageTrack count={STAGES.length} current={stageIdx(p)} className="mt-2.5" height={16} />
       <div className="mt-2 flex items-center justify-between font-mono text-[12px]">
         <span className="text-faint">{p.qty || "—"} pc</span>
-        <span className="text-brass">{money(fin.rev, "€")}</span>
+        <span className="text-brass">{baseMoney(fin.rev, company)}</span>
       </div>
-      {due > 0 && <div className="mt-1 font-mono text-[12px] text-warn">{money(due, "€")} owed</div>}
+      {due > 0 && <div className="mt-1 font-mono text-[12px] text-warn">{baseMoney(due, company)} owed</div>}
     </button>
   );
 }
@@ -98,9 +98,9 @@ export function Pipeline() {
 
       {/* Forecast */}
       <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Stat label="Weighted forecast" value={money(metrics.weighted, "€")} tone="brass" sub="open × stage probability" />
-        <Stat label="Speculative" value={money(metrics.prospectValue, "€")} sub="proposal · negotiating" />
-        <Stat label="Committed" value={money(metrics.committedValue, "€")} tone="ok" sub="won, in production" />
+        <Stat label="Weighted forecast" value={baseMoney(metrics.weighted, company)} tone="brass" sub="open × stage probability" />
+        <Stat label="Speculative" value={baseMoney(metrics.prospectValue, company)} sub="proposal · negotiating" />
+        <Stat label="Committed" value={baseMoney(metrics.committedValue, company)} tone="ok" sub="won, in production" />
         <Stat
           label="Win rate"
           value={`${metrics.winRate.toFixed(0)}%`}

@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { blankTask, coFounderBriefing, money, today } from "@/domain";
+import { baseMoney, blankTask, coFounderBriefing, today } from "@/domain";
 import { Button, Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
 import { deckGreeting, deckSubline, OPERATOR } from "@/ui/companion";
 import { WatchDial } from "@/ui/WatchDial";
@@ -79,10 +79,10 @@ export function Deck() {
 
       {/* KPI strip */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Revenue" value={money(d.totRev, "€")} tone="brass" />
-        <Stat label="Net" value={money(d.net, "€")} tone={d.net >= 0 ? "ok" : "bad"} />
-        <Stat label="Outstanding" value={money(d.outstanding, "€")} sub="committed, unpaid" />
-        <Stat label="Next 30 days" value={money(d.expected30, "€")} sub="expected inflow" />
+        <Stat label="Revenue" value={baseMoney(d.totRev, company)} tone="brass" />
+        <Stat label="Net" value={baseMoney(d.net, company)} tone={d.net >= 0 ? "ok" : "bad"} />
+        <Stat label="Outstanding" value={baseMoney(d.outstanding, company)} sub="committed, unpaid" />
+        <Stat label="Next 30 days" value={baseMoney(d.expected30, company)} sub="expected inflow" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -137,7 +137,7 @@ export function Deck() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-dim">Monthly target</span>
-              <span className="tnum font-mono text-sm text-faint">{money(monthlyTarget, "€")}</span>
+              <span className="tnum font-mono text-sm text-faint">{baseMoney(monthlyTarget, company)}</span>
             </div>
           </div>
         </Panel>
@@ -170,7 +170,7 @@ export function Deck() {
                     fontFamily: "var(--mono)",
                     fontSize: 11,
                   }}
-                  formatter={(v: number) => [money(v, "€"), "inflow"]}
+                  formatter={(v: number) => [baseMoney(v, company), "inflow"]}
                 />
                 <Area
                   type="monotone"

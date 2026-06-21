@@ -11,10 +11,10 @@ import {
   SERVICE,
   STAGES,
   acctName,
+  baseMoney,
   blankAccount,
   committed,
   dFromNow,
-  money,
   owed,
   projFin,
   projVerdict,
@@ -188,8 +188,8 @@ export function ProjectDetail() {
           )}
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <KV label="Revenue" value={money(fin.rev, "€")} tone="brass" />
-            <KV label="Owed" value={due > 0 ? money(due, "€") : "—"} tone={due > 0 ? "warn" : undefined} />
+            <KV label="Revenue" value={baseMoney(fin.rev, company)} tone="brass" />
+            <KV label="Owed" value={due > 0 ? baseMoney(due, company) : "—"} tone={due > 0 ? "warn" : undefined} />
             <KV
               label="QC"
               value={committed(p) ? verdict : "—"}

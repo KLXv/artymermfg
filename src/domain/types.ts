@@ -25,6 +25,7 @@ export interface Company {
   brand: string;
   logo: string; // brand logo URL (shown on the factory-doc letterhead)
   letterhead: string; // free-text contact block under the brand name on docs
+  baseCurrency: string; // the home currency every figure is kept + shown in (e.g. RON)
   fx: { RON: number; USD: number } & Record<string, number>;
   deposit: string;
   lotFail: string;

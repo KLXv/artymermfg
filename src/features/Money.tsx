@@ -20,13 +20,13 @@ import {
   CCY,
   acctName,
   bal,
+  baseMoney,
   cashFlowForecast,
   committed,
+  convertCcy,
   dep,
   fmtCcy,
-  fromEur,
   marginAnalysis,
-  moneyIn,
   monthlyBurn,
   num,
   owed,
@@ -51,14 +51,16 @@ export function Money() {
   const setExpenses = useStore((s) => s.setExpenses);
   const patchProject = useStore((s) => s.patchProject);
 
-  // Display currency (a UI preference, persisted locally — base figures stay EUR).
-  const [ccy, setCcy] = useState<Ccy>(() => (localStorage.getItem(CCY_KEY) as Ccy) || "EUR");
+  // Figures are kept in the company's base currency; the toggle is a view that
+  // converts to another currency (a UI preference, persisted locally).
+  const base = (company.baseCurrency as Ccy) || "EUR";
+  const [ccy, setCcy] = useState<Ccy>(() => (localStorage.getItem(CCY_KEY) as Ccy) || base);
   const pickCcy = (c: Ccy) => {
     setCcy(c);
     localStorage.setItem(CCY_KEY, c);
   };
-  const m = (eur: number) => moneyIn(eur, ccy, company.fx);
-  const conv = (eur: number) => fromEur(eur, ccy, company.fx);
+  const m = (amt: number) => (ccy === base ? baseMoney(amt, company) : fmtCcy(convertCcy(amt, base, ccy, company.fx), ccy));
+  const conv = (amt: number) => convertCcy(amt, base, ccy, company.fx);
 
   const forecast = cashFlowForecast(d.projList, expenses, company, 6).map((row) => ({
     ...row,
@@ -77,12 +79,7 @@ export function Money() {
   const addExp = () => setExpenses([...expenses, { label: "", amount: "" }]);
   const removeExp = (i: number) => setExpenses(expenses.filter((_, idx) => idx !== i));
 
-  const fxNote =
-    ccy === "EUR"
-      ? "base currency"
-      : ccy === "RON"
-        ? `1 lei = €${company.fx.RON} · set in Settings`
-        : `1 $ = €${company.fx.USD} · set in Settings`;
+  const fxNote = ccy === base ? "base currency" : `converted from ${base} · rates in Settings`;
 
   return (
     <div>
@@ -230,7 +227,7 @@ export function Money() {
             {expenses.map((e, i) => (
               <div key={i} className="flex items-end gap-2">
                 <Field value={e.label} onChange={(v) => setExp(i, { label: v })} placeholder="Label" className="flex-1" />
-                <Field value={e.amount} onChange={(v) => setExp(i, { amount: v })} placeholder="€" className="w-24" />
+                <Field value={e.amount} onChange={(v) => setExp(i, { amount: v })} placeholder={base === "RON" ? "lei" : base} className="w-24" />
                 <Button variant="danger" onClick={() => removeExp(i)} className="mb-0">
                   ✕
                 </Button>

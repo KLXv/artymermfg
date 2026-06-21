@@ -12,6 +12,7 @@ export const blankCompany = (): Company => ({
   brand: "Artymer",
   logo: "",
   letterhead: "",
+  baseCurrency: "RON",
   fx: { RON: 0.2, USD: 0.92 },
   deposit: "30",
   lotFail: "5",

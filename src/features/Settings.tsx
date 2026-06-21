@@ -4,11 +4,11 @@
  * migrates straight in, including the one-time legacy migration on import.
  */
 import { useRef, useState } from "react";
-import { type Company } from "@/domain";
+import { CCY, type Company } from "@/domain";
 import { isSupabaseConfigured } from "@/data/supabase";
 import { uploadAttachment, deleteAttachment } from "@/data/storage";
 import { SEED_BACKUP } from "@/data/seed";
-import { Button, Field, Label, Panel, SectionHead, Tag, TextArea } from "@/ui/kit";
+import { Button, Field, Label, Panel, SectionHead, SelectField, Tag, TextArea } from "@/ui/kit";
 import { useStore } from "@/state/store";
 import { useAuth } from "@/state/useAuth";
 import { PageHeader } from "./PageHeader";
@@ -134,6 +134,13 @@ export function Settings() {
               placeholder={"Artymer · Bespoke watchmaking\nhello@artymer.com\nartymer.com"}
             />
 
+            <SelectField
+              label="Base currency"
+              value={company.baseCurrency}
+              onChange={(v) => set({ baseCurrency: v })}
+              options={CCY}
+            />
+            <div />
             <Field label="FX · RON → EUR" value={String(company.fx.RON)} onChange={(v) => setFx("RON", v)} />
             <Field label="FX · USD → EUR" value={String(company.fx.USD)} onChange={(v) => setFx("USD", v)} />
           </div>
@@ -154,7 +161,7 @@ export function Settings() {
           <div className="grid gap-3 sm:grid-cols-3">
             <Field label="Buffer (weeks)" {...f("bufferWeeks")} />
             <Field label="Weekly outreach" {...f("weeklyOutreach")} />
-            <Field label="Monthly revenue €" {...f("monthlyRevenue")} />
+            <Field label={`Monthly revenue (${company.baseCurrency})`} {...f("monthlyRevenue")} />
           </div>
         </Panel>
 

@@ -10,10 +10,10 @@
 import { useState } from "react";
 import {
   bal,
+  baseMoney,
   cfg,
   committed,
   dep,
-  money,
   num,
   owed,
   projFinance,
@@ -74,13 +74,13 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
 
       {/* Economics — the headline */}
       <Panel className="p-4">
-        <SectionHead title="Economics" kicker={`all € · FX RON ${company.fx.RON} · USD ${company.fx.USD}`} />
+        <SectionHead title="Economics" kicker={`all ${company.baseCurrency} · FX RON ${company.fx.RON} · USD ${company.fx.USD}`} />
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          <Stat label="Revenue" value={money(fb.revenue, "€")} tone="brass" />
-          <Stat label="Total cost" value={money(fb.cost, "€")} />
-          <Stat label="Profit" value={money(fb.profit, "€")} tone={fb.profit >= 0 ? "ok" : "bad"} />
+          <Stat label="Revenue" value={baseMoney(fb.revenue, company)} tone="brass" />
+          <Stat label="Total cost" value={baseMoney(fb.cost, company)} />
+          <Stat label="Profit" value={baseMoney(fb.profit, company)} tone={fb.profit >= 0 ? "ok" : "bad"} />
           <Stat label="Margin" value={`${fb.margin.toFixed(0)}%`} tone={fb.margin >= 30 ? "ok" : "warn"} />
-          <Stat label="Profit / unit" value={money(fb.unitProfit, "€")} tone={fb.unitProfit >= 0 ? "ok" : "bad"} />
+          <Stat label="Profit / unit" value={baseMoney(fb.unitProfit, company)} tone={fb.unitProfit >= 0 ? "ok" : "bad"} />
           <Stat
             label="Break-even"
             value={fb.breakEvenUnits == null ? "—" : `${fb.breakEvenUnits} pc`}
@@ -89,15 +89,15 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
         </div>
         {/* Per-unit waterfall */}
         <div className="mt-3 grid gap-2 rounded-lg border border-line bg-inset-grad p-3 font-mono text-[13px] sm:grid-cols-2">
-          <Row label="Price / unit" value={money(fb.unitPrice, "€")} strong />
-          <Row label="Material / unit" value={`− ${money(fb.unitMaterial, "€")}`} />
-          <Row label={`Channel fee ${num(p.feePct) || 0}%`} value={`− ${money(fb.fee, "€")}`} />
-          <Row label="Tooling / unit (amortized)" value={`− ${money(fb.toolingPerUnit, "€")}`} />
-          <Row label="Cost / unit" value={money(fb.unitCost, "€")} />
-          <Row label="Profit / unit" value={money(fb.unitProfit, "€")} strong tone={fb.unitProfit >= 0 ? "ok" : "bad"} />
+          <Row label="Price / unit" value={baseMoney(fb.unitPrice, company)} strong />
+          <Row label="Material / unit" value={`− ${baseMoney(fb.unitMaterial, company)}`} />
+          <Row label={`Channel fee ${num(p.feePct) || 0}%`} value={`− ${baseMoney(fb.fee, company)}`} />
+          <Row label="Tooling / unit (amortized)" value={`− ${baseMoney(fb.toolingPerUnit, company)}`} />
+          <Row label="Cost / unit" value={baseMoney(fb.unitCost, company)} />
+          <Row label="Profit / unit" value={baseMoney(fb.unitProfit, company)} strong tone={fb.unitProfit >= 0 ? "ok" : "bad"} />
         </div>
         <p className="mt-2 font-mono text-[11px] text-faint">
-          One-off tooling {money(fb.toolingTotal, "€")} · contribution {money(fb.contribution, "€")}/unit ·{" "}
+          One-off tooling {baseMoney(fb.toolingTotal, company)} · contribution {baseMoney(fb.contribution, company)}/unit ·{" "}
           {fb.breakEvenUnits == null
             ? "price below variable cost — no break-even"
             : `clears tooling after ${fb.breakEvenUnits} of ${fb.qtyN || "—"} pc`}
@@ -133,14 +133,14 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
             className="flex-1 accent-[#2FE8AC]"
           />
           <div className="w-44 text-right font-mono text-[13px]">
-            <span className="text-ink">{money(previewPrice, cur === "EUR" ? "€" : "")} {cur !== "EUR" ? cur : ""}</span>
+            <span className="text-ink">{baseMoney(previewPrice, company)}</span>
             <span className="text-faint"> · </span>
             <span className={previewFb.margin >= 30 ? "text-ok" : "text-warn"}>{previewFb.margin.toFixed(0)}%</span>
           </div>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-2">
-          <Stat label="Profit / unit" value={money(previewFb.unitProfit, "€")} tone={previewFb.unitProfit >= 0 ? "ok" : "bad"} />
-          <Stat label="Total profit" value={money(previewFb.profit, "€")} tone={previewFb.profit >= 0 ? "ok" : "bad"} />
+          <Stat label="Profit / unit" value={baseMoney(previewFb.unitProfit, company)} tone={previewFb.unitProfit >= 0 ? "ok" : "bad"} />
+          <Stat label="Total profit" value={baseMoney(previewFb.profit, company)} tone={previewFb.profit >= 0 ? "ok" : "bad"} />
           <Stat label="Break-even" value={previewFb.breakEvenUnits == null ? "—" : `${previewFb.breakEvenUnits} pc`} />
         </div>
       </Panel>
@@ -157,7 +157,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           <Field label={`Tooling — one-off (${cur})`} {...f("tooling")} />
           <Field label="Payment-channel fee %" {...f("feePct")} />
           <div className="flex items-end font-mono text-[12px] text-dim">
-            Material/unit {money(fb.unitMaterial, "€")}
+            Material/unit {baseMoney(fb.unitMaterial, company)}
           </div>
         </div>
       </Panel>
@@ -169,7 +169,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           <div className="rounded-lg border border-line bg-inset p-3">
             <div className="flex items-center justify-between">
               <Label>Deposit · {cfg(p, "deposit", company)}%</Label>
-              <span className="font-mono text-sm text-brass">{money(dep(p, company), "€")}</span>
+              <span className="font-mono text-sm text-brass">{baseMoney(dep(p, company), company)}</span>
             </div>
             <div className="mt-2 flex flex-col gap-2">
               <Toggle label="Deposit paid" checked={p.depositPaid} onChange={(v) => patch({ depositPaid: v })} />
@@ -180,7 +180,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           <div className="rounded-lg border border-line bg-inset p-3">
             <div className="flex items-center justify-between">
               <Label>Balance</Label>
-              <span className="font-mono text-sm text-brass">{money(bal(p, company), "€")}</span>
+              <span className="font-mono text-sm text-brass">{baseMoney(bal(p, company), company)}</span>
             </div>
             <div className="mt-2 flex flex-col gap-2">
               <Toggle label="Balance paid" checked={p.balancePaid} onChange={(v) => patch({ balancePaid: v })} />
@@ -190,7 +190,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           </div>
         </div>
         <div className="mt-3 font-mono text-[13px]">
-          Outstanding on this project: <span className="text-warn">{money(owed(p, company), "€")}</span>
+          Outstanding on this project: <span className="text-warn">{baseMoney(owed(p, company), company)}</span>
         </div>
       </Panel>
 

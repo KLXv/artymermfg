@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import {
   STAGES,
   acctName,
+  baseMoney,
   blankProject,
-  money,
   owed,
   projFin,
   stageIdx,
@@ -99,9 +99,9 @@ export function Projects() {
                         <span className="font-mono text-[12px] text-dim">{p.stage}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 text-right font-mono text-[13px] text-brass">{money(fin.rev, "€")}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-[13px] text-brass">{baseMoney(fin.rev, company)}</td>
                     <td className="hidden px-3 py-2.5 text-right font-mono text-[13px] md:table-cell">
-                      <span className={due > 0 ? "text-warn" : "text-faint"}>{due > 0 ? money(due, "€") : "—"}</span>
+                      <span className={due > 0 ? "text-warn" : "text-faint"}>{due > 0 ? baseMoney(due, company) : "—"}</span>
                     </td>
                     <td className="hidden px-3 py-2.5 text-right font-mono text-[13px] text-dim md:table-cell">
                       {p.deadline || "—"}
