@@ -109,18 +109,12 @@ body {
   overflow: hidden;
   pointer-events: none;
 }
-/* Guilloché — the engine-turned texture of a fine dial: fine concentric rings
-   crossed by a radial sunburst, struck from a point up high. The brand's
-   signature, not a generic grid. */
-.ambient-guilloche {
-  position: absolute;
-  inset: 0;
-  background-image:
-    repeating-radial-gradient(circle at 50% 28%, rgba(47, 232, 172, 0.05) 0 1px, transparent 1px 10px),
-    repeating-conic-gradient(from 0deg at 50% 28%, rgba(47, 232, 172, 0.045) 0 0.5deg, transparent 0.5deg 3deg);
-  -webkit-mask-image: radial-gradient(90% 80% at 50% 24%, #000 18%, transparent 72%);
-  mask-image: radial-gradient(90% 80% at 50% 24%, #000 18%, transparent 72%);
-  opacity: 0.55;
+/* Concentric dial rings — a clean, regular guilloché echo for the Deck hero
+   (a single radial source, so no clustering). Faint. */
+.dial-rings {
+  background-image: repeating-radial-gradient(circle at center, rgba(47, 232, 172, 0.07) 0 1px, transparent 1px 13px);
+  -webkit-mask-image: radial-gradient(circle at center, #000 35%, transparent 70%);
+  mask-image: radial-gradient(circle at center, #000 35%, transparent 70%);
 }
 
 /* A soft light that follows the cursor — the scene is lit by a movable source;

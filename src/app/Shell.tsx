@@ -151,9 +151,8 @@ export function Shell() {
 
   return (
     <div className="min-h-screen bg-ground text-ink">
-      {/* Ambient field — guilloché texture, drifting aurora, cursor light, grain. */}
+      {/* Ambient field — drifting aurora, cursor light, fine grain. */}
       <div className="ambient" aria-hidden ref={ambientRef}>
-        <div className="ambient-guilloche" />
         <div className="aurora aurora-a" />
         <div className="aurora aurora-b" />
         <div className="ambient-spot" />
