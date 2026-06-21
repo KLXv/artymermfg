@@ -10,13 +10,14 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useStore } from "@/state/store";
-import { Sigma } from "@/ui/Sigma";
+import { BRAND_MARK, BRAND_WORDMARK } from "@/ui/brand";
+import { playPowerOn } from "@/ui/sound";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function Intro({ onDone }: { onDone: () => void }) {
-  const logo = useStore((s) => s.company.logo);
-  const brand = (useStore((s) => s.company.brand) || "Artymer").toUpperCase();
+  const mark = useStore((s) => s.company.logo) || BRAND_MARK;
+  const brand = useStore((s) => s.company.brand) || "Artymer";
   const [leaving, setLeaving] = useState(false);
   const done = useRef(false);
 
@@ -28,6 +29,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
   };
 
   useEffect(() => {
+    playPowerOn();
     const t = window.setTimeout(finish, 2600);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" || e.key === "Enter" || e.key === " ") finish();
@@ -91,18 +93,12 @@ export function Intro({ onDone }: { onDone: () => void }) {
           initial={{ opacity: 0, scale: 0.84, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0, transition: { duration: 0.95, ease: EASE, delay: 0.35 } }}
         >
-          {logo ? (
-            <img
-              src={logo}
-              alt=""
-              className="max-h-[100px] max-w-[128px] object-contain"
-              style={{ filter: "drop-shadow(0 0 28px rgba(47,232,172,.55))" }}
-            />
-          ) : (
-            <div style={{ filter: "drop-shadow(0 0 32px rgba(47,232,172,.5))" }}>
-              <Sigma size={96} />
-            </div>
-          )}
+          <img
+            src={mark}
+            alt={brand}
+            className="max-h-[104px] max-w-[132px] object-contain"
+            style={{ filter: "drop-shadow(0 0 30px rgba(47,232,172,.5))" }}
+          />
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <motion.div
               className="absolute -inset-y-6 w-1/3 -skew-x-12"
@@ -122,15 +118,15 @@ export function Intro({ onDone }: { onDone: () => void }) {
         />
 
         {/* wordmark resolving */}
+        <motion.img
+          src={BRAND_WORDMARK}
+          alt={brand}
+          className="-mb-8 -mt-2 w-[300px] max-w-[72vw] object-contain"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 0.95, y: 0, transition: { duration: 0.95, ease: EASE, delay: 0.95 } }}
+        />
         <motion.div
-          className="mt-7 font-disp text-[15px] font-semibold text-ink"
-          initial={{ opacity: 0, letterSpacing: "0.1em", y: 8 }}
-          animate={{ opacity: 1, letterSpacing: "0.42em", y: 0, transition: { duration: 0.95, ease: EASE, delay: 0.95 } }}
-        >
-          {brand}
-        </motion.div>
-        <motion.div
-          className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.34em] text-faint"
+          className="font-mono text-[10px] uppercase tracking-[0.34em] text-faint"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: 0.8, delay: 1.3 } }}
         >

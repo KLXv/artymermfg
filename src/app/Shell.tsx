@@ -8,7 +8,7 @@
 import { useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sigma } from "@/ui/Sigma";
+import { BRAND_MARK } from "@/ui/brand";
 import { cx } from "@/ui/kit";
 import { CommandPalette } from "./CommandPalette";
 import { Companion } from "@/ui/Companion";
@@ -144,7 +144,7 @@ export function Shell() {
       {/* Desktop rail */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0C1014] to-[#07090C] px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2">
-          {logo ? <img src={logo} alt="" className="h-7 w-7 rounded object-contain" /> : <Sigma size={26} />}
+          <img src={logo || BRAND_MARK} alt="" className="h-8 w-8 object-contain" />
           <div>
             <div className="font-disp text-[14px] font-semibold tracking-brand text-ink">ARTYMER</div>
             <div className="font-mono text-[11px] uppercase tracking-wide text-faint">Cockpit</div>
@@ -166,7 +166,7 @@ export function Shell() {
 
       {/* Mobile top bar */}
       <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur lg:hidden">
-        {logo ? <img src={logo} alt="" className="h-5 w-5 rounded object-contain" /> : <Sigma size={20} />}
+        <img src={logo || BRAND_MARK} alt="" className="h-6 w-6 object-contain" />
         <span className="font-disp text-[13px] font-semibold tracking-brand">ARTYMER</span>
         <button
           onClick={() => window.dispatchEvent(new Event("artymer:command"))}
@@ -206,10 +206,10 @@ export function Shell() {
       <main className="relative z-10 lg:pl-56">
         <motion.div
           key={loc.pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="page-enter mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8"
         >
           <Outlet />
         </motion.div>

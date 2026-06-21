@@ -101,6 +101,36 @@ body {
   font-feature-settings: "tnum" 1;
 }
 
+/* Entrance — panels rise in and cascade when a page mounts. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-enter .glass {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.page-enter .glass:nth-of-type(2) {
+  animation-delay: 0.05s;
+}
+.page-enter .glass:nth-of-type(3) {
+  animation-delay: 0.1s;
+}
+.page-enter .glass:nth-of-type(4) {
+  animation-delay: 0.15s;
+}
+.page-enter .glass:nth-of-type(5) {
+  animation-delay: 0.2s;
+}
+.page-enter .glass:nth-of-type(6) {
+  animation-delay: 0.25s;
+}
+
 /* ---- Ambient field ------------------------------------------------- */
 .ambient {
   position: fixed;
