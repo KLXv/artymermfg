@@ -155,14 +155,17 @@ export function Shell() {
       <div className="ambient" aria-hidden ref={ambientRef}>
         <div className="aurora aurora-a" />
         <div className="aurora aurora-b" />
-        <div className="ambient-spot" />
+        <div className="ambient-spot">
+          <div className="spot-trail" />
+          <div className="spot-core" />
+        </div>
         <div className="ambient-noise" />
       </div>
       <CommandPalette />
       <Companion />
       <CoFounder />
       {/* Desktop rail */}
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0C1014] to-[#07090C] px-3 py-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0C1014] to-[#07090C] px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2">
           <Sigma size={26} />
           <div>
@@ -185,7 +188,7 @@ export function Shell() {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur lg:hidden">
         <Sigma size={20} />
         <span className="font-disp text-[13px] font-semibold tracking-brand">ARTYMER</span>
         <button
@@ -203,7 +206,7 @@ export function Shell() {
       </header>
 
       {/* Mobile nav strip */}
-      <div className="sticky top-[49px] z-10 overflow-x-auto border-b border-line bg-panel/95 px-2 py-2 backdrop-blur lg:hidden">
+      <div className="sticky top-[49px] z-20 overflow-x-auto border-b border-line bg-panel/95 px-2 py-2 backdrop-blur lg:hidden">
         <div className="flex gap-1">
           {NAV.map((item) => (
             <NavLink
