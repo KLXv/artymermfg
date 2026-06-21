@@ -23,6 +23,7 @@ import { deckGreeting, deckSubline, OPERATOR } from "@/ui/companion";
 import { WatchDial } from "@/ui/WatchDial";
 import { useDashboard } from "@/state/useDashboard";
 import { useStore } from "@/state/store";
+import { useSharesStore } from "@/state/useSharesStore";
 import { PageHeader } from "./PageHeader";
 import { targetPath } from "@/app/nav";
 
@@ -32,6 +33,7 @@ export function Deck() {
   const d = useDashboard();
   const company = useStore((s) => s.company);
   const upsertTask = useStore((s) => s.upsertTask);
+  const responses = useSharesStore((s) => s.shares).filter((s) => !s.revoked && s.approval);
   const navigate = useNavigate();
   const monthlyTarget = parseFloat(company.monthlyRevenue) || 0;
 
@@ -197,6 +199,34 @@ export function Deck() {
           </div>
         )}
       </Panel>
+
+      {/* Client responses from published links */}
+      {responses.length > 0 && (
+        <Panel className="mt-6 p-4">
+          <SectionHead title="Client responses" kicker="from published links" />
+          <ul className="flex flex-col divide-y divide-line">
+            {responses.map((s) => {
+              const a = s.approval!;
+              const ok = a.decision === "approved";
+              return (
+                <li key={s.id}>
+                  <button
+                    onClick={() => s.project_id && navigate(`/projects/${s.project_id}`)}
+                    className="flex w-full items-center gap-3 py-2 text-left hover:bg-inset"
+                  >
+                    <span className="min-w-0 flex-1 truncate text-[14px]">{s.title || "Untitled"}</span>
+                    <span className="hidden min-w-0 max-w-[40%] truncate text-[13px] text-dim sm:block">
+                      {a.signer}
+                      {a.note ? ` — "${a.note}"` : ""}
+                    </span>
+                    <Tag tone={ok ? "ok" : "warn"}>{ok ? "Approved" : "Changes"}</Tag>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      )}
 
       {/* Near deadlines */}
       {d.deadlinesSoon.length > 0 && (

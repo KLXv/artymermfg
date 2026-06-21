@@ -58,6 +58,18 @@ describe("buildDashboard", () => {
     expect(d.queue[0].w).toBe(1);
   });
 
+  it("queues a 'changes requested' action from a client response, not an approval", () => {
+    const acct = { ...blankAccount(), id: "a1" };
+    const proj = { ...blankProject("a1"), id: "p1", name: "Falcon" };
+    const base = stateOf([acct], [proj]);
+    const changes = buildDashboard(base, [{ projectId: "p1", title: "Falcon", decision: "changes", signer: "Eve", note: "Bigger numerals" }]);
+    const item = changes.queue.find((q) => q.tag === "Client");
+    expect(item?.lbl).toContain("Falcon");
+    expect(item?.target).toEqual({ kind: "project", id: "p1" });
+    const approved = buildDashboard(base, [{ projectId: "p1", title: "Falcon", decision: "approved", signer: "Eve", note: "" }]);
+    expect(approved.queue.find((q) => q.tag === "Client")).toBeUndefined();
+  });
+
   it("counts outreach logged within the last 7 days against the weekly target", () => {
     const fresh = { ...blankAccount(), id: "a1", status: "prospect" as const, lastContact: today() };
     const stale = { ...blankAccount(), id: "a2", status: "prospect" as const, lastContact: "2000-01-01" };

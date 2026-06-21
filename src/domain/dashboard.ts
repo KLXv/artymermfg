@@ -34,6 +34,15 @@ export interface CashEvent {
   id: string;
 }
 
+/** A client's response to a published dossier (mapped from the shares table). */
+export interface ClientResponse {
+  projectId: string;
+  title: string;
+  decision: "approved" | "changes";
+  signer: string;
+  note: string;
+}
+
 const taskTarget = (t: Task): QueueTarget =>
   t.linkType === "project"
     ? { kind: "project", id: t.linkId }
@@ -62,7 +71,7 @@ export interface Dashboard {
   alerts: number;
 }
 
-export const buildDashboard = (state: CockpitState): Dashboard => {
+export const buildDashboard = (state: CockpitState, responses: ClientResponse[] = []): Dashboard => {
   const { accounts, projects, suppliers: _suppliers, tasks, expenses, company } = state;
   const projList = Object.values(projects);
   const acctList = Object.values(accounts);
@@ -205,6 +214,17 @@ export const buildDashboard = (state: CockpitState): Dashboard => {
         target: { kind: "account", id: a.id },
       }),
     );
+  responses.forEach((r) => {
+    if (r.decision !== "changes") return;
+    queue.push({
+      w: 2,
+      cls: "hot",
+      lbl: `Client requested changes — ${r.title || "piece"}`,
+      sub: r.note ? `${r.signer || "Client"}: ${r.note}` : `${r.signer || "Client"} · review & revise`,
+      tag: "Client",
+      target: { kind: "project", id: r.projectId },
+    });
+  });
   queue.sort((a, b) => a.w - b.w);
 
   return {

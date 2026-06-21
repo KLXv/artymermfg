@@ -9,8 +9,23 @@
 import { Font } from "@react-pdf/renderer";
 
 let registered = false;
+let cjkRegistered = false;
 
 const CDN = "https://cdn.jsdelivr.net/fontsource/fonts";
+// A full Simplified-Chinese face (Source Han Sans) for the supplier-language
+// PDFs. ~16 MB, fetched by the browser on first ZH export, then cached.
+const CJK_SRC = "https://cdn.jsdelivr.net/gh/StellarCN/scp_zh/fonts/SourceHanSansSC-Regular.otf";
+
+/** Register the CJK face on demand (only when a Chinese PDF is exported). */
+export function registerCjkFont() {
+  if (cjkRegistered) return;
+  cjkRegistered = true;
+  try {
+    Font.register({ family: "HanSans", fonts: [{ src: CJK_SRC, fontWeight: 400 }] });
+  } catch {
+    cjkRegistered = false;
+  }
+}
 
 export function registerDocumentFonts() {
   if (registered) return;

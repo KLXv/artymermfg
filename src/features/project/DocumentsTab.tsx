@@ -98,60 +98,83 @@ export function DocumentsTab({ p, account, company }: { p: Project; account?: Ac
   const suffix = zh ? "-zh" : "";
 
   const client = account?.name || "—";
+  const maker = suppliers[p.supplierId]?.name || p.maker || "—";
   const today = new Date().toISOString().slice(0, 10);
-  // Component reference photos embedded in the spec PDF.
-  const specPhotos = [
-    { label: "Full watch", src: p.images.hero },
-    { label: "Dial", src: p.images.dial },
-    { label: "Case", src: p.images.caseImg },
-    { label: "Caseback", src: p.images.back },
-    { label: "Movement", src: p.images.movementImg },
-  ];
+  const img = p.images;
+  const specPhotos = (en: boolean) =>
+    en
+      ? [
+          { label: "Full watch", src: img.hero },
+          { label: "Dial", src: img.dial },
+          { label: "Case", src: img.caseImg },
+          { label: "Caseback", src: img.back },
+          { label: "Movement", src: img.movementImg },
+        ]
+      : [
+          { label: "整表", src: img.hero },
+          { label: "表盘", src: img.dial },
+          { label: "表壳", src: img.caseImg },
+          { label: "表背", src: img.back },
+          { label: "机芯", src: img.movementImg },
+        ];
 
-  // The branded PDF is rendered from the English (source-of-record) text. The
-  // renderer is heavy, so it's loaded on demand only when a PDF is exported.
+  // The renderer is heavy, so it's loaded on demand only when a PDF is exported.
+  // Rendered from whichever language the toggle is on; ZH lazily embeds a CJK font.
   const makePdf = (kind: "spec" | "terms" | "qc") => async () => {
     const [{ FactoryDoc }, { docName, downloadPdf }] = await Promise.all([
       import("@/documents/FactoryDoc"),
       import("@/documents/download"),
     ]);
-    const common = { company } as const;
+    const lang = zh ? "ZH" : "EN";
+    const common = { company, lang } as const;
     if (kind === "spec") {
       await downloadPdf(
         <FactoryDoc
           {...common}
           kind="spec"
-          docTag="Production specification"
+          docTag={zh ? "生产规格书" : "Production specification"}
           title={piece}
-          meta={[`Client: ${client}   ·   Qty: ${p.qty || "—"} pc   ·   Rev: ${p.rev || "—"}`, `Manufacturer: ${suppliers[p.supplierId]?.name || p.maker || "—"}   ·   ${today}`]}
-          body={specText(p, accounts, suppliers)}
-          photos={specPhotos}
+          meta={
+            zh
+              ? [`客户：${client}   ·   数量：${p.qty || "—"} 件   ·   版本：${p.rev || "—"}`, `制造商：${maker}   ·   ${today}`]
+              : [`Client: ${client}   ·   Qty: ${p.qty || "—"} pc   ·   Rev: ${p.rev || "—"}`, `Manufacturer: ${maker}   ·   ${today}`]
+          }
+          body={zh ? specTextZh(p, accounts, suppliers) : specText(p, accounts, suppliers)}
+          photos={specPhotos(!zh)}
         />,
-        docName(piece, "spec"),
+        docName(piece, "spec") + suffix,
       );
     } else if (kind === "terms") {
       await downloadPdf(
         <FactoryDoc
           {...common}
           kind="terms"
-          docTag="Trade-assurance terms"
-          title="Contract terms"
-          meta={[`Order: ${piece} / ${client}   ·   Qty: ${p.qty || "—"} pc   ·   Rev: ${p.rev || "—"}`]}
-          body={termsText(p, accounts, company)}
+          docTag={zh ? "贸易保障条款" : "Trade-assurance terms"}
+          title={zh ? "合同条款" : "Contract terms"}
+          meta={
+            zh
+              ? [`订单：${piece} / ${client}   ·   数量：${p.qty || "—"} 件   ·   版本：${p.rev || "—"}`]
+              : [`Order: ${piece} / ${client}   ·   Qty: ${p.qty || "—"} pc   ·   Rev: ${p.rev || "—"}`]
+          }
+          body={zh ? termsTextZh(p, accounts, company) : termsText(p, accounts, company)}
         />,
-        docName(piece, "terms"),
+        docName(piece, "terms") + suffix,
       );
     } else {
       await downloadPdf(
         <FactoryDoc
           {...common}
           kind="qc"
-          docTag="QC sign-off"
-          title="Quality sign-off"
-          meta={[`Order: ${piece} / ${client}   ·   Rev: ${p.rev || "—"}   ·   ${today}`]}
-          body={qcSignoff(p, accounts, company)}
+          docTag={zh ? "品控签收" : "QC sign-off"}
+          title={zh ? "质量签收" : "Quality sign-off"}
+          meta={
+            zh
+              ? [`订单：${piece} / ${client}   ·   版本：${p.rev || "—"}   ·   ${today}`]
+              : [`Order: ${piece} / ${client}   ·   Rev: ${p.rev || "—"}   ·   ${today}`]
+          }
+          body={zh ? qcSignoffZh(p, accounts, company) : qcSignoff(p, accounts, company)}
         />,
-        docName(piece, "qc-signoff"),
+        docName(piece, "qc-signoff") + suffix,
       );
     }
   };
@@ -176,7 +199,7 @@ export function DocumentsTab({ p, account, company }: { p: Project; account?: Ac
           ))}
         </div>
         <span className="ml-auto font-mono text-[11px] text-faint">
-          {zh ? "供应商版本 · 与英文同源 · PDF 仅英文" : "source of record · branded PDF"}
+          {zh ? "供应商版本 · 与英文同源 · 带品牌 PDF" : "source of record · branded PDF"}
         </span>
       </Panel>
       <DocBlock
@@ -184,26 +207,25 @@ export function DocumentsTab({ p, account, company }: { p: Project; account?: Ac
         kicker={`Rev ${p.rev || "—"}`}
         text={zh ? specTextZh(p, accounts, suppliers) : specText(p, accounts, suppliers)}
         file={docName(piece, "spec") + suffix}
-        onPdf={zh ? undefined : makePdf("spec")}
+        onPdf={makePdf("spec")}
       />
       <DocBlock
         title="Trade-assurance contract terms"
         kicker="Alibaba channel"
         text={zh ? termsTextZh(p, accounts, company) : termsText(p, accounts, company)}
         file={docName(piece, "terms") + suffix}
-        onPdf={zh ? undefined : makePdf("terms")}
+        onPdf={makePdf("terms")}
       />
       <DocBlock
         title="QC sign-off"
         kicker="Watchmaker & Founder"
         text={zh ? qcSignoffZh(p, accounts, company) : qcSignoff(p, accounts, company)}
         file={docName(piece, "qc-signoff") + suffix}
-        onPdf={zh ? undefined : makePdf("qc")}
+        onPdf={makePdf("qc")}
       />
       {zh && (
         <p className="px-1 font-mono text-[12px] text-faint">
-          The branded PDF is English-only for now (Chinese needs an embedded CJK font). The 简体中文 spec, terms and
-          sign-off export cleanly via <span className="text-dim">Copy</span> or <span className="text-dim">↓ .txt</span>.
+          The 简体中文 PDF embeds a Chinese font (~16 MB) the first time you export it — give it a few seconds.
         </p>
       )}
     </div>

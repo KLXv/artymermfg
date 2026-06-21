@@ -48,6 +48,12 @@ const pipeline = (d: Dashboard): string => {
   return s;
 };
 
+const clients = (d: Dashboard): string => {
+  const changes = d.queue.filter((it) => it.tag === "Client");
+  if (!changes.length) return "No outstanding client change requests. Approvals show on your Deck as they come in.";
+  return `${plural(changes.length, "client change request")} to handle: ${changes.slice(0, 3).map((it) => clean(it.lbl)).join("; ")}.`;
+};
+
 const tasks = (d: Dashboard): string => {
   const due = d.queue.filter((it) => it.tag === "Task");
   if (!due.length) return "No tasks due today. You're on top of it.";
@@ -120,6 +126,8 @@ export function coFounderAnswer(qIn: string, d: Dashboard, name = ""): CoReply {
     return { text: focus(d), handled: true };
   if (has("money", "cash", "revenue", "owed", "outstanding", "margin", "profit", "burn", "runway", "income", "finance"))
     return { text: moneyLine(d), handled: true };
+  if (has("approval", "approve", "sign off", "sign-off", "portal", "did the client", "client respond", "feedback"))
+    return { text: clients(d), handled: true };
   if (has("lead", "pipeline", "prospect", "deal", "sales", "outreach", "client"))
     return { text: pipeline(d), handled: true };
   if (has("task", "to-do", "todo", "to do"))

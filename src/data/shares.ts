@@ -60,6 +60,14 @@ export async function loadProjectShares(projectId: string): Promise<ShareRecord[
   return (data ?? []) as ShareRecord[];
 }
 
+/** All shares the owner has published, across every project, newest first. */
+export async function loadAllShares(): Promise<ShareRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
+  if (error) return [];
+  return (data ?? []) as ShareRecord[];
+}
+
 export async function revokeShare(id: string): Promise<void> {
   if (!supabase) return;
   await supabase.from("shares").update({ revoked: true }).eq("id", id);

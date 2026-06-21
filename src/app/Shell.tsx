@@ -5,6 +5,7 @@
  * the Σ mark and the cockpit's sections. The Deck link wears a live count of
  * the action queue, so the most-pressing work is visible from anywhere.
  */
+import { useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sigma } from "@/ui/Sigma";
@@ -15,6 +16,7 @@ import { CoFounder } from "@/ui/CoFounder";
 import { useDashboard } from "@/state/useDashboard";
 import { useAuth, signOut } from "@/state/useAuth";
 import { useSyncStore } from "@/state/sync";
+import { useSharesStore } from "@/state/useSharesStore";
 import { isSupabaseConfigured } from "@/data/supabase";
 
 const SYNC_LABEL: Record<string, string> = {
@@ -118,6 +120,13 @@ function NavLinks({ alerts, onNavigate }: { alerts: number; onNavigate?: () => v
 export function Shell() {
   const { alerts } = useDashboard();
   const loc = useLocation();
+  const { user } = useAuth();
+  const loadShares = useSharesStore((s) => s.load);
+
+  // Pull the owner's published shares so client responses reach the queue.
+  useEffect(() => {
+    if (user) loadShares();
+  }, [user, loadShares, loc.pathname]);
 
   return (
     <div className="min-h-screen bg-ground text-ink">
