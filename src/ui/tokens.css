@@ -117,34 +117,15 @@ body {
   mask-image: radial-gradient(circle at center, #000 35%, transparent 70%);
 }
 
-/* A light that follows the cursor — a small, snappy core (instant) plus a
-   larger, fainter trail that lags a touch behind, leaving a soft trace. */
-.ambient-spot {
-  position: absolute;
-  inset: 0;
-}
-.spot-core,
-.spot-trail {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  will-change: transform;
-}
-.spot-core {
-  width: 200px;
-  height: 200px;
-  margin: -100px 0 0 -100px;
-  background: radial-gradient(circle, rgba(47, 232, 172, 0.16) 0%, rgba(47, 232, 172, 0) 68%);
-  transform: translate3d(var(--lx, 50vw), var(--ly, 30vh), 0);
-}
-.spot-trail {
-  width: 360px;
-  height: 360px;
-  margin: -180px 0 0 -180px;
-  background: radial-gradient(circle, rgba(47, 232, 172, 0.07) 0%, rgba(47, 232, 172, 0) 70%);
-  transform: translate3d(var(--lx, 50vw), var(--ly, 30vh), 0);
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+/* Intro spotlight bloom — used once on the cinematic splash. */
+@keyframes intro-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 .aurora {
   position: absolute;

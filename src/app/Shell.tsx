@@ -5,7 +5,7 @@
  * the Σ mark and the cockpit's sections. The Deck link wears a live count of
  * the action queue, so the most-pressing work is visible from anywhere.
  */
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sigma } from "@/ui/Sigma";
@@ -17,6 +17,7 @@ import { useDashboard } from "@/state/useDashboard";
 import { useAuth, signOut } from "@/state/useAuth";
 import { useSyncStore } from "@/state/sync";
 import { useSharesStore } from "@/state/useSharesStore";
+import { useStore } from "@/state/store";
 import { isSupabaseConfigured } from "@/data/supabase";
 
 const SYNC_LABEL: Record<string, string> = {
@@ -122,43 +123,19 @@ export function Shell() {
   const loc = useLocation();
   const { user } = useAuth();
   const loadShares = useSharesStore((s) => s.load);
-  const ambientRef = useRef<HTMLDivElement>(null);
+  const logo = useStore((s) => s.company.logo);
 
   // Pull the owner's published shares so client responses reach the queue.
   useEffect(() => {
     if (user) loadShares();
   }, [user, loadShares, loc.pathname]);
 
-  // The cursor lights the scene: a soft source the frosted panels catch.
-  useEffect(() => {
-    const el = ambientRef.current;
-    if (!el || !window.matchMedia("(pointer: fine)").matches) return;
-    let raf = 0;
-    const onMove = (e: PointerEvent) => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        el.style.setProperty("--lx", `${e.clientX}px`);
-        el.style.setProperty("--ly", `${e.clientY}px`);
-        raf = 0;
-      });
-    };
-    window.addEventListener("pointermove", onMove);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-ground text-ink">
-      {/* Ambient field — drifting aurora, cursor light, fine grain. */}
-      <div className="ambient" aria-hidden ref={ambientRef}>
+      {/* Ambient field — drifting aurora and fine grain. */}
+      <div className="ambient" aria-hidden>
         <div className="aurora aurora-a" />
         <div className="aurora aurora-b" />
-        <div className="ambient-spot">
-          <div className="spot-trail" />
-          <div className="spot-core" />
-        </div>
         <div className="ambient-noise" />
       </div>
       <CommandPalette />
@@ -167,7 +144,7 @@ export function Shell() {
       {/* Desktop rail */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-line bg-gradient-to-b from-[#0C1014] to-[#07090C] px-3 py-5 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2">
-          <Sigma size={26} />
+          {logo ? <img src={logo} alt="" className="h-7 w-7 rounded object-contain" /> : <Sigma size={26} />}
           <div>
             <div className="font-disp text-[14px] font-semibold tracking-brand text-ink">ARTYMER</div>
             <div className="font-mono text-[11px] uppercase tracking-wide text-faint">Cockpit</div>
@@ -189,7 +166,7 @@ export function Shell() {
 
       {/* Mobile top bar */}
       <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur lg:hidden">
-        <Sigma size={20} />
+        {logo ? <img src={logo} alt="" className="h-5 w-5 rounded object-contain" /> : <Sigma size={20} />}
         <span className="font-disp text-[13px] font-semibold tracking-brand">ARTYMER</span>
         <button
           onClick={() => window.dispatchEvent(new Event("artymer:command"))}

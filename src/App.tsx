@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Intro } from "./app/Intro";
 import { Shell } from "./app/Shell";
 import { SignIn } from "./app/SignIn";
 import { Deck } from "./features/Deck";
@@ -55,11 +57,31 @@ function Cockpit() {
 }
 
 export default function App() {
+  // Cinematic intro: once per session, never on the public share page, and not
+  // when the visitor prefers reduced motion.
+  const [intro, setIntro] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const isShare = window.location.pathname.startsWith("/share");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const seen = sessionStorage.getItem("artymer:intro");
+    return !isShare && !reduce && !seen;
+  });
+
   return (
-    <Routes>
-      {/* Public, read-only dossier — no auth, no shell. */}
-      <Route path="/share" element={<ShareDossier />} />
-      <Route path="/*" element={<Cockpit />} />
-    </Routes>
+    <>
+      {intro && (
+        <Intro
+          onDone={() => {
+            sessionStorage.setItem("artymer:intro", "1");
+            setIntro(false);
+          }}
+        />
+      )}
+      <Routes>
+        {/* Public, read-only dossier — no auth, no shell. */}
+        <Route path="/share" element={<ShareDossier />} />
+        <Route path="/*" element={<Cockpit />} />
+      </Routes>
+    </>
   );
 }
