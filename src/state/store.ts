@@ -17,15 +17,20 @@ import {
   type Company,
   type ContentItem,
   type Expense,
+  type Invoice,
   type Project,
   type Supplier,
   type Task,
   blankCompany,
   buildBackup,
+  buyerSnapshot,
   migrateLegacy,
+  nextInvoiceNumber,
   parseBackup,
   planAdvance,
   rid,
+  sellerSnapshot,
+  today,
 } from "@/domain";
 
 export interface WorkspaceState {
@@ -36,6 +41,7 @@ export interface WorkspaceState {
   tasks: Record<string, Task>;
   expenses: Expense[];
   content: Record<string, ContentItem>;
+  invoices: Record<string, Invoice>;
 }
 
 export interface WorkspaceActions {
@@ -68,6 +74,13 @@ export interface WorkspaceActions {
   patchContent: (id: string, patch: Partial<ContentItem>) => void;
   deleteContent: (id: string) => void;
 
+  upsertInvoice: (inv: Invoice) => void;
+  patchInvoice: (id: string, patch: Partial<Invoice>) => void;
+  deleteInvoice: (id: string) => void;
+  /** Assign a series + sequential number, snapshot the parties, mark issued. */
+  issueInvoice: (id: string) => void;
+  setInvoicePaid: (id: string, paid: boolean) => void;
+
   /** Replace the entire workspace (used by cloud sync on load). */
   hydrate: (state: WorkspaceState) => void;
 
@@ -92,6 +105,7 @@ const emptyState = (): WorkspaceState => ({
   tasks: {},
   expenses: [],
   content: {},
+  invoices: {},
 });
 
 export const useStore = create<Store>()(
@@ -192,6 +206,39 @@ export const useStore = create<Store>()(
           return { content };
         }),
 
+      upsertInvoice: (inv) => set((s) => ({ invoices: { ...s.invoices, [inv.id]: inv } })),
+      patchInvoice: (id, patch) =>
+        set((s) => (s.invoices[id] ? { invoices: { ...s.invoices, [id]: { ...s.invoices[id], ...patch } } } : s)),
+      deleteInvoice: (id) =>
+        set((s) => {
+          const invoices = { ...s.invoices };
+          delete invoices[id];
+          return { invoices };
+        }),
+      issueInvoice: (id) =>
+        set((s) => {
+          const inv = s.invoices[id];
+          if (!inv) return s;
+          const series = s.company.fiscal.series || "ART";
+          const number = inv.number || nextInvoiceNumber(Object.values(s.invoices), series);
+          const updated: Invoice = {
+            ...inv,
+            series,
+            number,
+            status: inv.status === "draft" ? "issued" : inv.status,
+            issueDate: inv.issueDate || today(),
+            seller: sellerSnapshot(s.company),
+            buyer: inv.buyer.name ? inv.buyer : buyerSnapshot(s.accounts[inv.accountId]),
+          };
+          return { invoices: { ...s.invoices, [id]: updated } };
+        }),
+      setInvoicePaid: (id, paid) =>
+        set((s) =>
+          s.invoices[id]
+            ? { invoices: { ...s.invoices, [id]: { ...s.invoices[id], status: paid ? "paid" : "issued", paidDate: paid ? today() : "" } } }
+            : s,
+        ),
+
       hydrate: (state) => set({ ...state }),
 
       exportJSON: () => {
@@ -205,6 +252,7 @@ export const useStore = create<Store>()(
             expenses: s.expenses,
             company: s.company,
             content: s.content,
+            invoices: s.invoices,
           }),
           null,
           2,
@@ -222,6 +270,7 @@ export const useStore = create<Store>()(
         const company = parsed.company ? { ...s.company, ...parsed.company } : s.company;
         const expenses = parsed.expenses ?? s.expenses;
         const content = parsed.content ? { ...s.content, ...parsed.content } : s.content;
+        const invoices = parsed.invoices ? { ...s.invoices, ...parsed.invoices } : s.invoices;
 
         // One-time legacy migration of pre-account projects.
         const mig = migrateLegacy(company, accounts, projects);
@@ -232,6 +281,7 @@ export const useStore = create<Store>()(
           tasks,
           expenses,
           content,
+          invoices,
           company: { ...company, migrated: true },
         });
         return { accounts: Object.keys(mig.accounts).length, projects: Object.keys(mig.projects).length };

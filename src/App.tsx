@@ -12,6 +12,7 @@ import { ClientDetail } from "./features/ClientDetail";
 import { Suppliers } from "./features/Suppliers";
 import { Tasks } from "./features/Tasks";
 import { Money } from "./features/Money";
+import { Invoices } from "./features/Invoices";
 import { Marketing } from "./features/Marketing";
 import { Assistant } from "./features/Assistant";
 import { Guide } from "./features/Guide";
@@ -48,6 +49,7 @@ function Cockpit() {
           <Route path="suppliers" element={<Suppliers />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="money" element={<Money />} />
+          <Route path="invoices" element={<Invoices />} />
           <Route path="marketing" element={<Marketing />} />
           <Route path="assistant" element={<Assistant />} />
           <Route path="guide" element={<Guide />} />

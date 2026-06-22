@@ -1,5 +1,5 @@
 /** Entity factories — ported verbatim from ArtymerCockpit.jsx. */
-import type { Account, Company, ContentItem, Project, Supplier, Task } from "./types";
+import type { Account, Company, ContentItem, Invoice, Project, Supplier, Task } from "./types";
 
 export const rid = (p: string): string =>
   p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -13,6 +13,17 @@ export const blankCompany = (): Company => ({
   logo: "",
   letterhead: "",
   baseCurrency: "RON",
+  fiscal: {
+    legalName: "",
+    taxId: "",
+    regNo: "",
+    address: "",
+    iban: "",
+    bank: "",
+    vatRegistered: false,
+    vatRate: "19",
+    series: "ART",
+  },
   fx: { RON: 0.2, USD: 0.92 },
   deposit: "30",
   lotFail: "5",
@@ -56,6 +67,24 @@ export const blankSupplier = (): Supplier => ({
   communication: "",
   price: "",
   capabilities: "",
+});
+
+export const blankInvoice = (accountId = "", projectId = ""): Invoice => ({
+  id: rid("inv"),
+  kind: "Factură",
+  series: "",
+  number: "",
+  status: "draft",
+  accountId,
+  projectId,
+  currency: "RON",
+  issueDate: today(),
+  dueDate: "",
+  paidDate: "",
+  lines: [{ desc: "", qty: "1", unitPrice: "", vat: "0" }],
+  notes: "",
+  buyer: { name: "", taxId: "", regNo: "", address: "", email: "" },
+  seller: { name: "", taxId: "", regNo: "", address: "", email: "" },
 });
 
 export const blankContent = (): ContentItem => ({

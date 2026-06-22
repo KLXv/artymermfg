@@ -8,7 +8,7 @@ import { CCY, type Company } from "@/domain";
 import { isSupabaseConfigured } from "@/data/supabase";
 import { uploadAttachment, deleteAttachment } from "@/data/storage";
 import { SEED_BACKUP } from "@/data/seed";
-import { Button, Field, Label, Panel, SectionHead, SelectField, Tag, TextArea } from "@/ui/kit";
+import { Button, Field, Label, Panel, SectionHead, SelectField, Tag, TextArea, Toggle } from "@/ui/kit";
 import { useStore } from "@/state/store";
 import { useAuth } from "@/state/useAuth";
 import { PageHeader } from "./PageHeader";
@@ -143,6 +143,23 @@ export function Settings() {
             <div />
             <Field label="FX · RON → EUR" value={String(company.fx.RON)} onChange={(v) => setFx("RON", v)} />
             <Field label="FX · USD → EUR" value={String(company.fx.USD)} onChange={(v) => setFx("USD", v)} />
+          </div>
+        </Panel>
+
+        <Panel className="p-4">
+          <SectionHead title="Fiscal identity" kicker="appears on invoices" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Legal name" mono={false} value={company.fiscal.legalName} onChange={(v) => set({ fiscal: { ...company.fiscal, legalName: v } })} />
+            <Field label="CUI / CIF" value={company.fiscal.taxId} onChange={(v) => set({ fiscal: { ...company.fiscal, taxId: v } })} />
+            <Field label="Reg. Com." value={company.fiscal.regNo} onChange={(v) => set({ fiscal: { ...company.fiscal, regNo: v } })} />
+            <Field label="Invoice series" value={company.fiscal.series} onChange={(v) => set({ fiscal: { ...company.fiscal, series: v } })} />
+            <Field label="IBAN" value={company.fiscal.iban} onChange={(v) => set({ fiscal: { ...company.fiscal, iban: v } })} className="sm:col-span-2" />
+            <Field label="Bank" value={company.fiscal.bank} onChange={(v) => set({ fiscal: { ...company.fiscal, bank: v } })} />
+            <Field label="Default TVA %" value={company.fiscal.vatRate} onChange={(v) => set({ fiscal: { ...company.fiscal, vatRate: v } })} />
+            <TextArea label="Registered address" value={company.fiscal.address} onChange={(v) => set({ fiscal: { ...company.fiscal, address: v } })} rows={2} className="sm:col-span-2" />
+          </div>
+          <div className="mt-3">
+            <Toggle label="VAT-registered (plătitor de TVA)" checked={company.fiscal.vatRegistered} onChange={(v) => set({ fiscal: { ...company.fiscal, vatRegistered: v } })} />
           </div>
         </Panel>
 

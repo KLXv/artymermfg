@@ -19,6 +19,54 @@ export type Market = "RO" | "HU" | "EU" | "Other";
 export type Lang = "EN" | "HU" | "RO";
 export type SupplierStatus = "Primary" | "Backup" | "Warming" | "Retired";
 
+/** Legal identity used on invoices (Romanian fiscal fields). */
+export interface FiscalIdentity {
+  legalName: string; // registered entity name
+  taxId: string; // CUI / CIF
+  regNo: string; // Reg. Com. (trade registry no.)
+  address: string; // registered address (multi-line)
+  iban: string;
+  bank: string;
+  vatRegistered: boolean; // plătitor de TVA
+  vatRate: string; // default TVA %, e.g. "19"
+  series: string; // invoice series, e.g. "ART"
+}
+
+/** One line on an invoice. */
+export interface InvoiceLine {
+  desc: string;
+  qty: string;
+  unitPrice: string;
+  vat: string; // VAT rate %, per line
+}
+
+/** A frozen copy of a party's details at the moment of issue. */
+export interface PartySnapshot {
+  name: string;
+  taxId: string;
+  regNo: string;
+  address: string;
+  email: string;
+}
+
+export interface Invoice {
+  id: string;
+  kind: string; // "Factură" | "Proformă" | "Chitanță"
+  series: string;
+  number: string; // assigned on issue (e.g. "0007"); blank while draft
+  status: string; // "draft" | "issued" | "paid"
+  accountId: string;
+  projectId: string;
+  currency: string;
+  issueDate: string;
+  dueDate: string;
+  paidDate: string;
+  lines: InvoiceLine[];
+  notes: string;
+  buyer: PartySnapshot; // snapshot at issue
+  seller: PartySnapshot; // snapshot at issue
+}
+
 export interface Company {
   id: "company";
   migrated: boolean;
@@ -26,6 +74,7 @@ export interface Company {
   logo: string; // brand logo URL (shown on the factory-doc letterhead)
   letterhead: string; // free-text contact block under the brand name on docs
   baseCurrency: string; // the home currency every figure is kept + shown in (e.g. RON)
+  fiscal: FiscalIdentity; // legal identity for invoices
   fx: { RON: number; USD: number } & Record<string, number>;
   deposit: string;
   lotFail: string;

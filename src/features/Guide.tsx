@@ -174,6 +174,11 @@ export function Guide() {
             The cash picture: revenue booked, deposits in, balances owed, aging, and a forward forecast from your live
             deals. The per-project numbers come from the Commercial tab.
           </Area>
+          <Area glyph="▦" name="Invoices">
+            Official fiscal documents: set your identity once (Settings → Fiscal: CUI/CIF, Reg. Com., IBAN, VAT status,
+            series), then create invoices with buyer details and line items — issue assigns the next sequential number
+            and freezes the parties; mark paid; export a branded PDF (factură) with net / TVA / total.
+          </Area>
           <Area glyph="◈" name="Marketing">
             The demand side: a value-aware funnel, lead-source attribution, a cadence/agenda and a kanban content board.
             Feature pieces to your public <span className="text-dim">Collection</span> (a portfolio page at /collection

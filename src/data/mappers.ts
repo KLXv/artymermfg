@@ -11,6 +11,7 @@ import {
   blankAccount,
   blankCompany,
   blankContent,
+  blankInvoice,
   blankProject,
   blankSupplier,
   blankTask,
@@ -19,6 +20,7 @@ import {
   type Company,
   type ContentItem,
   type Expense,
+  type Invoice,
   type Project,
   type Supplier,
   type Task,
@@ -235,6 +237,45 @@ export const rowToContent = (row: Row): ContentItem => ({
   projectId: (row.project_id as string) ?? "",
 });
 
+/* ----------------------------- invoice ----------------------------------- */
+
+const INVOICE_DATE_COLS = new Set(["issue_date", "due_date", "paid_date"]);
+
+export const invoiceToRow = (inv: Invoice, ownerId: string): Row => ({
+  id: inv.id,
+  owner_id: ownerId,
+  number: inv.number,
+  series: inv.series,
+  kind: inv.kind,
+  status: inv.status,
+  account_id: inv.accountId || null,
+  project_id: inv.projectId || null,
+  currency: inv.currency,
+  issue_date: inv.issueDate || null,
+  due_date: inv.dueDate || null,
+  paid_date: inv.paidDate || null,
+  notes: inv.notes,
+  lines: inv.lines,
+  buyer: inv.buyer,
+  seller: inv.seller,
+});
+
+export const rowToInvoice = (row: Row): Invoice => {
+  const inv = { ...blankInvoice(), id: String(row.id) };
+  const scalar: (keyof Invoice)[] = ["number", "series", "kind", "status", "currency", "notes"];
+  scalar.forEach((k) => row[k] != null && ((inv as Record<string, unknown>)[k] = row[k]));
+  inv.accountId = (row.account_id as string) ?? "";
+  inv.projectId = (row.project_id as string) ?? "";
+  for (const col of INVOICE_DATE_COLS) {
+    const key = col === "issue_date" ? "issueDate" : col === "due_date" ? "dueDate" : "paidDate";
+    (inv as Record<string, unknown>)[key] = (row[col] as string) ?? "";
+  }
+  if (Array.isArray(row.lines)) inv.lines = row.lines as Invoice["lines"];
+  if (row.buyer && typeof row.buyer === "object") inv.buyer = { ...inv.buyer, ...(row.buyer as object) };
+  if (row.seller && typeof row.seller === "object") inv.seller = { ...inv.seller, ...(row.seller as object) };
+  return inv;
+};
+
 /* ----------------------------- company ----------------------------------- */
 
 export const companyToRow = (c: Company, ownerId: string): Row => ({
@@ -244,6 +285,7 @@ export const companyToRow = (c: Company, ownerId: string): Row => ({
   logo: c.logo,
   letterhead: c.letterhead,
   base_currency: c.baseCurrency,
+  fiscal: c.fiscal,
   fx: c.fx,
   deposit: c.deposit,
   lot_fail: c.lotFail,
@@ -261,6 +303,7 @@ export const rowToCompany = (row: Row): Company => ({
   logo: (row.logo as string) ?? "",
   letterhead: (row.letterhead as string) ?? "",
   baseCurrency: (row.base_currency as string) ?? "RON",
+  fiscal: { ...blankCompany().fiscal, ...((row.fiscal as object) ?? {}) },
   fx: (row.fx as Company["fx"]) ?? blankCompany().fx,
   deposit: (row.deposit as string) ?? "",
   lotFail: (row.lot_fail as string) ?? "",
