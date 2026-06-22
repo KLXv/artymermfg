@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { blankInvoice } from "./factories";
-import { invoiceSummary, invoiceTotals, nextInvoiceNumber } from "./invoicing";
+import { blankCompany } from "./factories";
+import { invoiceSummary, invoiceTotals, nextInvoiceNumber, profitTimeline } from "./invoicing";
 
 const inv = (over = {}) => ({ ...blankInvoice(), ...over });
 
@@ -41,5 +42,16 @@ describe("invoiceSummary", () => {
     expect(s.invoiced).toBe(150);
     expect(s.outstanding).toBe(100);
     expect(s.paid).toBe(50);
+  });
+});
+
+describe("profitTimeline", () => {
+  it("nets revenue against overhead burn by month", () => {
+    const issued = inv({ status: "issued", issueDate: "2026-05-10", lines: [{ desc: "a", qty: "1", unitPrice: "1000", vat: "0" }] });
+    const pnl = profitTimeline([issued], [], blankCompany(), [{ label: "Studio", amount: "300" }], 8);
+    expect(pnl).toHaveLength(1);
+    expect(pnl[0].revenue).toBe(1000);
+    expect(pnl[0].overhead).toBe(300);
+    expect(pnl[0].profit).toBe(700);
   });
 });

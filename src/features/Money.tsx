@@ -30,6 +30,7 @@ import {
   monthlyBurn,
   num,
   owed,
+  profitTimeline,
   projFin,
   receivablesAging,
   type Ccy,
@@ -48,6 +49,7 @@ export function Money() {
   const accounts = useStore((s) => s.accounts);
   const company = useStore((s) => s.company);
   const expenses = useStore((s) => s.expenses);
+  const invoices = useStore((s) => s.invoices);
   const setExpenses = useStore((s) => s.setExpenses);
   const patchProject = useStore((s) => s.patchProject);
 
@@ -73,6 +75,16 @@ export function Money() {
   const burn = monthlyBurn(expenses);
   // Runway: months the cumulative position stays solvent given the burn.
   const endingPosition = forecast.length ? forecast[forecast.length - 1].cumulative : 0;
+
+  // Profit-and-loss over time (from invoices + matched COGS + overheads).
+  const pnl = profitTimeline(Object.values(invoices), d.projList, company, expenses, 8).map((r) => ({
+    month: r.month,
+    revenue: Math.round(conv(r.revenue)),
+    costs: Math.round(conv(r.cost + r.overhead)),
+    profit: Math.round(conv(r.profit)),
+  }));
+  const pnlRevenue = pnl.reduce((a, r) => a + r.revenue, 0);
+  const pnlProfit = pnl.reduce((a, r) => a + r.profit, 0);
 
   const setExp = (i: number, patch: Partial<Expense>) =>
     setExpenses(expenses.map((e, idx) => (idx === i ? { ...e, ...patch } : e)));
@@ -153,6 +165,43 @@ export function Money() {
                 <Bar dataKey="inflow" name="inflow" fill="#2FE8AC" radius={[2, 2, 0, 0]} maxBarSize={36} />
                 <Bar dataKey="outflow" name="burn" fill="#2A3A44" radius={[2, 2, 0, 0]} maxBarSize={36} />
                 <Line dataKey="cumulative" name="position" stroke="#5FF5C8" strokeWidth={2} dot={{ r: 2 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Panel>
+
+      {/* Profit & loss over time */}
+      <Panel className="mt-6 p-4">
+        <SectionHead
+          title="Profit & loss"
+          kicker="invoiced revenue − cost − overheads · by month"
+          right={
+            <span className="font-mono text-[13px]">
+              <span className="text-faint">profit </span>
+              <span className={pnlProfit >= 0 ? "text-ok" : "text-bad"}>{fmtCcy(pnlProfit, ccy)}</span>
+              {pnlRevenue > 0 && <span className="text-faint"> · {Math.round((pnlProfit / pnlRevenue) * 100)}%</span>}
+            </span>
+          }
+        />
+        {pnl.length === 0 ? (
+          <Empty>No issued invoices yet. Profit over time appears once you invoice.</Empty>
+        ) : (
+          <div style={{ height: 240 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={pnl} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                <CartesianGrid stroke="#1B2A28" vertical={false} />
+                <XAxis dataKey="month" stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} />
+                <YAxis stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} width={52} />
+                <ReferenceLine y={0} stroke="#5E6470" />
+                <Tooltip
+                  cursor={{ fill: "rgba(47,232,172,.07)" }}
+                  contentStyle={{ background: "#0B1117", border: "1px solid #1E2730", borderRadius: 6, fontFamily: "var(--mono)", fontSize: 11 }}
+                  formatter={(v: number, name) => [fmtCcy(v, ccy), name]}
+                />
+                <Bar dataKey="revenue" name="revenue" fill="#2FE8AC" radius={[2, 2, 0, 0]} maxBarSize={32} />
+                <Bar dataKey="costs" name="costs" fill="#7A2230" radius={[2, 2, 0, 0]} maxBarSize={32} />
+                <Line dataKey="profit" name="profit" stroke="#5FF5C8" strokeWidth={2} dot={{ r: 2 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

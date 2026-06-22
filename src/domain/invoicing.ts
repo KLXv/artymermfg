@@ -4,7 +4,9 @@
  * profit-over-time view. Pure + tested.
  */
 import { num } from "./format";
-import type { Account, Company, Invoice, PartySnapshot } from "./types";
+import { projFin } from "./finance";
+import { monthlyBurn } from "./money";
+import type { Account, Company, Expense, Invoice, PartySnapshot, Project } from "./types";
 
 export interface InvoiceTotals {
   net: number;
@@ -81,4 +83,50 @@ export const invoiceSummary = (invoices: Invoice[], monthsBack = 6): InvoiceSumm
     .slice(-monthsBack)
     .map((month) => ({ month, net: Math.round(months[month].net), gross: Math.round(months[month].gross) }));
   return { invoiced: round2(invoiced), outstanding: round2(outstanding), paid: round2(paid), byMonth };
+};
+
+export interface PnlMonth {
+  month: string;
+  revenue: number; // net invoiced
+  cost: number; // matched COGS from linked projects
+  overhead: number; // monthly burn
+  profit: number; // revenue − cost − overhead
+}
+
+/**
+ * Monthly profit-and-loss over time. Revenue is net invoiced per month; for an
+ * invoice linked to a project, a proportional share of that project's COGS is
+ * matched into the same month; overhead burn is applied to every shown month.
+ */
+export const profitTimeline = (
+  invoices: Invoice[],
+  projects: Project[],
+  company: Company,
+  expenses: Expense[],
+  monthsBack = 8,
+): PnlMonth[] => {
+  const burn = monthlyBurn(expenses);
+  const projById: Record<string, Project> = Object.fromEntries(projects.map((p) => [p.id, p]));
+  const months: Record<string, { revenue: number; cost: number }> = {};
+  invoices.forEach((inv) => {
+    if (inv.status === "draft") return;
+    const key = (inv.issueDate || "").slice(0, 7);
+    if (!key) return;
+    const t = invoiceTotals(inv);
+    months[key] = months[key] || { revenue: 0, cost: 0 };
+    months[key].revenue += t.net;
+    const p = projById[inv.projectId];
+    if (p) {
+      const f = projFin(p, company);
+      if (f.rev > 0) months[key].cost += f.cost * (t.net / f.rev);
+    }
+  });
+  return Object.keys(months)
+    .sort()
+    .slice(-monthsBack)
+    .map((month) => {
+      const r = months[month];
+      const profit = r.revenue - r.cost - burn;
+      return { month, revenue: Math.round(r.revenue), cost: Math.round(r.cost), overhead: Math.round(burn), profit: Math.round(profit) };
+    });
 };
