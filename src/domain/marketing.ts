@@ -8,7 +8,7 @@
  */
 import { STAGES } from "./constants";
 import { committed, projFin } from "./finance";
-import { dFromNow } from "./format";
+import { dAgo, dFromNow } from "./format";
 import type { Account, Company, ContentItem, Project } from "./types";
 
 export interface FunnelStage {
@@ -29,7 +29,10 @@ export interface MarketingMetrics {
   leadToWon: number; // % of clients with a committed project
   channels: ChannelRow[];
   contentByStatus: Record<string, number>;
-  upcoming: ContentItem[];
+  upcoming: ContentItem[]; // future scheduled, soonest first
+  overdue: ContentItem[]; // scheduled but the date has passed
+  postedThisWeek: number;
+  postedLastWeek: number;
 }
 
 const WON = STAGES.indexOf("Won");
@@ -87,6 +90,11 @@ export function marketingMetrics(
     .filter((c) => c.status === "scheduled" && c.date && (dFromNow(c.date) ?? -1) >= 0)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 6);
+  const overdue = content
+    .filter((c) => c.status === "scheduled" && c.date && (dFromNow(c.date) ?? 0) < 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const postedIn = (lo: number, hi: number) =>
+    content.filter((c) => c.status === "posted" && c.date && (() => { const a = dAgo(c.date); return a != null && a >= lo && a <= hi; })()).length;
 
-  return { funnel, leadToWon, channels, contentByStatus, upcoming };
+  return { funnel, leadToWon, channels, contentByStatus, upcoming, overdue, postedThisWeek: postedIn(0, 6), postedLastWeek: postedIn(7, 13) };
 }
