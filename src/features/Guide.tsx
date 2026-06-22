@@ -175,9 +175,9 @@ export function Guide() {
             deals. The per-project numbers come from the Commercial tab.
           </Area>
           <Area glyph="◈" name="Marketing">
-            The demand side: a sales funnel (leads → proposals → won → delivered), lead-source attribution showing which
-            channels actually convert and earn, and a content calendar to plan posts/campaigns. Set each client's source
-            to sharpen the channel analytics.
+            The demand side: a value-aware funnel, lead-source attribution, a cadence/agenda and a kanban content board.
+            Feature pieces to your public <span className="text-dim">Collection</span> (a portfolio page at /collection
+            with an inquiry form); inquiries land in the Marketing inbox to convert into source-tagged leads in one tap.
           </Area>
           <Area glyph="✺" name="Assistant">
             The AI operator. Ask it about your workspace; it can propose concrete actions (draft outreach, suggest next

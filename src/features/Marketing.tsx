@@ -6,11 +6,12 @@
  * kanban content board (idea → drafting → scheduled → posted) where each item
  * can feature a piece. Analytics are pure derivations; content is synced.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CONTENT_CHANNELS,
   CONTENT_STATUS,
   baseMoney,
+  blankAccount,
   blankContent,
   dFromNow,
   marketingMetrics,
@@ -19,6 +20,7 @@ import {
 } from "@/domain";
 import { Button, Empty, Field, Panel, SectionHead, SelectField, Stat, Tag, TextArea, cx } from "@/ui/kit";
 import { useStore } from "@/state/store";
+import { loadInquiries, presenceEnabled, setInquiryStatus, type Inquiry } from "@/data/collection";
 import { PageHeader } from "./PageHeader";
 
 const STATUS_TONE: Record<string, "neutral" | "warn" | "brass" | "ok"> = {
@@ -69,6 +71,30 @@ export function Marketing() {
   const company = useStore((s) => s.company);
   const content = useStore((s) => s.content);
   const upsertContent = useStore((s) => s.upsertContent);
+  const upsertAccount = useStore((s) => s.upsertAccount);
+
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const refreshInq = () => {
+    if (presenceEnabled()) loadInquiries().then(setInquiries);
+  };
+  useEffect(refreshInq, []);
+  const newInq = inquiries.filter((q) => q.status === "new");
+  const convertInquiry = async (q: Inquiry) => {
+    upsertAccount({
+      ...blankAccount(),
+      name: q.name || "New inquiry",
+      email: q.email,
+      source: q.source || "Website",
+      status: "prospect",
+      notes: q.message,
+    });
+    await setInquiryStatus(q.id, "converted");
+    refreshInq();
+  };
+  const archiveInquiry = async (q: Inquiry) => {
+    await setInquiryStatus(q.id, "archived");
+    refreshInq();
+  };
 
   const acctList = useMemo(() => Object.values(accounts), [accounts]);
   const projList = useMemo(() => Object.values(projects), [projects]);
@@ -90,11 +116,49 @@ export function Marketing() {
         title="Marketing"
         kicker="demand · channels · content"
         actions={
-          <Button variant="primary" onClick={() => addTo("idea")}>
-            + Content
-          </Button>
+          <div className="flex items-center gap-2">
+            <a
+              href="/collection"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-md border border-line px-3 py-1.5 font-mono text-[12px] uppercase tracking-label text-dim transition-colors hover:border-brass hover:text-ink"
+            >
+              Public site ↗
+            </a>
+            <Button variant="primary" onClick={() => addTo("idea")}>
+              + Content
+            </Button>
+          </div>
         }
       />
+
+      {/* Inquiries inbox — leads from the public collection */}
+      {newInq.length > 0 && (
+        <Panel className="mb-6 p-4">
+          <SectionHead title="Inquiries" kicker="from your public collection" right={<Tag tone="brass">{newInq.length} new</Tag>} />
+          <ul className="flex flex-col divide-y divide-line">
+            {newInq.map((q) => (
+              <li key={q.id} className="flex flex-col gap-1.5 py-3 first:pt-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[14px] text-ink">{q.name || "Someone"}</span>
+                  <Tag tone="neutral">{q.source}</Tag>
+                  <span className="font-mono text-[12px] text-faint">{new Date(q.created_at).toLocaleDateString()}</span>
+                  <span className="ml-auto flex gap-2">
+                    <Button variant="primary" onClick={() => convertInquiry(q)}>
+                      Convert to client
+                    </Button>
+                    <Button variant="ghost" onClick={() => archiveInquiry(q)}>
+                      Archive
+                    </Button>
+                  </span>
+                </div>
+                {q.email && <div className="font-mono text-[12px] text-dim">{q.email}</div>}
+                {q.message && <p className="font-serif text-[14px] italic leading-relaxed text-dim">"{q.message}"</p>}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
 
       {/* Funnel + pipeline value */}
       <Panel className="mb-6 p-4">

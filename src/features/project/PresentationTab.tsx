@@ -17,8 +17,9 @@ import {
   sharesEnabled,
   type ShareRecord,
 } from "@/data/shares";
+import { featurePiece, loadFeatured, unfeaturePiece } from "@/data/collection";
 import { useAuth } from "@/state/useAuth";
-import { Button, Field, Panel, SectionHead, SelectField, TextArea, Tag } from "@/ui/kit";
+import { Button, Field, Panel, SectionHead, SelectField, TextArea, Tag, cx } from "@/ui/kit";
 import { makeBind, type Patch } from "./bind";
 
 const IMG_FIELDS: [keyof Project["images"], string][] = [
@@ -48,6 +49,8 @@ export function PresentationTab({
   const [shares, setShares] = useState<ShareRecord[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [copiedToken, setCopiedToken] = useState("");
+  const [featured, setFeatured] = useState(false);
+  const [featuring, setFeaturing] = useState(false);
   const pl = (p.servicePath || account?.servicePath) === "Private label";
   const accounts = account ? { [account.id]: account } : {};
   const portalOn = sharesEnabled() && !!user;
@@ -57,8 +60,25 @@ export function PresentationTab({
   };
   useEffect(() => {
     refreshShares();
+    if (portalOn) loadFeatured().then((items) => setFeatured(items.some((i) => i.project_id === p.id)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p.id, user]);
+
+  const toggleFeatured = async () => {
+    if (!user) return;
+    setFeaturing(true);
+    try {
+      if (featured) {
+        await unfeaturePiece(p.id);
+        setFeatured(false);
+      } else {
+        await featurePiece(p.id, user.id, buildSharePayload(p, account, company));
+        setFeatured(true);
+      }
+    } finally {
+      setFeaturing(false);
+    }
+  };
 
   const publish = async () => {
     if (!user) return;
@@ -230,7 +250,23 @@ export function PresentationTab({
           }
         />
         {portalOn ? (
-          shares.length === 0 ? (
+          <>
+            <div className="mb-3 flex flex-wrap items-center gap-3 border-b border-line pb-3">
+              <button
+                onClick={toggleFeatured}
+                disabled={featuring}
+                className={cx(
+                  "rounded-md border px-3 py-1.5 font-mono text-[12px] transition-colors disabled:opacity-50",
+                  featured ? "border-brass bg-brass-dim text-brass" : "border-line text-dim hover:border-brass hover:text-ink",
+                )}
+              >
+                {featuring ? "…" : featured ? "★ In public Collection" : "☆ Add to public Collection"}
+              </button>
+              <a href="/collection" target="_blank" rel="noreferrer" className="font-mono text-[12px] text-faint hover:text-dim">
+                View public collection ↗
+              </a>
+            </div>
+            {shares.length === 0 ? (
             <p className="font-mono text-[13px] text-faint">
               Publish a private web page of this dossier. The client opens it in their browser — no login — reads the
               piece, and approves the design or requests changes. Their decision lands back here.
@@ -282,7 +318,8 @@ export function PresentationTab({
                 );
               })}
             </ul>
-          )
+            )}
+          </>
         ) : (
           <div>
             <div className="flex flex-wrap gap-2">

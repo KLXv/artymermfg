@@ -17,6 +17,7 @@ import { Assistant } from "./features/Assistant";
 import { Guide } from "./features/Guide";
 import { Settings } from "./features/Settings";
 import { ShareDossier } from "./features/ShareDossier";
+import { Collection } from "./features/Collection";
 import { isSupabaseConfigured } from "./data/supabase";
 import { useAuth } from "./state/useAuth";
 import { SyncProvider } from "./state/sync";
@@ -63,7 +64,7 @@ export default function App() {
   // when the visitor prefers reduced motion.
   const [intro, setIntro] = useState(() => {
     if (typeof window === "undefined") return false;
-    const isShare = window.location.pathname.startsWith("/share");
+    const isShare = /^\/(share|collection)/.test(window.location.pathname);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const seen = sessionStorage.getItem("artymer:intro");
     return !isShare && !reduce && !seen;
@@ -82,6 +83,7 @@ export default function App() {
       <Routes>
         {/* Public, read-only dossier — no auth, no shell. */}
         <Route path="/share" element={<ShareDossier />} />
+        <Route path="/collection" element={<Collection />} />
         <Route path="/*" element={<Cockpit />} />
       </Routes>
     </>
