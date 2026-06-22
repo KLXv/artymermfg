@@ -224,6 +224,11 @@ export const SEED_BACKUP: Backup = {
   projects: { [PRJ]: project },
   suppliers: { [SUP]: supplier, [SUP2]: supplier2 },
   tasks: Object.fromEntries(tasks.map((t) => [t.id, t])),
+  content: {
+    seed_c1: { id: "seed_c1", title: "Navigant dial — macro reel", channel: "Instagram", status: "scheduled", date: "2026-07-08", link: "", notes: "Sunburst under raking light; CTA to inquiries.", projectId: PRJ },
+    seed_c2: { id: "seed_c2", title: "Behind the bench — sample approval", channel: "TikTok", status: "drafting", date: "", link: "", notes: "Show the QC-video review workflow.", projectId: "" },
+    seed_c3: { id: "seed_c3", title: "Anniversary commission case study", channel: "Email", status: "idea", date: "", link: "", notes: "Newsletter to past clients — repeat-order nudge.", projectId: PRJ },
+  },
   expenses: [],
   company: { ...blankCompany(), migrated: true },
 };

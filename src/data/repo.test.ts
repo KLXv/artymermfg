@@ -10,6 +10,7 @@ const ws = (over: Partial<WorkspaceState> = {}): WorkspaceState => ({
   suppliers: {},
   tasks: {},
   expenses: [],
+  content: {},
   ...over,
 });
 

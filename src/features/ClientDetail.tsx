@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   ACCT_STATUS,
   ACCT_TYPES,
+  LEAD_SOURCES,
   MARKETS,
   SERVICE,
   STAGES,
@@ -89,7 +90,7 @@ export function ClientDetail() {
             <SelectField label="Service path" {...f("servicePath")} options={SERVICE} />
             <SelectField label="Status" {...f("status")} options={ACCT_STATUS} />
             <SelectField label="Market" {...f("market")} options={MARKETS} />
-            <Field label="Source" {...f("source")} className="sm:col-span-2" />
+            <Field label="Source" list={LEAD_SOURCES} {...f("source")} className="sm:col-span-2" />
           </div>
         </Panel>
 

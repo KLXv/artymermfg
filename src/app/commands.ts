@@ -40,6 +40,7 @@ export const NAV_TARGETS: { value: string; label: string }[] = [
   { value: "/suppliers", label: "Suppliers" },
   { value: "/tasks", label: "Tasks" },
   { value: "/money", label: "Money" },
+  { value: "/marketing", label: "Marketing" },
   { value: "/assistant", label: "Assistant" },
   { value: "/guide", label: "Manual" },
   { value: "/settings", label: "Settings" },

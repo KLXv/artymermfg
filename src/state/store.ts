@@ -15,6 +15,7 @@ import type { CustomCommand } from "@/app/commands";
 import {
   type Account,
   type Company,
+  type ContentItem,
   type Expense,
   type Project,
   type Supplier,
@@ -34,6 +35,7 @@ export interface WorkspaceState {
   suppliers: Record<string, Supplier>;
   tasks: Record<string, Task>;
   expenses: Expense[];
+  content: Record<string, ContentItem>;
 }
 
 export interface WorkspaceActions {
@@ -62,6 +64,10 @@ export interface WorkspaceActions {
 
   setExpenses: (e: Expense[]) => void;
 
+  upsertContent: (c: ContentItem) => void;
+  patchContent: (id: string, patch: Partial<ContentItem>) => void;
+  deleteContent: (id: string) => void;
+
   /** Replace the entire workspace (used by cloud sync on load). */
   hydrate: (state: WorkspaceState) => void;
 
@@ -85,6 +91,7 @@ const emptyState = (): WorkspaceState => ({
   suppliers: {},
   tasks: {},
   expenses: [],
+  content: {},
 });
 
 export const useStore = create<Store>()(
@@ -175,6 +182,16 @@ export const useStore = create<Store>()(
 
       setExpenses: (expenses) => set({ expenses }),
 
+      upsertContent: (c) => set((s) => ({ content: { ...s.content, [c.id]: c } })),
+      patchContent: (id, patch) =>
+        set((s) => (s.content[id] ? { content: { ...s.content, [id]: { ...s.content[id], ...patch } } } : s)),
+      deleteContent: (id) =>
+        set((s) => {
+          const content = { ...s.content };
+          delete content[id];
+          return { content };
+        }),
+
       hydrate: (state) => set({ ...state }),
 
       exportJSON: () => {
@@ -187,6 +204,7 @@ export const useStore = create<Store>()(
             tasks: s.tasks,
             expenses: s.expenses,
             company: s.company,
+            content: s.content,
           }),
           null,
           2,
@@ -203,6 +221,7 @@ export const useStore = create<Store>()(
         const tasks = { ...s.tasks, ...parsed.tasks };
         const company = parsed.company ? { ...s.company, ...parsed.company } : s.company;
         const expenses = parsed.expenses ?? s.expenses;
+        const content = parsed.content ? { ...s.content, ...parsed.content } : s.content;
 
         // One-time legacy migration of pre-account projects.
         const mig = migrateLegacy(company, accounts, projects);
@@ -212,6 +231,7 @@ export const useStore = create<Store>()(
           suppliers,
           tasks,
           expenses,
+          content,
           company: { ...company, migrated: true },
         });
         return { accounts: Object.keys(mig.accounts).length, projects: Object.keys(mig.projects).length };

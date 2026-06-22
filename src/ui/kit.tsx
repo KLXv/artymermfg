@@ -156,6 +156,7 @@ export function Field({
   type = "text",
   mono = true,
   className,
+  list,
 }: {
   label?: string;
   value: string;
@@ -164,7 +165,9 @@ export function Field({
   type?: string;
   mono?: boolean;
   className?: string;
+  list?: readonly string[];
 }) {
+  const listId = list ? `dl-${label || placeholder || "f"}`.replace(/\s+/g, "-") : undefined;
   return (
     <div className={className}>
       {label && <Label>{label}</Label>}
@@ -172,9 +175,17 @@ export function Field({
         type={type}
         value={value}
         placeholder={placeholder}
+        list={listId}
         onChange={(e) => onChange(e.target.value)}
         className={cx(inputCls, !mono && "font-body")}
       />
+      {list && (
+        <datalist id={listId}>
+          {list.map((o) => (
+            <option key={o} value={o} />
+          ))}
+        </datalist>
+      )}
     </div>
   );
 }

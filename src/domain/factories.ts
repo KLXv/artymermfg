@@ -1,5 +1,5 @@
 /** Entity factories — ported verbatim from ArtymerCockpit.jsx. */
-import type { Account, Company, Project, Supplier, Task } from "./types";
+import type { Account, Company, ContentItem, Project, Supplier, Task } from "./types";
 
 export const rid = (p: string): string =>
   p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -56,6 +56,17 @@ export const blankSupplier = (): Supplier => ({
   communication: "",
   price: "",
   capabilities: "",
+});
+
+export const blankContent = (): ContentItem => ({
+  id: rid("c"),
+  title: "",
+  channel: "Instagram",
+  status: "idea",
+  date: "",
+  link: "",
+  notes: "",
+  projectId: "",
 });
 
 export const blankTask = (link: { type?: string; id?: string } = {}): Task => ({

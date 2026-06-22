@@ -174,6 +174,11 @@ export function Guide() {
             The cash picture: revenue booked, deposits in, balances owed, aging, and a forward forecast from your live
             deals. The per-project numbers come from the Commercial tab.
           </Area>
+          <Area glyph="◈" name="Marketing">
+            The demand side: a sales funnel (leads → proposals → won → delivered), lead-source attribution showing which
+            channels actually convert and earn, and a content calendar to plan posts/campaigns. Set each client's source
+            to sharpen the channel analytics.
+          </Area>
           <Area glyph="✺" name="Assistant">
             The AI operator. Ask it about your workspace; it can propose concrete actions (draft outreach, suggest next
             steps) that you review and apply. Requires an API key in Settings.

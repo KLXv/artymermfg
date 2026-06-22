@@ -46,3 +46,20 @@ export const ACCT_STATUS = ["prospect", "active", "dormant", "lost"];
 export const MARKETS = ["RO", "HU", "EU", "Other"];
 export const SERVICE = ["Commission", "Private label"];
 export const SUPP_STATUS = ["Primary", "Backup", "Warming", "Retired"];
+
+/** Where leads come from — used for source attribution + channel analytics. */
+export const LEAD_SOURCES = [
+  "Instagram",
+  "TikTok",
+  "Referral",
+  "Word of mouth",
+  "Trade show",
+  "Cold outreach",
+  "Website",
+  "Press",
+  "Other",
+];
+
+/** Marketing content calendar vocabularies. */
+export const CONTENT_CHANNELS = ["Instagram", "TikTok", "YouTube", "Email", "Outreach", "Website", "Press", "Other"];
+export const CONTENT_STATUS = ["idea", "drafting", "scheduled", "posted"] as const;

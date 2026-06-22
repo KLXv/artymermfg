@@ -12,6 +12,7 @@ export * from "./documents-zh";
 export * from "./dashboard";
 export * from "./pipeline";
 export * from "./money";
+export * from "./marketing";
 export * from "./prompts";
 export * from "./operator";
 export * from "./cofounder";

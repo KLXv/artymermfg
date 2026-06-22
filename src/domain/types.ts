@@ -87,6 +87,18 @@ export interface Expense {
   amount: string;
 }
 
+/** A marketing content / campaign item on the calendar. */
+export interface ContentItem {
+  id: string;
+  title: string;
+  channel: string; // Instagram, TikTok, Email, Outreach, Website, Press, Other
+  status: string; // idea | drafting | scheduled | posted
+  date: string; // scheduled / posted date (YYYY-MM-DD)
+  link: string; // URL to the post or asset
+  notes: string;
+  projectId: string; // optional: the piece this features
+}
+
 export interface DialColor {
   name: string;
   ref: string;

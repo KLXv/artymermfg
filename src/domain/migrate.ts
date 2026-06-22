@@ -8,7 +8,7 @@
  */
 import { STAGES } from "./constants";
 import { blankAccount, blankProject, today } from "./factories";
-import type { Account, Company, Expense, Project, Supplier, Task } from "./types";
+import type { Account, Company, ContentItem, Expense, Project, Supplier, Task } from "./types";
 
 export interface Backup {
   artymer: "cockpit-backup";
@@ -20,6 +20,7 @@ export interface Backup {
   tasks: Record<string, Task>;
   expenses: Expense[];
   company: Company;
+  content?: Record<string, ContentItem>;
 }
 
 export const buildBackup = (s: {
@@ -29,6 +30,7 @@ export const buildBackup = (s: {
   tasks: Record<string, Task>;
   expenses: Expense[];
   company: Company;
+  content?: Record<string, ContentItem>;
 }): Backup => ({
   artymer: "cockpit-backup",
   schema: 3,
@@ -39,6 +41,7 @@ export const buildBackup = (s: {
   tasks: s.tasks,
   expenses: s.expenses,
   company: s.company,
+  content: s.content ?? {},
 });
 
 export interface ParsedBackup {
@@ -48,6 +51,7 @@ export interface ParsedBackup {
   tasks: Record<string, Task>;
   expenses?: Expense[];
   company?: Company;
+  content?: Record<string, ContentItem>;
 }
 
 /**
@@ -69,6 +73,7 @@ export const parseBackup = (raw: string): ParsedBackup => {
     tasks,
     expenses: Array.isArray(d.expenses) ? d.expenses : undefined,
     company: d.company || undefined,
+    content: d.content || undefined,
   };
 };
 

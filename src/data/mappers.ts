@@ -10,12 +10,14 @@
 import {
   blankAccount,
   blankCompany,
+  blankContent,
   blankProject,
   blankSupplier,
   blankTask,
   rid,
   type Account,
   type Company,
+  type ContentItem,
   type Expense,
   type Project,
   type Supplier,
@@ -205,6 +207,32 @@ export const expensesToRows = (expenses: Expense[], ownerId: string): Row[] =>
 export const rowToExpense = (row: Row): Expense => ({
   label: (row.label as string) ?? "",
   amount: (row.amount as string) ?? "",
+});
+
+/* ----------------------------- content ----------------------------------- */
+
+export const contentToRow = (c: ContentItem, ownerId: string): Row => ({
+  id: c.id,
+  owner_id: ownerId,
+  title: c.title,
+  channel: c.channel,
+  status: c.status,
+  date: c.date === "" ? null : c.date,
+  link: c.link,
+  notes: c.notes,
+  project_id: c.projectId || null,
+});
+
+export const rowToContent = (row: Row): ContentItem => ({
+  ...blankContent(),
+  id: String(row.id),
+  title: (row.title as string) ?? "",
+  channel: (row.channel as string) ?? "Instagram",
+  status: (row.status as string) ?? "idea",
+  date: (row.date as string) ?? "",
+  link: (row.link as string) ?? "",
+  notes: (row.notes as string) ?? "",
+  projectId: (row.project_id as string) ?? "",
 });
 
 /* ----------------------------- company ----------------------------------- */

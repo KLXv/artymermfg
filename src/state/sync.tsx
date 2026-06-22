@@ -36,6 +36,7 @@ const snapshot = (s: WorkspaceState): WorkspaceState => ({
   suppliers: s.suppliers,
   tasks: s.tasks,
   expenses: s.expenses,
+  content: s.content,
 });
 
 const stateOf = (): WorkspaceState => snapshot(useStore.getState());

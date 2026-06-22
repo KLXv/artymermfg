@@ -22,6 +22,7 @@ export const isWorkspaceEmpty = (s: WorkspaceState): boolean =>
   Object.keys(s.projects).length === 0 &&
   Object.keys(s.suppliers).length === 0 &&
   Object.keys(s.tasks).length === 0 &&
+  Object.keys(s.content).length === 0 &&
   s.expenses.length === 0;
 
 const indexById = <T extends { id: string }>(rows: T[]): Record<string, T> =>
@@ -46,6 +47,7 @@ export function mergeWorkspaces(remote: WorkspaceState, local: WorkspaceState): 
     suppliers: fill(remote.suppliers, local.suppliers),
     projects: fill(remote.projects, local.projects),
     tasks: fill(remote.tasks, local.tasks),
+    content: fill(remote.content, local.content),
     expenses: remote.expenses.length ? remote.expenses : local.expenses,
   };
 }
@@ -53,13 +55,14 @@ export function mergeWorkspaces(remote: WorkspaceState, local: WorkspaceState): 
 /** Load the full workspace for the signed-in owner. Throws on a hard error. */
 export async function loadWorkspace(): Promise<WorkspaceState> {
   const sb = client();
-  const [company, accounts, suppliers, projects, tasks, expenses] = await Promise.all([
+  const [company, accounts, suppliers, projects, tasks, expenses, content] = await Promise.all([
     sb.from("company").select("*").maybeSingle(),
     sb.from("accounts").select("*"),
     sb.from("suppliers").select("*"),
     sb.from("projects").select("*"),
     sb.from("tasks").select("*"),
     sb.from("expenses").select("*"),
+    sb.from("content").select("*"),
   ]);
 
   const hard = [accounts.error, suppliers.error, projects.error, tasks.error, expenses.error].find(Boolean);
@@ -72,6 +75,7 @@ export async function loadWorkspace(): Promise<WorkspaceState> {
     projects: indexById((projects.data ?? []).map((r) => M.rowToProject(r as M.Row))),
     tasks: indexById((tasks.data ?? []).map((r) => M.rowToTask(r as M.Row))),
     expenses: (expenses.data ?? []).map((r) => M.rowToExpense(r as M.Row)),
+    content: indexById((content.data ?? []).map((r) => M.rowToContent(r as M.Row))),
   };
 }
 
@@ -98,6 +102,7 @@ export async function pushWorkspaceDiff(ownerId: string, prev: WorkspaceState, n
   const sups = diffMap(prev.suppliers, next.suppliers);
   const projs = diffMap(prev.projects, next.projects);
   const tasks = diffMap(prev.tasks, next.tasks);
+  const cont = diffMap(prev.content, next.content);
 
   // Phase 1 — parents (and the singleton company).
   const phase1: PromiseLike<unknown>[] = [];
@@ -112,6 +117,7 @@ export async function pushWorkspaceDiff(ownerId: string, prev: WorkspaceState, n
   // Phase 3 — tasks + expenses (expenses have no stable id → replace wholesale).
   const phase3: PromiseLike<unknown>[] = [];
   if (tasks.upserts.length) phase3.push(sb.from("tasks").upsert(tasks.upserts.map((t) => M.taskToRow(t, ownerId))));
+  if (cont.upserts.length) phase3.push(sb.from("content").upsert(cont.upserts.map((c) => M.contentToRow(c, ownerId))));
   if (changed(prev.expenses, next.expenses)) {
     phase3.push(
       sb
@@ -126,6 +132,7 @@ export async function pushWorkspaceDiff(ownerId: string, prev: WorkspaceState, n
   // Phase 4 — deletes, children before parents.
   if (projs.deletes.length) await sb.from("projects").delete().in("id", projs.deletes);
   if (tasks.deletes.length) await sb.from("tasks").delete().in("id", tasks.deletes);
+  if (cont.deletes.length) await sb.from("content").delete().in("id", cont.deletes);
   const phase5: PromiseLike<unknown>[] = [];
   if (accts.deletes.length) phase5.push(sb.from("accounts").delete().in("id", accts.deletes));
   if (sups.deletes.length) phase5.push(sb.from("suppliers").delete().in("id", sups.deletes));
