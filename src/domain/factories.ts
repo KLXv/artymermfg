@@ -46,6 +46,7 @@ export const blankAccount = (): Account => ({
   email: "",
   phone: "",
   source: "",
+  referredBy: "",
   notes: "",
   testimonial: "",
   lastContact: "",
@@ -220,4 +221,5 @@ export const blankProject = (accountId = ""): Project => ({
     disabled: [],
     sample: { decision: "", date: "", reviewer: "", notes: "", media: "" },
   },
+  warranty: { deliveredDate: "", months: "12", serial: "", services: [] },
 });

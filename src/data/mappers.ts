@@ -93,6 +93,7 @@ export const projectToRow = (p: Project, ownerId: string): Row => {
   row.files = p.files;
   row.costs = pick(p, COSTS_FIELDS);
   row.qc = p.qc;
+  row.warranty = p.warranty;
   return row;
 };
 
@@ -118,6 +119,7 @@ export const rowToProject = (row: Row): Project => {
   if (row.images && typeof row.images === "object") p.images = { ...p.images, ...(row.images as object) };
   if (row.files && typeof row.files === "object") p.files = { ...p.files, ...(row.files as object) };
   if (row.qc && typeof row.qc === "object") p.qc = { ...p.qc, ...(row.qc as object) };
+  if (row.warranty && typeof row.warranty === "object") p.warranty = { ...p.warranty, ...(row.warranty as object) };
   return p;
 };
 
@@ -126,7 +128,7 @@ export const rowToProject = (row: Row): Project => {
 const ACCOUNT_COLUMNS: Record<string, keyof Account> = {
   name: "name", type: "type", service_path: "servicePath", status: "status", market: "market",
   contact_name: "contactName", contact_role: "contactRole", email: "email", phone: "phone",
-  source: "source", notes: "notes", testimonial: "testimonial",
+  source: "source", referred_by: "referredBy", notes: "notes", testimonial: "testimonial",
   last_contact: "lastContact", next_action: "nextAction", next_date: "nextDate",
 };
 const ACCOUNT_DATE_COLS = new Set(["last_contact", "next_date"]);

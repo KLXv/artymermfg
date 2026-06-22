@@ -55,6 +55,7 @@ const account: Account = {
   email: "f.hartmann@hartmann-uhren.de",
   phone: "+49 89 4521 1830",
   source: "Trade show · Baselworld 2024",
+  referredBy: "",
   notes: "Second-generation family business in Munich. 50th-anniversary signature piece.",
   testimonial: "",
   lastContact: "2026-05-28",
@@ -184,6 +185,7 @@ const project: Project = {
   balancePaid: false,
   balanceDate: "",
   qc: { received: false, results: {}, signed: false, signedDate: "", disabled: [] },
+  warranty: { deliveredDate: "", months: "12", serial: "", services: [] },
 };
 
 const tasks: Task[] = [

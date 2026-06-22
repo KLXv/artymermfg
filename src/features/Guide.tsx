@@ -184,6 +184,11 @@ export function Guide() {
             Feature pieces to your public <span className="text-dim">Collection</span> (a portfolio page at /collection
             with an inquiry form); inquiries land in the Marketing inbox to convert into source-tagged leads in one tap.
           </Area>
+          <Area glyph="✧" name="Strategy">
+            Goals vs actuals (revenue, outreach, margin, pipeline coverage against your Settings targets), a warranty /
+            after-sales register over delivered pieces — with a service log and expiry tracking — and referral
+            attribution (set "Referred by" on a client to see who sends you business and the revenue it brings).
+          </Area>
           <Area glyph="✺" name="Assistant">
             The AI operator. Ask it about your workspace; it can propose concrete actions (draft outreach, suggest next
             steps) that you review and apply. Requires an API key in Settings.

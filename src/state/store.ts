@@ -141,7 +141,12 @@ export const useStore = create<Store>()(
         if (!p) return [];
         const eff = planAdvance(p, Object.values(s.tasks));
         if (!eff.canAdvance) return [];
-        const projects = { ...s.projects, [id]: { ...p, ...eff.patch } };
+        const updated = { ...p, ...eff.patch };
+        // Stamp the warranty start the moment a piece is delivered.
+        if (updated.stage === "Delivered" && !updated.warranty?.deliveredDate) {
+          updated.warranty = { ...updated.warranty, deliveredDate: today() };
+        }
+        const projects = { ...s.projects, [id]: updated };
         const tasks = eff.newTask ? { ...s.tasks, [eff.newTask.id]: eff.newTask } : s.tasks;
         set({ projects, tasks });
         return eff.notes;
@@ -165,6 +170,7 @@ export const useStore = create<Store>()(
           balancePaid: false,
           balanceDate: "",
           qc: { received: false, results: {}, signed: false, signedDate: "" },
+          warranty: { deliveredDate: "", months: p.warranty?.months || "12", serial: "", services: [] },
         };
         set({ projects: { ...s.projects, [copy.id]: copy } });
         return copy.id;

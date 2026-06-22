@@ -14,6 +14,7 @@ export * from "./pipeline";
 export * from "./money";
 export * from "./marketing";
 export * from "./invoicing";
+export * from "./strategy";
 export * from "./prompts";
 export * from "./operator";
 export * from "./cofounder";

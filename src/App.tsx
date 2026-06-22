@@ -14,6 +14,7 @@ import { Tasks } from "./features/Tasks";
 import { Money } from "./features/Money";
 import { Invoices } from "./features/Invoices";
 import { Marketing } from "./features/Marketing";
+import { Strategy } from "./features/Strategy";
 import { Assistant } from "./features/Assistant";
 import { Guide } from "./features/Guide";
 import { Settings } from "./features/Settings";
@@ -51,6 +52,7 @@ function Cockpit() {
           <Route path="money" element={<Money />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="marketing" element={<Marketing />} />
+          <Route path="strategy" element={<Strategy />} />
           <Route path="assistant" element={<Assistant />} />
           <Route path="guide" element={<Guide />} />
           <Route path="settings" element={<Settings />} />

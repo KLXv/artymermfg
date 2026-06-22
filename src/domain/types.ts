@@ -97,6 +97,7 @@ export interface Account {
   email: string;
   phone: string;
   source: string;
+  referredBy: string; // who referred this client (name or client)
   notes: string;
   testimonial: string;
   lastContact: string;
@@ -189,6 +190,21 @@ export interface ProjectQc {
   disabled?: string[];
   /** First-off sample sign-off, reviewed from the factory's media. */
   sample?: SampleApproval;
+}
+
+/** An after-sales service event on a delivered piece. */
+export interface ServiceEntry {
+  id: string;
+  date: string;
+  note: string;
+}
+
+/** Warranty + after-sales record for a delivered piece. */
+export interface WarrantyInfo {
+  deliveredDate: string;
+  months: string; // guarantee length, default "12"
+  serial: string;
+  services: ServiceEntry[];
 }
 
 export interface Project {
@@ -322,6 +338,7 @@ export interface Project {
   balancePaid: boolean;
   balanceDate: string;
   qc: ProjectQc;
+  warranty: WarrantyInfo;
 }
 
 /** Convenience bundle of the full workspace state for derivation functions. */
