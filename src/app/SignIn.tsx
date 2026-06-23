@@ -10,7 +10,7 @@ import { Sigma } from "@/ui/Sigma";
 import { Button, Field, Panel } from "@/ui/kit";
 
 export function SignIn() {
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "up" | "forgot">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -22,23 +22,34 @@ export function SignIn() {
   const cleanEmail = email.trim().toLowerCase();
 
   const submit = async () => {
-    if (!supabase || !cleanEmail || !password) return;
+    if (!supabase || !cleanEmail) return;
+    if (mode !== "forgot" && !password) return;
     setBusy(true);
     setMsg(null);
     try {
       if (mode === "in") {
         const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) setMsg({ tone: "bad", text: error.message });
-      } else {
+      } else if (mode === "up") {
         const { data, error } = await supabase.auth.signUp({ email: cleanEmail, password });
         if (error) setMsg({ tone: "bad", text: error.message });
         else if (!data.session)
           setMsg({ tone: "ok", text: "Account created — check your email to confirm, then sign in." });
+      } else {
+        // Password reset: email a recovery link that returns to this app and
+        // signs you in, so you can set a fresh password from any device.
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: window.location.origin,
+        });
+        if (error) setMsg({ tone: "bad", text: error.message });
+        else setMsg({ tone: "ok", text: "Reset link sent — open it on this device to get back in." });
       }
     } finally {
       setBusy(false);
     }
   };
+
+  const cta = busy ? "…" : mode === "in" ? "Sign in" : mode === "up" ? "Create account" : "Send reset link";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-ground px-4">
@@ -52,7 +63,7 @@ export function SignIn() {
             <div>
               <div className="font-disp text-[13px] font-semibold tracking-brand">ARTYMER</div>
               <div className="font-mono text-[11px] uppercase tracking-wide text-faint">
-                {mode === "in" ? "Sign in" : "Create account"}
+                {mode === "in" ? "Sign in" : mode === "up" ? "Create account" : "Reset password"}
               </div>
             </div>
           </div>
@@ -76,33 +87,51 @@ export function SignIn() {
               inputMode="email"
               spellCheck={false}
             />
-            <Field
-              label="Password"
-              type="password"
-              value={password}
-              onChange={setPassword}
-              placeholder="••••••••"
-              mono={false}
-              autoCapitalize="none"
-              autoComplete="current-password"
-              spellCheck={false}
-            />
-            <Button type="submit" variant="primary" disabled={busy || !cleanEmail || !password} className="mt-1 justify-center">
-              {busy ? "…" : mode === "in" ? "Sign in" : "Create account"}
+            {mode !== "forgot" && (
+              <Field
+                label="Password"
+                type="password"
+                value={password}
+                onChange={setPassword}
+                placeholder="••••••••"
+                mono={false}
+                autoCapitalize="none"
+                autoComplete={mode === "up" ? "new-password" : "current-password"}
+                spellCheck={false}
+              />
+            )}
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={busy || !cleanEmail || (mode !== "forgot" && !password)}
+              className="mt-1 justify-center"
+            >
+              {cta}
             </Button>
           </form>
 
           {msg && <p className={"mt-3 font-mono text-[13px] " + (msg.tone === "ok" ? "text-ok" : "text-bad")}>{msg.text}</p>}
 
-          <button
-            onClick={() => {
-              setMode((m) => (m === "in" ? "up" : "in"));
-              setMsg(null);
-            }}
-            className="mt-4 font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim"
-          >
-            {mode === "in" ? "Need an account? Create one" : "Have an account? Sign in"}
-          </button>
+          <div className="mt-4 flex flex-col gap-2">
+            <button
+              onClick={() => {
+                setMode((m) => (m === "in" ? "up" : "in"));
+                setMsg(null);
+              }}
+              className="text-left font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim"
+            >
+              {mode === "up" ? "Have an account? Sign in" : "Need an account? Create one"}
+            </button>
+            <button
+              onClick={() => {
+                setMode((m) => (m === "forgot" ? "in" : "forgot"));
+                setMsg(null);
+              }}
+              className="text-left font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim"
+            >
+              {mode === "forgot" ? "Back to sign in" : "Forgot password?"}
+            </button>
+          </div>
         </Panel>
         <p className="mt-4 text-center font-mono text-[11px] uppercase tracking-wide text-faint">
           one operator · one workshop
