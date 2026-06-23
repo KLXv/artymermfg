@@ -157,6 +157,10 @@ export function Field({
   mono = true,
   className,
   list,
+  autoCapitalize,
+  autoComplete,
+  inputMode,
+  spellCheck,
 }: {
   label?: string;
   value: string;
@@ -166,6 +170,10 @@ export function Field({
   mono?: boolean;
   className?: string;
   list?: readonly string[];
+  autoCapitalize?: string;
+  autoComplete?: string;
+  inputMode?: "text" | "email" | "tel" | "url" | "numeric" | "decimal" | "search" | "none";
+  spellCheck?: boolean;
 }) {
   const listId = list ? `dl-${label || placeholder || "f"}`.replace(/\s+/g, "-") : undefined;
   return (
@@ -176,6 +184,10 @@ export function Field({
         value={value}
         placeholder={placeholder}
         list={listId}
+        autoCapitalize={autoCapitalize}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        spellCheck={spellCheck}
         onChange={(e) => onChange(e.target.value)}
         className={cx(inputCls, !mono && "font-body")}
       />

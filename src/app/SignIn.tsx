@@ -16,16 +16,21 @@ export function SignIn() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
 
+  // Normalize the email the same way Supabase stores it: trimmed + lowercased.
+  // Phone keyboards love to auto-capitalize the first letter, which otherwise
+  // turns a correct address into an "invalid credentials" error.
+  const cleanEmail = email.trim().toLowerCase();
+
   const submit = async () => {
-    if (!supabase || !email.trim() || !password) return;
+    if (!supabase || !cleanEmail || !password) return;
     setBusy(true);
     setMsg(null);
     try {
       if (mode === "in") {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) setMsg({ tone: "bad", text: error.message });
       } else {
-        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { data, error } = await supabase.auth.signUp({ email: cleanEmail, password });
         if (error) setMsg({ tone: "bad", text: error.message });
         else if (!data.session)
           setMsg({ tone: "ok", text: "Account created — check your email to confirm, then sign in." });
@@ -59,9 +64,30 @@ export function SignIn() {
             }}
             className="flex flex-col gap-3"
           >
-            <Field label="Email" type="text" value={email} onChange={setEmail} placeholder="you@studio.com" mono={false} />
-            <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="••••••••" mono={false} />
-            <Button type="submit" variant="primary" disabled={busy || !email.trim() || !password} className="mt-1 justify-center">
+            <Field
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              placeholder="you@studio.com"
+              mono={false}
+              autoCapitalize="none"
+              autoComplete="email"
+              inputMode="email"
+              spellCheck={false}
+            />
+            <Field
+              label="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+              placeholder="••••••••"
+              mono={false}
+              autoCapitalize="none"
+              autoComplete="current-password"
+              spellCheck={false}
+            />
+            <Button type="submit" variant="primary" disabled={busy || !cleanEmail || !password} className="mt-1 justify-center">
               {busy ? "…" : mode === "in" ? "Sign in" : "Create account"}
             </Button>
           </form>
