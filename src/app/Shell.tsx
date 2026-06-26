@@ -5,9 +5,9 @@
  * the Σ mark and the cockpit's sections. The Deck link wears a live count of
  * the action queue, so the most-pressing work is visible from anywhere.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { BRAND_MARK } from "@/ui/brand";
 import { cx } from "@/ui/kit";
 import { CommandPalette } from "./CommandPalette";
@@ -121,8 +121,106 @@ function NavLinks({ alerts, onNavigate }: { alerts: number; onNavigate?: () => v
   );
 }
 
+/** The handful of destinations that earn a permanent thumb-reachable tab. */
+const PRIMARY = ["/", "/pipeline", "/projects", "/money"];
+
+/** Mobile bottom tab bar — primary tabs plus a "More" opener. */
+function MobileTabBar({ alerts, onMore }: { alerts: number; onMore: () => void }) {
+  const primaries = PRIMARY.map((to) => NAV.find((n) => n.to === to)).filter(Boolean) as NavItem[];
+  const tab = (active: boolean) =>
+    cx(
+      "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 font-mono text-[10px] uppercase tracking-label transition-colors",
+      active ? "text-brass" : "text-faint",
+    );
+  return (
+    <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-line bg-panel/95 backdrop-blur lg:hidden">
+      {primaries.map((item) => (
+        <NavLink key={item.to} to={item.to} end={item.to === "/"} className={({ isActive }) => tab(isActive)}>
+          {({ isActive }) => (
+            <>
+              <span className="relative text-[17px]" aria-hidden>
+                {item.glyph}
+                {item.to === "/" && alerts > 0 && (
+                  <span className="absolute -right-2 -top-1 h-1.5 w-1.5 rounded-full bg-brass" />
+                )}
+              </span>
+              <span className={isActive ? "text-brass" : "text-faint"}>{item.label}</span>
+            </>
+          )}
+        </NavLink>
+      ))}
+      <button onClick={onMore} className={tab(false)} aria-label="More sections">
+        <span className="text-[17px]" aria-hidden>
+          ⋯
+        </span>
+        <span>More</span>
+      </button>
+    </nav>
+  );
+}
+
+/** Slide-up sheet holding the secondary destinations and sign-out. */
+function MoreSheet({ open, onClose, signedIn }: { open: boolean; onClose: () => void; signedIn: boolean }) {
+  const rest = NAV.filter((n) => !PRIMARY.includes(n.to));
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-40 lg:hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+          <motion.div
+            className="mobile-sheet absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-line bg-panel-grad p-4"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 34 }}
+          >
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line2" />
+            <div className="grid grid-cols-3 gap-2">
+              {rest.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    cx(
+                      "flex flex-col items-center gap-1.5 rounded-xl border bg-inset py-3.5 font-mono text-[11px] uppercase tracking-label transition-colors",
+                      isActive ? "border-brass/40 text-brass" : "border-line text-dim hover:text-ink",
+                    )
+                  }
+                >
+                  <span className="text-[19px]" aria-hidden>
+                    {item.glyph}
+                  </span>
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+            {signedIn && (
+              <button
+                onClick={() => {
+                  onClose();
+                  signOut();
+                }}
+                className="mt-3 w-full rounded-xl border border-line py-3 font-mono text-[12px] uppercase tracking-label text-faint transition-colors hover:border-bad hover:text-bad"
+              >
+                Sign out
+              </button>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export function Shell() {
   const { alerts } = useDashboard();
+  const [moreOpen, setMoreOpen] = useState(false);
   const loc = useLocation();
   const { user } = useAuth();
   const loadShares = useSharesStore((s) => s.load);
@@ -132,6 +230,9 @@ export function Shell() {
   useEffect(() => {
     if (user) loadShares();
   }, [user, loadShares, loc.pathname]);
+
+  // Close the mobile "More" sheet whenever the route changes.
+  useEffect(() => setMoreOpen(false), [loc.pathname]);
 
   return (
     <div className="min-h-screen bg-ground text-ink">
@@ -185,26 +286,9 @@ export function Shell() {
         )}
       </header>
 
-      {/* Mobile nav strip */}
-      <div className="sticky top-[49px] z-20 overflow-x-auto border-b border-line bg-panel/95 px-2 py-2 backdrop-blur lg:hidden">
-        <div className="flex gap-1">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              className={({ isActive }) =>
-                cx(
-                  "whitespace-nowrap rounded px-2.5 py-1 font-mono text-[12px] uppercase tracking-label",
-                  isActive ? "bg-brass-dim text-brass" : "text-dim",
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
-      </div>
+      {/* Mobile bottom navigation */}
+      <MobileTabBar alerts={alerts} onMore={() => setMoreOpen(true)} />
+      <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} signedIn={!!user} />
 
       <main className="relative z-10 lg:pl-56">
         <motion.div
@@ -212,7 +296,7 @@ export function Shell() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="page-enter mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8"
+          className="page-enter mx-auto max-w-6xl px-4 py-6 pb-28 sm:px-6 sm:py-8 sm:pb-28 lg:pb-8"
         >
           <Outlet />
         </motion.div>

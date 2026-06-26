@@ -81,7 +81,7 @@ export function Companion() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2">
+    <div className="pointer-events-none fixed bottom-24 right-4 z-40 flex flex-col items-end gap-2 lg:bottom-4">
       <AnimatePresence>
         {open && line && (
           <motion.div

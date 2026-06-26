@@ -245,3 +245,11 @@ body {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
+
+/* Mobile bottom-nav safe-area insets (iPhone home indicator). */
+.mobile-tabbar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mobile-sheet {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
