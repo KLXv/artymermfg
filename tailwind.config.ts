@@ -29,9 +29,9 @@ export default {
         pl: { DEFAULT: "#C3B1F0", line: "#7A66BE" },
       },
       fontFamily: {
-        disp: ["'Space Grotesk'", "system-ui", "sans-serif"],
-        body: ["'Inter'", "system-ui", "sans-serif"],
-        mono: ["'IBM Plex Mono'", "ui-monospace", "monospace"],
+        disp: ["'Geist'", "system-ui", "sans-serif"],
+        body: ["'Geist'", "system-ui", "sans-serif"],
+        mono: ["'Geist Mono'", "ui-monospace", "monospace"],
         serif: ["'Newsreader'", "Georgia", "serif"],
       },
       letterSpacing: {

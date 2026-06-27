@@ -23,9 +23,9 @@
   --pl: #c3b1f0;
   --pl-line: #7a66be;
 
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
-  --disp: "Space Grotesk", system-ui, sans-serif;
-  --body: "Inter", system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, monospace;
+  --disp: "Geist", system-ui, sans-serif;
+  --body: "Geist", system-ui, sans-serif;
   --serif: "Newsreader", Georgia, serif;
 }
 
