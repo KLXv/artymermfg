@@ -90,7 +90,7 @@ export function Deck() {
         <Panel className="p-4">
           <SectionHead title="Action queue" kicker="prioritized" />
           {d.queue.length === 0 ? (
-            <Empty>Nothing pressing. Open the pipeline and create some pressure.</Empty>
+            <Empty glyph="✓">Nothing pressing. Open the pipeline and create some pressure.</Empty>
           ) : (
             <ul className="flex flex-col divide-y divide-line">
               {d.queue.map((q, i) => (

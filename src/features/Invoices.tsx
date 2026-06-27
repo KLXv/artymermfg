@@ -201,7 +201,9 @@ export function Invoices() {
       <Panel className="p-4">
         <SectionHead title="Register" kicker={`${list.length} document${list.length === 1 ? "" : "s"}`} />
         {list.length === 0 ? (
-          <Empty>No invoices yet. Create your first.</Empty>
+          <Empty glyph="▦" action={<Button variant="primary" onClick={create}>+ New invoice</Button>}>
+            No invoices yet. Issue your first factură — it assigns the next number and freezes both parties.
+          </Empty>
         ) : (
           <ul className="flex flex-col divide-y divide-line">
             {list.map((inv) => {

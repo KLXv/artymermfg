@@ -139,7 +139,7 @@ export function Strategy() {
         <Panel className="p-4">
           <SectionHead title="Warranty & after-sales" kicker="delivered pieces" />
           {warranty.length === 0 ? (
-            <Empty>No delivered pieces yet. Warranty starts the day a project is delivered.</Empty>
+            <Empty glyph="✧">No delivered pieces yet. Warranty starts the day a project is delivered.</Empty>
           ) : (
             <div className="flex flex-col gap-3">
               {warranty.map((row) => (
@@ -152,7 +152,7 @@ export function Strategy() {
         <Panel className="p-4">
           <SectionHead title="Referrals" kicker="who sends business" />
           {referrals.length === 0 ? (
-            <Empty>Set "Referred by" on a client to attribute referrals.</Empty>
+            <Empty glyph="✦">Set "Referred by" on a client to attribute referrals.</Empty>
           ) : (
             <table className="w-full border-collapse text-left">
               <thead>

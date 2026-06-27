@@ -288,10 +288,29 @@ export function Toggle({ label, checked, onChange }: { label: string; checked: b
 
 /* ---- Empty + misc ---------------------------------------------------- */
 
-export function Empty({ children }: { children: ReactNode }) {
+export function Empty({
+  children,
+  glyph,
+  action,
+}: {
+  children: ReactNode;
+  /** Optional motif shown in a soft badge above the message. */
+  glyph?: ReactNode;
+  /** Optional call-to-action rendered below the message (e.g. a Button). */
+  action?: ReactNode;
+}) {
   return (
-    <div className="rounded-lg border border-dashed border-line bg-white/[.015] p-8 text-center font-mono text-[13px] text-faint">
-      {children}
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-line2/60 bg-white/[.015] px-6 py-10 text-center">
+      {glyph && (
+        <span
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-inset text-[17px] text-brass/70 shadow-glow-sm"
+          aria-hidden
+        >
+          {glyph}
+        </span>
+      )}
+      <p className="max-w-sm font-mono text-[13px] leading-relaxed text-faint">{children}</p>
+      {action && <div className="mt-0.5">{action}</div>}
     </div>
   );
 }
