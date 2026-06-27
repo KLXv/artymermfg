@@ -158,9 +158,9 @@ export function Deck() {
                     <stop offset="100%" stopColor="#2FE8AC" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#1B2A28" vertical={false} />
-                <XAxis dataKey="name" stroke="#6C7688" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} />
-                <YAxis stroke="#6C7688" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} width={48} />
+                <CartesianGrid stroke="#22332E" strokeDasharray="2 4" vertical={false} />
+                <XAxis dataKey="name" stroke="#3A4550" tick={{ fontSize: 10, fontFamily: "var(--mono)", fill: "#8A93A0" }} />
+                <YAxis stroke="#3A4550" tick={{ fontSize: 10, fontFamily: "var(--mono)", fill: "#8A93A0" }} width={48} />
                 <Tooltip
                   cursor={{ stroke: "#2FE8AC", strokeOpacity: 0.3 }}
                   contentStyle={{

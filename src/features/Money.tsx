@@ -5,10 +5,10 @@
  * figures come from the pure money/finance domain.
  */
 import {
+  Area,
   Bar,
   CartesianGrid,
   ComposedChart,
-  Line,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -147,10 +147,16 @@ export function Money() {
           <div style={{ height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={forecast} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid stroke="#1B2A28" vertical={false} />
-                <XAxis dataKey="month" stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} />
-                <YAxis stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} width={52} />
-                <ReferenceLine y={0} stroke="#5E6470" />
+                <defs>
+                  <linearGradient id="posFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#5FF5C8" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="#5FF5C8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#22332E" strokeDasharray="2 4" vertical={false} />
+                <XAxis dataKey="month" stroke="#3A4550" tick={{ fontSize: 10, fontFamily: "var(--mono)", fill: "#8A93A0" }} />
+                <YAxis stroke="#3A4550" tick={{ fontSize: 10, fontFamily: "var(--mono)", fill: "#8A93A0" }} width={52} />
+                <ReferenceLine y={0} stroke="#3A4550" />
                 <Tooltip
                   cursor={{ fill: "rgba(47,232,172,.07)" }}
                   contentStyle={{
@@ -163,8 +169,17 @@ export function Money() {
                   formatter={(v: number, name) => [fmtCcy(v, ccy), name]}
                 />
                 <Bar dataKey="inflow" name="inflow" fill="#2FE8AC" radius={[2, 2, 0, 0]} maxBarSize={36} />
-                <Bar dataKey="outflow" name="burn" fill="#2A3A44" radius={[2, 2, 0, 0]} maxBarSize={36} />
-                <Line dataKey="cumulative" name="position" stroke="#5FF5C8" strokeWidth={2} dot={{ r: 2 }} />
+                <Bar dataKey="outflow" name="burn" fill="#33454F" radius={[2, 2, 0, 0]} maxBarSize={36} />
+                <Area
+                  type="monotone"
+                  dataKey="cumulative"
+                  name="position"
+                  stroke="#5FF5C8"
+                  strokeWidth={2}
+                  fill="url(#posFill)"
+                  dot={{ r: 2, fill: "#2FE8AC" }}
+                  activeDot={{ r: 4 }}
+                />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -190,10 +205,16 @@ export function Money() {
           <div style={{ height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={pnl} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid stroke="#1B2A28" vertical={false} />
-                <XAxis dataKey="month" stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} />
-                <YAxis stroke="#5E6470" tick={{ fontSize: 10, fontFamily: "var(--mono)" }} width={52} />
-                <ReferenceLine y={0} stroke="#5E6470" />
+                <defs>
+                  <linearGradient id="profitFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#5FF5C8" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="#5FF5C8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#22332E" strokeDasharray="2 4" vertical={false} />
+                <XAxis dataKey="month" stroke="#3A4550" tick={{ fontSize: 10, fontFamily: "var(--mono)", fill: "#8A93A0" }} />
+                <YAxis stroke="#3A4550" tick={{ fontSize: 10, fontFamily: "var(--mono)", fill: "#8A93A0" }} width={52} />
+                <ReferenceLine y={0} stroke="#3A4550" />
                 <Tooltip
                   cursor={{ fill: "rgba(47,232,172,.07)" }}
                   contentStyle={{ background: "#0B1117", border: "1px solid #1E2730", borderRadius: 6, fontFamily: "var(--mono)", fontSize: 11 }}
@@ -201,7 +222,16 @@ export function Money() {
                 />
                 <Bar dataKey="revenue" name="revenue" fill="#2FE8AC" radius={[2, 2, 0, 0]} maxBarSize={32} />
                 <Bar dataKey="costs" name="costs" fill="#7A2230" radius={[2, 2, 0, 0]} maxBarSize={32} />
-                <Line dataKey="profit" name="profit" stroke="#5FF5C8" strokeWidth={2} dot={{ r: 2 }} />
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  name="profit"
+                  stroke="#5FF5C8"
+                  strokeWidth={2}
+                  fill="url(#profitFill)"
+                  dot={{ r: 2, fill: "#2FE8AC" }}
+                  activeDot={{ r: 4 }}
+                />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
