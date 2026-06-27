@@ -5,7 +5,8 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  NEXT,
+  PIPE,
+  PROD,
   STAGES,
   acctName,
   baseMoney,
@@ -18,7 +19,14 @@ import {
   today,
   type Project,
 } from "@/domain";
-import { Button, Empty, Panel, SectionHead, Stat, Tag, cx } from "@/ui/kit";
+import { Button, Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
+
+/** The board collapses the 13 stages into three readable phase lanes. */
+const PHASES: { name: string; kicker: string; stages: readonly string[]; glyph: string }[] = [
+  { name: "Sales", kicker: "proposal → won", stages: PIPE, glyph: "⇶" },
+  { name: "Production", kicker: "brief → shipped", stages: PROD.filter((s) => s !== "Delivered"), glyph: "❖" },
+  { name: "Delivered", kicker: "done · pursue repeat", stages: ["Delivered"], glyph: "✓" },
+];
 import { StageTrack } from "@/ui/StageTrack";
 import { useStore } from "@/state/store";
 import { PageHeader } from "./PageHeader";
@@ -45,10 +53,13 @@ function Card({ p }: { p: Project }) {
       </div>
       <StageTrack count={STAGES.length} current={stageIdx(p)} className="mt-2.5" height={16} />
       <div className="mt-2 flex items-center justify-between font-mono text-[12px]">
-        <span className="text-faint">{p.qty || "—"} pc</span>
+        <span className="text-dim">{p.stage}</span>
         <span className="text-brass">{baseMoney(fin.rev, company)}</span>
       </div>
-      {due > 0 && <div className="mt-1 font-mono text-[12px] text-warn">{baseMoney(due, company)} owed</div>}
+      <div className="mt-1 flex items-center justify-between font-mono text-[11px] text-faint">
+        <span>{p.qty || "—"} pc</span>
+        {due > 0 && <span className="text-warn">{baseMoney(due, company)} owed</span>}
+      </div>
     </button>
   );
 }
@@ -137,27 +148,36 @@ export function Pipeline() {
       )}
 
       {Object.keys(projects).length === 0 ? (
-        <Empty>No projects yet. Start one, or import your data from Settings.</Empty>
+        <Empty glyph="⇶">No projects yet. Start one, or import your data from Settings.</Empty>
       ) : (
-        <div className="flex gap-3 overflow-x-auto pb-3">
-          {STAGES.map((stage) => {
-            const items = byStage[stage];
+        <div className="grid items-start gap-4 lg:grid-cols-3">
+          {PHASES.map((ph) => {
+            const items = ph.stages
+              .flatMap((s) => byStage[s] || [])
+              .sort((a, b) => stageIdx(a) - stageIdx(b));
+            const laneValue = items.reduce((t, p) => t + projFin(p, company).rev, 0);
             return (
-              <div key={stage} className="flex w-60 shrink-0 flex-col">
-                <div className="mb-2 flex items-baseline justify-between border-b border-line pb-1.5">
-                  <span className="font-mono text-[12px] uppercase tracking-label text-dim">{stage}</span>
-                  <span className="font-mono text-[12px] text-faint">{items.length}</span>
-                </div>
-                <div className={cx("flex flex-col gap-2", items.length === 0 && "min-h-[60px]")}>
-                  {items.length === 0 ? (
-                    <div className="rounded border border-dashed border-line/60 p-3 text-center font-mono text-[11px] text-faint">
-                      {NEXT[stage]}
-                    </div>
-                  ) : (
-                    items.map((p) => <Card key={p.id} p={p} />)
-                  )}
-                </div>
-              </div>
+              <Panel key={ph.name} className="flex flex-col p-4">
+                <SectionHead
+                  title={ph.name}
+                  kicker={ph.kicker}
+                  right={
+                    <span className="font-mono text-[12px] text-faint">
+                      {items.length}
+                      {laneValue > 0 && <span className="ml-2 text-brass">{baseMoney(laneValue, company)}</span>}
+                    </span>
+                  }
+                />
+                {items.length === 0 ? (
+                  <Empty glyph={ph.glyph}>Nothing in {ph.name.toLowerCase()} right now.</Empty>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {items.map((p) => (
+                      <Card key={p.id} p={p} />
+                    ))}
+                  </div>
+                )}
+              </Panel>
             );
           })}
         </div>
