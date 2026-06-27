@@ -204,20 +204,25 @@ export function ProjectDetail() {
         </div>
       </Panel>
 
-      {/* Tabs */}
-      <div className="mb-4 flex flex-wrap gap-1 border-b border-line">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cx(
-              "whitespace-nowrap border-b-2 px-3 py-2 font-mono text-[13px] uppercase tracking-label transition-colors",
-              tab === t ? "border-brass text-brass" : "border-transparent text-faint hover:text-dim",
-            )}
-          >
-            {t}
-          </button>
-        ))}
+      {/* Tabs — sticky, so you can switch from deep in the long Build spec */}
+      <div className="sticky top-[49px] z-20 -mx-4 mb-4 overflow-x-auto border-b border-line bg-ground/90 px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:top-0">
+        <div className="flex flex-wrap gap-1">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => {
+                setTab(t);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={cx(
+                "whitespace-nowrap border-b-2 px-3 py-2 font-mono text-[13px] uppercase tracking-label transition-colors",
+                tab === t ? "border-brass text-brass" : "border-transparent text-faint hover:text-dim",
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {tab === "Build" && <BuildTab p={p} patch={patch} />}
