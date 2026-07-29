@@ -8,7 +8,18 @@
  */
 import { STAGES } from "./constants";
 import { blankAccount, blankProject, today } from "./factories";
-import type { Account, Company, ContentItem, Expense, Invoice, Project, Supplier, Task } from "./types";
+import type {
+  Account,
+  Company,
+  ContentItem,
+  DiscoveryCandidate,
+  Expense,
+  Invoice,
+  Project,
+  Prospect,
+  Supplier,
+  Task,
+} from "./types";
 
 export interface Backup {
   artymer: "cockpit-backup";
@@ -22,6 +33,8 @@ export interface Backup {
   company: Company;
   content?: Record<string, ContentItem>;
   invoices?: Record<string, Invoice>;
+  prospects?: Record<string, Prospect>;
+  candidates?: Record<string, DiscoveryCandidate>;
 }
 
 export const buildBackup = (s: {
@@ -33,6 +46,8 @@ export const buildBackup = (s: {
   company: Company;
   content?: Record<string, ContentItem>;
   invoices?: Record<string, Invoice>;
+  prospects?: Record<string, Prospect>;
+  candidates?: Record<string, DiscoveryCandidate>;
 }): Backup => ({
   artymer: "cockpit-backup",
   schema: 3,
@@ -45,6 +60,8 @@ export const buildBackup = (s: {
   company: s.company,
   content: s.content ?? {},
   invoices: s.invoices ?? {},
+  prospects: s.prospects ?? {},
+  candidates: s.candidates ?? {},
 });
 
 export interface ParsedBackup {
@@ -56,6 +73,8 @@ export interface ParsedBackup {
   company?: Company;
   content?: Record<string, ContentItem>;
   invoices?: Record<string, Invoice>;
+  prospects?: Record<string, Prospect>;
+  candidates?: Record<string, DiscoveryCandidate>;
 }
 
 /**
@@ -79,6 +98,8 @@ export const parseBackup = (raw: string): ParsedBackup => {
     company: d.company || undefined,
     content: d.content || undefined,
     invoices: d.invoices || undefined,
+    prospects: d.prospects || undefined,
+    candidates: d.candidates || undefined,
   };
 };
 

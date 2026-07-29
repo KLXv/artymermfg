@@ -2,6 +2,82 @@
 
 A short, running log of architectural choices. Newest phase on top.
 
+## Phase 6 — Outbound Engine (Phase 1)
+
+Cold prospecting, added as a Cockpit module rather than a separate tool. Pure
+logic in `src/domain/outreach.ts`; screens under `src/features/outreach/`.
+
+### PROSPECTOR is the engine, Cockpit is the workspace
+
+Lead *generation* (enumerate the bounded Hungarian-Romanian universe, enrich with
+real financial filings, score the rubric, write briefs) is a Python data pipeline
+— PROSPECTOR — that lives outside Cockpit. It's the wrong workload for a
+Vercel-serverless/browser app (long-running, rate-limited scraping; needs real
+registry data an LLM can't invent). Cockpit is where the operator *works* those
+leads: review, approve, promote, draft, track.
+
+The bridge is a file: PROSPECTOR emits `cockpit.json` (contract in
+`docs/prospector-import.md`); the Discovery screen imports it via
+`parseCockpitExport` into the same review queue the web-search agent feeds. Each
+lead carries a `prospector` blob (score, financials, brief, breakdown) that rides
+through approval onto the Prospect, so the operator designs from the brief without
+re-researching. `importLeads` skips any org already known (prospect/client/queued)
+— contacted leads never resurface. Cockpit owns funnel state; PROSPECTOR is
+stateless about it. The web-search Discovery agent is demoted to trigger-refresh
+on already-known orgs (the one thing web search does well), not enumeration.
+Direct Supabase push is the deferred Phase-2 transport; the JSON contract is the
+same payload.
+
+### Prospect is a new entity, not an overloaded Account
+
+`Account.status` (prospect|active|dormant|lost) models a *relationship*; the
+outbound funnel is a different axis (Not Contacted → … → Closed Won/Lost,
+Nurture) with segment, signal, and touch 1–5 dates. Overloading `Account` would
+have mixed cold leads into the client list and collided with the existing
+`contactsDue` cadence. So `Prospect` is its own collection with a **Promote to
+client** action that spawns an `Account` (`promoteFields`) and back-links via
+`prospect.accountId`. Two funnels, one bridge.
+
+### Human-in-the-loop, reusing the Phase-4 operator pattern
+
+Both agents emit fenced JSON that a pure parser validates — `parseDiscovery`
+(`artymer-candidates`) and `parseDrafts` (`artymer-drafts`) — exactly as
+`parseAssistantReply` does. **Nothing an agent produces touches the funnel
+without a tap:** Discovery writes to a `DiscoveryCandidate` review queue
+(approve → Prospect, reject → kept for audit), and drafts land per-prospect as
+`draft → approved → sent`, where "sent" is the operator logging that they sent
+it by hand. No send path exists in this phase, by design.
+
+### Web search via a third proxy endpoint
+
+Discovery needs live signals, so `/api/ai/research` joins `chat` and `generate`,
+sharing `verifyUser` and the server-side key. It adds Anthropic's server-side
+`web_search_20260209` tool (bounded by `max_uses`) and resumes across
+`stop_reason: "pause_turn"` up to a hard hop cap, so a long search can't hang the
+function. Every candidate must carry a real `sourceUrl` or the prompt drops it.
+
+### Language + proof points
+
+`detectLang` maps market/city → HU/RO/EN, treating the Székelyföld cities as
+Hungarian-speaking rather than defaulting all of RO to Romanian; the operator can
+override per prospect. Drafts cite **LóFő only** — HFN is deliberately excluded
+from `CASE_STUDIES` until it actually ships, since cold outreach is public-facing.
+
+### LinkedIn
+
+`linkedinSearchUrl` builds a pre-filled people-search URL the operator clicks.
+There is no LinkedIn automation anywhere in the module, and the Discovery prompt
+forbids proposing individual profiles.
+
+### Storage
+
+ICP config is a JSONB blob on the company singleton (like `fiscal`), so segments,
+cities, and size bands are data. `prospects` keeps queryable fields as columns
+with `touches`/`drafts` as JSONB; `discovery_candidates` is flat. Both are
+`owner_id`-scoped with RLS (`0011`), wired into the repo diff phases and the sync
+snapshot, and carried in the JSON backup. The Zustand store bumps to `version: 2`
+with a `migrate` that backfills `company.icp` for existing local workspaces.
+
 ## Phase 5 — Auth, cloud sync, deploy
 
 The last phase wires persistence, login and shipping — without disturbing the

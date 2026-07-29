@@ -1,5 +1,17 @@
 /** Entity factories — ported verbatim from ArtymerCockpit.jsx. */
-import type { Account, Company, ContentItem, Invoice, Project, Supplier, Task } from "./types";
+import type {
+  Account,
+  Company,
+  ContentItem,
+  DiscoveryCandidate,
+  IcpConfig,
+  Invoice,
+  Project,
+  Prospect,
+  Supplier,
+  Task,
+} from "./types";
+import { DEFAULT_ICP_SEGMENTS, DEFAULT_SIZE_BANDS } from "./constants";
 
 export const rid = (p: string): string =>
   p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -24,6 +36,7 @@ export const blankCompany = (): Company => ({
     vatRate: "19",
     series: "ART",
   },
+  icp: defaultIcp(),
   fx: { RON: 0.2, USD: 0.92 },
   deposit: "30",
   lotFail: "5",
@@ -222,4 +235,67 @@ export const blankProject = (accountId = ""): Project => ({
     sample: { decision: "", date: "", reviewer: "", notes: "", media: "" },
   },
   warranty: { deliveredDate: "", months: "12", serial: "", services: [] },
+});
+
+/* ---- Outbound Engine ------------------------------------------------- */
+
+export const defaultIcp = (): IcpConfig => ({
+  segments: DEFAULT_ICP_SEGMENTS.map((s) => ({
+    id: rid("seg"),
+    name: s.name,
+    enabled: true,
+    servicePath: s.servicePath,
+    signals: s.signals,
+    notes: s.notes,
+  })),
+  cities: ["Miercurea Ciuc", "Odorheiu Secuiesc", "Cluj-Napoca", "Târgu Mureș", "Budapest"],
+  sizeBands: [...DEFAULT_SIZE_BANDS],
+});
+
+export const blankIcpSegment = (): IcpConfig["segments"][number] => ({
+  id: rid("seg"),
+  name: "",
+  enabled: true,
+  servicePath: "Commission",
+  signals: "",
+  notes: "",
+});
+
+export const blankProspect = (): Prospect => ({
+  id: rid("pr"),
+  name: "",
+  org: "",
+  role: "",
+  segment: "",
+  city: "",
+  market: "RO",
+  lang: "EN",
+  channel: "Email",
+  email: "",
+  phone: "",
+  signal: "",
+  sourceUrl: "",
+  status: "Not Contacted",
+  touches: ["", "", "", "", ""],
+  notes: "",
+  drafts: [],
+  accountId: "",
+  createdAt: today(),
+});
+
+export const blankCandidate = (): DiscoveryCandidate => ({
+  id: rid("dc"),
+  org: "",
+  segment: "",
+  city: "",
+  market: "RO",
+  signal: "",
+  signalType: "other",
+  sourceUrl: "",
+  contactHint: "",
+  rationale: "",
+  status: "pending",
+  createdAt: today(),
+  source: "discovery",
+  score: null,
 });

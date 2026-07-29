@@ -25,6 +25,22 @@ export async function generate(system: string, messages: ChatTurn[], maxTokens =
   return (data.text || "").trim();
 }
 
+/** Discovery Agent: web search + reasoning. Returns the model's text (fenced candidate JSON). */
+export async function research(
+  system: string,
+  messages: ChatTurn[],
+  opts: { maxTokens?: number; maxSearches?: number } = {},
+): Promise<string> {
+  const res = await fetch("/api/ai/research", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeader()) },
+    body: JSON.stringify({ system, messages, maxTokens: opts.maxTokens ?? 4000, maxSearches: opts.maxSearches ?? 8 }),
+  });
+  if (!res.ok) throw new Error(`research failed: ${res.status}`);
+  const data = (await res.json()) as { text?: string };
+  return (data.text || "").trim();
+}
+
 /** Streaming chat. Calls `onDelta` with each text chunk; resolves with the full text. */
 export async function chatStream(
   system: string,

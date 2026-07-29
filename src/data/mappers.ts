@@ -12,15 +12,20 @@ import {
   blankCompany,
   blankContent,
   blankInvoice,
+  blankCandidate,
   blankProject,
+  blankProspect,
   blankSupplier,
   blankTask,
   rid,
   type Account,
   type Company,
   type ContentItem,
+  type DiscoveryCandidate,
   type Expense,
   type Invoice,
+  type OutboundDraft,
+  type Prospect,
   type Project,
   type Supplier,
   type Task,
@@ -288,6 +293,7 @@ export const companyToRow = (c: Company, ownerId: string): Row => ({
   letterhead: c.letterhead,
   base_currency: c.baseCurrency,
   fiscal: c.fiscal,
+  icp: c.icp,
   fx: c.fx,
   deposit: c.deposit,
   lot_fail: c.lotFail,
@@ -306,6 +312,7 @@ export const rowToCompany = (row: Row): Company => ({
   letterhead: (row.letterhead as string) ?? "",
   baseCurrency: (row.base_currency as string) ?? "RON",
   fiscal: { ...blankCompany().fiscal, ...((row.fiscal as object) ?? {}) },
+  icp: { ...blankCompany().icp, ...((row.icp as object) ?? {}) },
   fx: (row.fx as Company["fx"]) ?? blankCompany().fx,
   deposit: (row.deposit as string) ?? "",
   lotFail: (row.lot_fail as string) ?? "",
@@ -316,3 +323,82 @@ export const rowToCompany = (row: Row): Company => ({
   monthlyRevenue: (row.monthly_revenue as string) ?? "",
   migrated: Boolean(row.migrated),
 });
+
+/* ----------------------------- prospect ---------------------------------- */
+// Outbound Engine. Queryable fields are columns; touches + drafts are JSONB.
+
+export const prospectToRow = (p: Prospect, ownerId: string): Row => ({
+  id: p.id,
+  owner_id: ownerId,
+  name: p.name,
+  org: p.org,
+  role: p.role,
+  segment: p.segment,
+  city: p.city,
+  market: p.market,
+  lang: p.lang,
+  channel: p.channel,
+  email: p.email,
+  phone: p.phone,
+  signal: p.signal,
+  source_url: p.sourceUrl,
+  status: p.status,
+  notes: p.notes,
+  account_id: p.accountId || null,
+  created_at: p.createdAt || null,
+  touches: p.touches,
+  drafts: p.drafts,
+  prospector: p.prospector ?? null,
+});
+
+export const rowToProspect = (row: Row): Prospect => {
+  const p = { ...blankProspect(), id: String(row.id) };
+  const scalar: (keyof Prospect)[] = ["name", "org", "role", "segment", "city", "channel", "email", "phone", "signal", "status", "notes"];
+  scalar.forEach((k) => row[k] != null && ((p as Record<string, unknown>)[k] = row[k]));
+  p.market = (row.market as Prospect["market"]) ?? "RO";
+  p.lang = (row.lang as Prospect["lang"]) ?? "EN";
+  p.sourceUrl = (row.source_url as string) ?? "";
+  p.accountId = (row.account_id as string) ?? "";
+  p.createdAt = (row.created_at as string) ?? "";
+  if (Array.isArray(row.touches)) p.touches = row.touches as string[];
+  if (Array.isArray(row.drafts)) p.drafts = row.drafts as OutboundDraft[];
+  if (row.prospector && typeof row.prospector === "object") p.prospector = row.prospector as Prospect["prospector"];
+  return p;
+};
+
+/* ---------------------------- candidate ---------------------------------- */
+// Discovery review queue. Small + flat — plain columns, no JSONB.
+
+export const candidateToRow = (c: DiscoveryCandidate, ownerId: string): Row => ({
+  id: c.id,
+  owner_id: ownerId,
+  org: c.org,
+  segment: c.segment,
+  city: c.city,
+  market: c.market,
+  signal: c.signal,
+  signal_type: c.signalType,
+  source_url: c.sourceUrl,
+  contact_hint: c.contactHint,
+  rationale: c.rationale,
+  status: c.status,
+  created_at: c.createdAt || null,
+  source: c.source,
+  score: c.score,
+  prospector: c.prospector ?? null,
+});
+
+export const rowToCandidate = (row: Row): DiscoveryCandidate => {
+  const c = { ...blankCandidate(), id: String(row.id) };
+  const scalar: (keyof DiscoveryCandidate)[] = ["org", "segment", "city", "signal", "rationale", "status"];
+  scalar.forEach((k) => row[k] != null && ((c as Record<string, unknown>)[k] = row[k]));
+  c.market = (row.market as DiscoveryCandidate["market"]) ?? "RO";
+  c.signalType = (row.signal_type as string) ?? "other";
+  c.sourceUrl = (row.source_url as string) ?? "";
+  c.contactHint = (row.contact_hint as string) ?? "";
+  c.createdAt = (row.created_at as string) ?? "";
+  c.source = (row.source as DiscoveryCandidate["source"]) ?? "discovery";
+  c.score = typeof row.score === "number" ? row.score : null;
+  if (row.prospector && typeof row.prospector === "object") c.prospector = row.prospector as DiscoveryCandidate["prospector"];
+  return c;
+};

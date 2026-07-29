@@ -72,6 +72,7 @@ const NAV: NavItem[] = [
   { to: "/money", label: "Money", glyph: "€" },
   { to: "/invoices", label: "Invoices", glyph: "▦" },
   { to: "/marketing", label: "Marketing", glyph: "◈" },
+  { to: "/outreach", label: "Outbound", glyph: "➤" },
   { to: "/strategy", label: "Strategy", glyph: "✧" },
   { to: "/assistant", label: "Assistant", glyph: "✺" },
   { to: "/guide", label: "Manual", glyph: "▤" },

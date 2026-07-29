@@ -17,5 +17,6 @@ export * from "./invoicing";
 export * from "./strategy";
 export * from "./prompts";
 export * from "./operator";
+export * from "./outreach";
 export * from "./cofounder";
 export * from "./migrate";

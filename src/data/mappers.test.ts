@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { blankAccount, blankProject, blankTask, type Project } from "@/domain";
+import { blankAccount, blankCandidate, blankProject, blankProspect, blankTask, type Project } from "@/domain";
 import {
   accountToRow,
+  candidateToRow,
   companyToRow,
   projectToRow,
+  prospectToRow,
   rowToAccount,
+  rowToCandidate,
   rowToCompany,
   rowToProject,
+  rowToProspect,
   rowToTask,
   taskToRow,
 } from "./mappers";
@@ -93,5 +97,139 @@ describe("company mapper", () => {
     expect(row.id).toBe("company");
     expect(row.weekly_outreach).toBe(c.weeklyOutreach);
     expect(rowToCompany(row)).toEqual(c);
+  });
+
+  it("carries the ICP config through as a JSONB blob", () => {
+    const c = blankCompany();
+    const row = companyToRow(c, OWNER);
+    expect(row.icp).toEqual(c.icp);
+    expect(rowToCompany(row).icp.segments.map((s) => s.name)).toEqual(c.icp.segments.map((s) => s.name));
+  });
+
+  it("restores a default ICP when the column is missing (pre-0011 rows)", () => {
+    const row = companyToRow(blankCompany(), OWNER);
+    delete row.icp;
+    expect(rowToCompany(row).icp.segments.length).toBeGreaterThan(0);
+  });
+});
+
+describe("prospect mapper", () => {
+  it("round-trips a fully-populated prospect through columns + JSONB", () => {
+    const p = {
+      ...blankProspect(),
+      id: "pr1",
+      name: "Anna",
+      org: "Lófő SE",
+      role: "club president",
+      segment: "Sports Club",
+      city: "Miercurea Ciuc",
+      market: "RO" as const,
+      lang: "HU" as const,
+      channel: "Email",
+      email: "anna@lofo.ro",
+      phone: "+40",
+      signal: "Promoted in 2026",
+      sourceUrl: "https://example.org/news",
+      status: "Contacted" as const,
+      notes: "warm",
+      accountId: "a1",
+      createdAt: "2026-07-01",
+      touches: ["2026-07-02", "", "", "", ""],
+      drafts: [
+        {
+          touch: 1,
+          channel: "Email",
+          subject: "S",
+          body: "B",
+          lang: "HU" as const,
+          status: "approved" as const,
+          approvedDate: "2026-07-02",
+          sentDate: "",
+        },
+      ],
+    };
+    expect(rowToProspect(prospectToRow(p, OWNER))).toEqual(p);
+  });
+
+  it("nulls the empty account link and created date on write", () => {
+    const p = { ...blankProspect(), id: "pr1", accountId: "", createdAt: "" };
+    const row = prospectToRow(p, OWNER);
+    expect(row.account_id).toBeNull();
+    expect(row.created_at).toBeNull();
+    expect(row.owner_id).toBe(OWNER);
+    const back = rowToProspect(row);
+    expect(back.accountId).toBe("");
+    expect(back.createdAt).toBe("");
+  });
+
+  it("keeps the five touch slots and defaults drafts to an empty list", () => {
+    const back = rowToProspect(prospectToRow({ ...blankProspect(), id: "pr1" }, OWNER));
+    expect(back.touches).toHaveLength(5);
+    expect(back.drafts).toEqual([]);
+  });
+});
+
+describe("discovery candidate mapper", () => {
+  it("round-trips a candidate and maps its snake_case columns", () => {
+    const c = {
+      ...blankCandidate(),
+      id: "dc1",
+      org: "Acme Kft",
+      segment: "Company/HR",
+      city: "Budapest",
+      market: "HU" as const,
+      signal: "125th anniversary in 2026",
+      signalType: "anniversary",
+      sourceUrl: "https://example.org/about",
+      contactHint: "HR Director",
+      rationale: "Milestone worth marking",
+      status: "pending" as const,
+      createdAt: "2026-07-01",
+    };
+    const row = candidateToRow(c, OWNER);
+    expect(row.signal_type).toBe("anniversary");
+    expect(row.source_url).toBe("https://example.org/about");
+    expect(row.contact_hint).toBe("HR Director");
+    expect(row.source).toBe("discovery");
+    expect(rowToCandidate(row)).toEqual(c);
+  });
+
+  it("round-trips an imported PROSPECTOR lead with its scoring blob", () => {
+    const c = {
+      ...blankCandidate(),
+      id: "dc2",
+      org: "Sportklub",
+      source: "prospector" as const,
+      score: 87,
+      prospector: {
+        score: 87,
+        path: "Commission" as const,
+        category: "Sports club",
+        county: "Harghita",
+        language: "Hungarian",
+        revenueRon: 6200000,
+        employees: 40,
+        foundingYear: 1976,
+        anniversaryYears: 50,
+        cashTimingRisk: "LOW" as const,
+        decisionStructure: "Small leadership team (2–4)",
+        identityScore: 5,
+        designHours: "LOW" as const,
+        logoVectorAvailable: true,
+        logoSourceUrl: "https://x/logo.svg",
+        projectValueEur: 7500,
+        suggestedUnits: 50,
+        contactRoute: "office@club.ro",
+        website: "https://club.ro",
+        social: "https://fb.com/club",
+        disqualified: false,
+        breakdown: { affordability: 30, trigger: 25 },
+        brief: "## Sportklub\n\nbrief",
+      },
+    };
+    const row = candidateToRow(c, OWNER);
+    expect(row.score).toBe(87);
+    expect((row.prospector as { revenueRon: number }).revenueRon).toBe(6200000);
+    expect(rowToCandidate(row)).toEqual(c);
   });
 });

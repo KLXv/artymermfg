@@ -14,9 +14,12 @@ You can stop at any mode.
 ## 1. Supabase (cloud sync + auth)
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. **Schema:** open the SQL editor and run `supabase/migrations/0001_init.sql`.
-   It creates the six tables and the row-level-security policies (every row is
-   scoped to its owner).
+2. **Schema:** open the SQL editor and run every file in `supabase/migrations/`
+   in numeric order (`0001_init.sql` → `0011_outbound_engine.sql`). `0001`
+   creates the core tables and the row-level-security policies (every row is
+   scoped to its owner); later migrations add invoices, the client portal, and
+   the Outbound Engine. They are idempotent, so if your project predates one,
+   just run the ones you're missing.
 3. **Image storage (optional):** create a public bucket named `project-images`
    (Storage → New bucket), or run the snippet at the bottom of the migration.
 4. **Auth:** Authentication → Providers → Email is on by default. For a single

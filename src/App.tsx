@@ -14,6 +14,10 @@ import { Tasks } from "./features/Tasks";
 import { Money } from "./features/Money";
 import { Invoices } from "./features/Invoices";
 import { Marketing } from "./features/Marketing";
+import { OutreachDashboard } from "./features/outreach/OutreachDashboard";
+import { Discovery } from "./features/outreach/Discovery";
+import { Prospects } from "./features/outreach/Prospects";
+import { OutreachConfig } from "./features/outreach/OutreachConfig";
 import { Strategy } from "./features/Strategy";
 import { Assistant } from "./features/Assistant";
 import { Guide } from "./features/Guide";
@@ -52,6 +56,10 @@ function Cockpit() {
           <Route path="money" element={<Money />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="marketing" element={<Marketing />} />
+          <Route path="outreach" element={<OutreachDashboard />} />
+          <Route path="outreach/discovery" element={<Discovery />} />
+          <Route path="outreach/prospects" element={<Prospects />} />
+          <Route path="outreach/config" element={<OutreachConfig />} />
           <Route path="strategy" element={<Strategy />} />
           <Route path="assistant" element={<Assistant />} />
           <Route path="guide" element={<Guide />} />

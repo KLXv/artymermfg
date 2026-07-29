@@ -75,3 +75,45 @@ export async function completion(req: ProxyRequest): Promise<string> {
     .join("\n")
     .trim();
 }
+
+/**
+ * A grounded, web-searching call for the Discovery Agent. Adds Anthropic's
+ * server-side web_search tool so the model verifies signals against live
+ * sources. Server tools run on Anthropic's side; a long search turn can stop
+ * with `stop_reason: "pause_turn"`, which we resume by re-sending until the
+ * model finishes (bounded so a runaway loop can't hang the function).
+ *
+ * Returns only the model's own text blocks (the fenced candidate JSON lives
+ * there); web_search_tool_result blocks are left for the model to synthesize.
+ */
+export async function research(req: ProxyRequest & { maxSearches?: number }): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured");
+  const client = new Anthropic({ apiKey });
+
+  const tools = [{ type: "web_search_20260209", name: "web_search", max_uses: req.maxSearches ?? 8 }];
+  let messages = [...req.messages];
+  let text = "";
+
+  // Resume across pause_turn up to a hard cap (each turn may run several searches).
+  for (let hop = 0; hop < 6; hop++) {
+    const res = await client.messages.create({
+      model: MODEL,
+      max_tokens: req.maxTokens ?? 4000,
+      system: req.system,
+      messages,
+      tools: tools as never,
+    });
+    text = res.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("\n")
+      .trim();
+    // `pause_turn` is a server-tool stop reason; the pinned SDK (0.32.x) predates
+    // it in its union, so compare as a plain string rather than narrowing.
+    if ((res.stop_reason as string | null) !== "pause_turn") break;
+    // Re-send with the paused assistant turn appended so the server resumes.
+    messages = [...messages, { role: "assistant", content: res.content as never }];
+  }
+  return text;
+}

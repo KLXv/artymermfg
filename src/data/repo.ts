@@ -24,6 +24,8 @@ export const isWorkspaceEmpty = (s: WorkspaceState): boolean =>
   Object.keys(s.tasks).length === 0 &&
   Object.keys(s.content).length === 0 &&
   Object.keys(s.invoices).length === 0 &&
+  Object.keys(s.prospects).length === 0 &&
+  Object.keys(s.candidates).length === 0 &&
   s.expenses.length === 0;
 
 const indexById = <T extends { id: string }>(rows: T[]): Record<string, T> =>
@@ -50,6 +52,8 @@ export function mergeWorkspaces(remote: WorkspaceState, local: WorkspaceState): 
     tasks: fill(remote.tasks, local.tasks),
     content: fill(remote.content, local.content),
     invoices: fill(remote.invoices, local.invoices),
+    prospects: fill(remote.prospects, local.prospects),
+    candidates: fill(remote.candidates, local.candidates),
     expenses: remote.expenses.length ? remote.expenses : local.expenses,
   };
 }
@@ -57,16 +61,19 @@ export function mergeWorkspaces(remote: WorkspaceState, local: WorkspaceState): 
 /** Load the full workspace for the signed-in owner. Throws on a hard error. */
 export async function loadWorkspace(): Promise<WorkspaceState> {
   const sb = client();
-  const [company, accounts, suppliers, projects, tasks, expenses, content, invoices] = await Promise.all([
-    sb.from("company").select("*").maybeSingle(),
-    sb.from("accounts").select("*"),
-    sb.from("suppliers").select("*"),
-    sb.from("projects").select("*"),
-    sb.from("tasks").select("*"),
-    sb.from("expenses").select("*"),
-    sb.from("content").select("*"),
-    sb.from("invoices").select("*"),
-  ]);
+  const [company, accounts, suppliers, projects, tasks, expenses, content, invoices, prospects, candidates] =
+    await Promise.all([
+      sb.from("company").select("*").maybeSingle(),
+      sb.from("accounts").select("*"),
+      sb.from("suppliers").select("*"),
+      sb.from("projects").select("*"),
+      sb.from("tasks").select("*"),
+      sb.from("expenses").select("*"),
+      sb.from("content").select("*"),
+      sb.from("invoices").select("*"),
+      sb.from("prospects").select("*"),
+      sb.from("discovery_candidates").select("*"),
+    ]);
 
   const hard = [accounts.error, suppliers.error, projects.error, tasks.error, expenses.error].find(Boolean);
   if (hard) throw hard;
@@ -80,6 +87,8 @@ export async function loadWorkspace(): Promise<WorkspaceState> {
     expenses: (expenses.data ?? []).map((r) => M.rowToExpense(r as M.Row)),
     content: indexById((content.data ?? []).map((r) => M.rowToContent(r as M.Row))),
     invoices: indexById((invoices.data ?? []).map((r) => M.rowToInvoice(r as M.Row))),
+    prospects: indexById((prospects.data ?? []).map((r) => M.rowToProspect(r as M.Row))),
+    candidates: indexById((candidates.data ?? []).map((r) => M.rowToCandidate(r as M.Row))),
   };
 }
 
@@ -108,6 +117,8 @@ export async function pushWorkspaceDiff(ownerId: string, prev: WorkspaceState, n
   const tasks = diffMap(prev.tasks, next.tasks);
   const cont = diffMap(prev.content, next.content);
   const invs = diffMap(prev.invoices, next.invoices);
+  const pros = diffMap(prev.prospects, next.prospects);
+  const cand = diffMap(prev.candidates, next.candidates);
 
   // Phase 1 — parents (and the singleton company).
   const phase1: PromiseLike<unknown>[] = [];
@@ -124,6 +135,10 @@ export async function pushWorkspaceDiff(ownerId: string, prev: WorkspaceState, n
   if (tasks.upserts.length) phase3.push(sb.from("tasks").upsert(tasks.upserts.map((t) => M.taskToRow(t, ownerId))));
   if (cont.upserts.length) phase3.push(sb.from("content").upsert(cont.upserts.map((c) => M.contentToRow(c, ownerId))));
   if (invs.upserts.length) phase3.push(sb.from("invoices").upsert(invs.upserts.map((i) => M.invoiceToRow(i, ownerId))));
+  // Prospects reference accounts by id (no DB FK); accounts are already upserted in phase 1.
+  if (pros.upserts.length) phase3.push(sb.from("prospects").upsert(pros.upserts.map((p) => M.prospectToRow(p, ownerId))));
+  if (cand.upserts.length)
+    phase3.push(sb.from("discovery_candidates").upsert(cand.upserts.map((c) => M.candidateToRow(c, ownerId))));
   if (changed(prev.expenses, next.expenses)) {
     phase3.push(
       sb
@@ -140,6 +155,8 @@ export async function pushWorkspaceDiff(ownerId: string, prev: WorkspaceState, n
   if (tasks.deletes.length) await sb.from("tasks").delete().in("id", tasks.deletes);
   if (cont.deletes.length) await sb.from("content").delete().in("id", cont.deletes);
   if (invs.deletes.length) await sb.from("invoices").delete().in("id", invs.deletes);
+  if (pros.deletes.length) await sb.from("prospects").delete().in("id", pros.deletes);
+  if (cand.deletes.length) await sb.from("discovery_candidates").delete().in("id", cand.deletes);
   const phase5: PromiseLike<unknown>[] = [];
   if (accts.deletes.length) phase5.push(sb.from("accounts").delete().in("id", accts.deletes));
   if (sups.deletes.length) phase5.push(sb.from("suppliers").delete().in("id", sups.deletes));

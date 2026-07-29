@@ -75,6 +75,7 @@ export interface Company {
   letterhead: string; // free-text contact block under the brand name on docs
   baseCurrency: string; // the home currency every figure is kept + shown in (e.g. RON)
   fiscal: FiscalIdentity; // legal identity for invoices
+  icp: IcpConfig; // Outbound Engine — Ideal Customer Profile config (editable data)
   fx: { RON: number; USD: number } & Record<string, number>;
   deposit: string;
   lotFail: string;
@@ -339,6 +340,131 @@ export interface Project {
   balanceDate: string;
   qc: ProjectQc;
   warranty: WarrantyInfo;
+}
+
+/* ---- Outbound Engine ------------------------------------------------- */
+
+/**
+ * The 8-stage cold-outbound funnel. Distinct from `AccountStatus`
+ * (prospect|active|dormant|lost) — a Prospect is top-of-funnel and only
+ * becomes an Account when it engages (see `promoteProspect`).
+ */
+export type ProspectStatus =
+  | "Not Contacted"
+  | "Contacted"
+  | "Responded"
+  | "Concept Sent"
+  | "Negotiating"
+  | "Closed Won"
+  | "Closed Lost"
+  | "Nurture";
+
+/** One editable ICP segment. Stored as data so segments aren't hardcoded. */
+export interface IcpSegment {
+  id: string;
+  name: string; // e.g. "Company/HR", "Sports Club", "Institution", "Private Label"
+  enabled: boolean;
+  servicePath: ServicePath; // which offer this segment maps to
+  signals: string; // free-text: the trigger signals to hunt for (anniversary, championship…)
+  notes: string; // what qualifies an org in this segment
+}
+
+/** The Ideal-Customer-Profile config — a JSONB blob on the company singleton. */
+export interface IcpConfig {
+  segments: IcpSegment[];
+  cities: string[]; // target cities
+  sizeBands: string[]; // e.g. "1–10", "10–50", "50–200", "200+"
+}
+
+/** A drafted outbound message for one touch in the 1–5 cadence. */
+export interface OutboundDraft {
+  touch: number; // 1–5
+  channel: string; // "Email" | "LinkedIn" (LinkedIn = manual paste, never automated)
+  subject: string;
+  body: string;
+  lang: Lang;
+  status: "draft" | "approved" | "sent"; // Phase 1 tops out at "approved"; "sent" is Phase 2
+  approvedDate: string;
+  sentDate: string;
+}
+
+/**
+ * Rich scoring + evidence attached to a lead produced by the PROSPECTOR pipeline
+ * (the separate Python data engine — see docs/prospector-import.md). Rides along
+ * on a candidate through import and onto the Prospect when approved, so the
+ * operator can start designing from the brief without re-researching.
+ */
+export interface ProspectorData {
+  score: number; // 0–100 rubric total
+  path: ServicePath | ""; // recommended service path
+  category: string; // rubric category fit
+  county: string;
+  language: string; // Hungarian | Bilingual | Romanian
+  revenueRon: number | null;
+  employees: number | null;
+  foundingYear: number | null;
+  anniversaryYears: number | null;
+  cashTimingRisk: "LOW" | "HIGH" | "UNKNOWN" | "";
+  decisionStructure: string;
+  identityScore: number | null;
+  designHours: "LOW" | "HIGH" | "";
+  logoVectorAvailable: boolean;
+  logoSourceUrl: string;
+  projectValueEur: number | null;
+  suggestedUnits: number | null;
+  contactRoute: string;
+  website: string;
+  social: string;
+  disqualified: boolean;
+  breakdown: Record<string, number>; // per-rubric points, for the score breakdown UI
+  brief: string; // full markdown brief (top ~10 only)
+}
+
+/**
+ * A candidate proposed by the Discovery Agent OR imported from PROSPECTOR. Lands
+ * in a review queue — the operator approves (→ becomes a Prospect) or rejects
+ * each one. Never written straight into `prospects`.
+ */
+export interface DiscoveryCandidate {
+  id: string;
+  org: string;
+  segment: string; // matched ICP segment name
+  city: string;
+  market: Market;
+  signal: string; // the specific trigger (e.g. "125th anniversary in 2026")
+  signalType: string; // "anniversary" | "championship" | "founding" | "expansion" | "other"
+  sourceUrl: string; // where the signal was found
+  contactHint: string; // suggested role/person to reach (no LinkedIn automation)
+  rationale: string; // why it fits the ICP
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  source: "discovery" | "prospector"; // where this candidate came from
+  score: number | null; // PROSPECTOR rubric total, for ranking the queue (null = web-search discovery)
+  prospector?: ProspectorData; // full scoring + brief, present on imported leads
+}
+
+/** A cold-outbound prospect — the new top-of-funnel entity. */
+export interface Prospect {
+  id: string;
+  name: string; // contact name (may be blank until found)
+  org: string;
+  role: string; // contact role/title
+  segment: string; // ICP segment name
+  city: string;
+  market: Market;
+  lang: Lang; // detected HU/RO/EN, drives draft language
+  channel: string; // primary channel: "Email" | "LinkedIn" | "Phone"
+  email: string;
+  phone: string;
+  signal: string; // the specific signal that makes now the moment
+  sourceUrl: string; // provenance of the signal
+  status: ProspectStatus;
+  touches: string[]; // touch 1–5 dates (length 5; "" = not yet done)
+  notes: string;
+  drafts: OutboundDraft[]; // Touch 1–5 drafts (JSONB); approval queue lives here
+  accountId: string; // set once promoted to a client Account
+  createdAt: string;
+  prospector?: ProspectorData; // scoring + brief carried over from an imported lead
 }
 
 /** Convenience bundle of the full workspace state for derivation functions. */
