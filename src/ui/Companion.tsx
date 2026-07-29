@@ -8,7 +8,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { COMPANION_LINES, companionLine } from "./companion";
+import { COMPANION_LINES, companionLine } from "./companionLines";
 import { cx } from "./kit";
 
 /* How often the companion speaks unprompted, and for how long. */

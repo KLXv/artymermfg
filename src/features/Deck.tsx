@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { baseMoney, blankTask, coFounderBriefing, today } from "@/domain";
 import { Button, Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
-import { deckGreeting, deckSubline, OPERATOR } from "@/ui/companion";
+import { deckGreeting, deckSubline, OPERATOR } from "@/ui/companionLines";
 import { WatchDial } from "@/ui/WatchDial";
 import { useDashboard } from "@/state/useDashboard";
 import { useStore } from "@/state/store";

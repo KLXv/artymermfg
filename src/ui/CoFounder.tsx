@@ -12,7 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { coFounderAnswer, coFounderBriefing, coFounderSystem } from "@/domain";
 import { generate } from "@/data/ai";
 import { useDashboard } from "@/state/useDashboard";
-import { OPERATOR } from "./companion";
+import { OPERATOR } from "./companionLines";
 import { rankEnglishVoices, splitSentences, voiceLabel } from "./voice";
 import { cx } from "./kit";
 

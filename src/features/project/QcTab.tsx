@@ -17,7 +17,7 @@ import {
 } from "@/domain";
 import { Button, Empty, Field, Panel, SectionHead, Stat, Tag, TextArea, Toggle, cx } from "@/ui/kit";
 import { useStore } from "@/state/store";
-import { OPERATOR } from "@/ui/companion";
+import { OPERATOR } from "@/ui/companionLines";
 import type { Patch } from "./bind";
 
 const BLANK_SAMPLE: SampleApproval = { decision: "", date: "", reviewer: "", notes: "", media: "" };

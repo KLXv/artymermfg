@@ -5,7 +5,7 @@ import {
   deckGreeting,
   deckSubline,
   timeOfDay,
-} from "./companion";
+} from "./companionLines";
 
 const at = (h: number) => new Date(2026, 5, 19, h, 0, 0);
 
