@@ -13,7 +13,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { baseMoney, blankTask, coFounderBriefing, today } from "@/domain";
 import { Button, Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
 import { deckGreeting, deckSubline, OPERATOR } from "@/ui/companionLines";
-import { WatchDial } from "@/ui/WatchDial";
+import { ArtymerWatch } from "@/ui/ArtymerWatch";
 import { useDashboard } from "@/state/useDashboard";
 import { useStore } from "@/state/store";
 import { useSharesStore } from "@/state/useSharesStore";
@@ -70,7 +70,7 @@ export function Deck() {
           <div className="flex flex-col items-center">
             <div className="relative grid place-items-center">
               <div className="dial-rings pointer-events-none absolute h-[360px] w-[360px] opacity-70" aria-hidden />
-              <WatchDial size={224} mode="live" showConstruction showLogo />
+              <ArtymerWatch size={224} mode="live" />
             </div>
             <div className="mt-2 font-mono text-[11px] uppercase tracking-label text-faint">Studio time</div>
           </div>

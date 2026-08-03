@@ -5,7 +5,7 @@
  */
 import { useState } from "react";
 import { supabase } from "@/data/supabase";
-import { WatchDial } from "@/ui/WatchDial";
+import { ArtymerWatch } from "@/ui/ArtymerWatch";
 import { Sigma } from "@/ui/Sigma";
 import { Button, Field, Panel } from "@/ui/kit";
 
@@ -55,7 +55,7 @@ export function SignIn() {
     <div className="flex min-h-screen items-center justify-center bg-ground px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
-          <WatchDial size={188} mode="live" showConstruction showLogo />
+          <ArtymerWatch size={188} mode="live" />
         </div>
         <Panel className="p-6">
           <div className="mb-5 flex items-center gap-2.5">
