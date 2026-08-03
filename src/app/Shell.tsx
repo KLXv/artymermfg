@@ -38,6 +38,8 @@ const SYNC_TONE: Record<string, string> = {
 function SyncFooter() {
   const { user } = useAuth();
   const status = useSyncStore((s) => s.status);
+  const error = useSyncStore((s) => s.error);
+  const retry = useSyncStore((s) => s.retry);
   if (!isSupabaseConfigured()) {
     return <div className="px-2 font-mono text-[10px] uppercase tracking-wide text-faint">local only · no cloud</div>;
   }
@@ -47,6 +49,19 @@ function SyncFooter() {
         <span className={cx("h-1.5 w-1.5 rounded-full", status === "error" ? "bg-bad" : status === "synced" ? "bg-ok" : "bg-brass")} />
         <span className={SYNC_TONE[status]}>{SYNC_LABEL[status]}</span>
       </div>
+      {/* On failure, say what went wrong and that nothing is lost — the local
+          copy stays authoritative and the change is retried, not discarded. */}
+      {status === "error" && (
+        <div className="flex flex-col gap-1 rounded border border-bad/30 bg-bad/5 p-1.5">
+          <div className="font-mono text-[10px] leading-snug text-dim">
+            Your work is safe on this device. Don’t sign out or clear the browser until this clears.
+          </div>
+          {error && <div className="break-words font-mono text-[10px] leading-snug text-bad">{error}</div>}
+          <button onClick={retry} className="self-start font-mono text-[10px] uppercase tracking-wide text-brass hover:text-ok">
+            Retry now
+          </button>
+        </div>
+      )}
       {user && (
         <button onClick={signOut} className="text-left font-mono text-[11px] uppercase tracking-wide text-faint hover:text-dim">
           Sign out
