@@ -33,10 +33,14 @@ export const STAGE_PROB: Record<string, number> = {
 
 const isOpen = (p: Project) => !p.lost && p.stage !== "Delivered";
 
-/** Add `n` days to an ISO date string (yyyy-mm-dd). */
+/**
+ * Add `n` days to an ISO date string (yyyy-mm-dd). All arithmetic is in UTC so
+ * the result is identical in every timezone — parsing as local time and then
+ * formatting with toISOString() (UTC) drifts the date by a day east of London.
+ */
 const addDays = (iso: string, n: number): string => {
-  const d = new Date(iso + "T00:00:00");
-  d.setDate(d.getDate() + n);
+  const d = new Date(iso + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 };
 

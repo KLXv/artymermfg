@@ -19,13 +19,16 @@ import type { Company, Expense, Project } from "./types";
 export const monthlyBurn = (expenses: Expense[]): number =>
   expenses.reduce((a, e) => a + num(e.amount), 0);
 
+// All arithmetic in UTC so the month axis is the same in every timezone. Parsing
+// as local time then formatting with toISOString() (UTC) shifts the first month
+// back by one east of London (e.g. Europe/Bucharest saw August's chart start in July).
 const monthKeys = (n: number, todayStr: string): string[] => {
-  const d = new Date(todayStr + "T00:00:00");
-  d.setDate(1);
+  const d = new Date(todayStr + "T00:00:00Z");
+  d.setUTCDate(1);
   const out: string[] = [];
   for (let i = 0; i < n; i++) {
     out.push(d.toISOString().slice(0, 7));
-    d.setMonth(d.getMonth() + 1);
+    d.setUTCMonth(d.getUTCMonth() + 1);
   }
   return out;
 };

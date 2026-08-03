@@ -39,9 +39,11 @@ export const warrantyRegister = (projects: Project[], todayStr: string = today()
       if (!w.deliveredDate)
         return { project: p, deliveredDate: "", expiry: "", status: "unset" as WarrantyStatus, daysLeft: null, services: serviceCount };
       const months = parseInt(w.months, 10) || 12;
-      const exp = new Date(w.deliveredDate + "T00:00:00");
-      exp.setMonth(exp.getMonth() + months);
-      const daysLeft = Math.round((exp.getTime() - new Date(todayStr + "T00:00:00").getTime()) / 86400000);
+      // UTC throughout so the expiry date formats correctly and daysLeft is
+      // timezone-independent (see pipeline.addDays / money.monthKeys).
+      const exp = new Date(w.deliveredDate + "T00:00:00Z");
+      exp.setUTCMonth(exp.getUTCMonth() + months);
+      const daysLeft = Math.round((exp.getTime() - new Date(todayStr + "T00:00:00Z").getTime()) / 86400000);
       const status: WarrantyStatus = daysLeft < 0 ? "expired" : daysLeft <= 60 ? "expiring" : "active";
       return { project: p, deliveredDate: w.deliveredDate, expiry: exp.toISOString().slice(0, 10), status, daysLeft, services: serviceCount };
     })
