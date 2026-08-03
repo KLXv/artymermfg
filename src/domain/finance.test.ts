@@ -38,17 +38,25 @@ describe("projFin", () => {
 });
 
 describe("FX conversion", () => {
+  // Pinned rates, not the shipped defaults: real FX drifts, and a test that
+  // asserts today's rate breaks every time the default is refreshed.
+  const fxCompany = (): Company => ({ ...blankCompany(), fx: { RON: 0.2, USD: 0.9 } });
+
   it("leaves EUR at parity and converts others by company rate", () => {
-    const c = company();
+    const c = fxCompany();
     expect(rateOf("EUR", c)).toBe(1);
     expect(rateOf("RON", c)).toBe(0.2);
-    expect(rateOf("USD", c)).toBe(0.92);
+    expect(rateOf("USD", c)).toBe(0.9);
+  });
+
+  it("falls back to parity for a currency with no configured rate", () => {
+    expect(rateOf("GBP", fxCompany())).toBe(1);
   });
 
   it("applies the rate to revenue", () => {
     const p = project({ currency: "RON", unitPrice: "1000", qty: "10" });
     // 1000 * 10 * 0.2 = 2000
-    expect(projFin(p, company()).rev).toBe(2000);
+    expect(projFin(p, fxCompany()).rev).toBe(2000);
   });
 });
 

@@ -33,11 +33,15 @@ export const blankCompany = (): Company => ({
     iban: "",
     bank: "",
     vatRegistered: false,
-    vatRate: "19",
+    // Romania's standard TVA has been 21% since 1 Aug 2025 (Law 141/2025,
+    // up from 19%); the reduced rate is 11%. Editable in Settings.
+    vatRate: "21",
     series: "ART",
   },
   icp: defaultIcp(),
-  fx: { RON: 0.2, USD: 0.92 },
+  // Value of one unit in EUR. RON ≈ 1/5.25 (EUR/RON ~5.25, Aug 2026).
+  // These are a starting point only — refresh them in Settings; FX drifts.
+  fx: { RON: 0.1906, USD: 0.92 },
   deposit: "30",
   lotFail: "5",
   rework: "2",
