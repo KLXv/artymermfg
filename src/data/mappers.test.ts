@@ -19,6 +19,27 @@ import { blankCompany } from "@/domain";
 const OWNER = "00000000-0000-0000-0000-000000000000";
 
 describe("project mapper", () => {
+  // The only two foreign keys in the schema. Writing "" for an unset one is a
+  // foreign key violation that rejects the whole project upsert, so an
+  // unassigned client/supplier has to reach Postgres as NULL.
+  it("writes NULL, not \"\", for an unset client or supplier", () => {
+    const row = projectToRow({ ...blankProject(""), id: "p1", supplierId: "" }, OWNER);
+    expect(row.account_id).toBeNull();
+    expect(row.supplier_id).toBeNull();
+  });
+
+  it("keeps a client and supplier that are set", () => {
+    const row = projectToRow({ ...blankProject("acc1"), id: "p1", supplierId: "sup1" }, OWNER);
+    expect(row.account_id).toBe("acc1");
+    expect(row.supplier_id).toBe("sup1");
+  });
+
+  it("restores an unset client/supplier as \"\" when reading NULL back", () => {
+    const back = rowToProject(projectToRow({ ...blankProject(""), id: "p1", supplierId: "" }, OWNER));
+    expect(back.accountId).toBe("");
+    expect(back.supplierId).toBe("");
+  });
+
   it("round-trips a fully-populated project through columns + JSONB groups", () => {
     const p: Project = {
       ...blankProject("acc1"),

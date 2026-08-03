@@ -70,6 +70,8 @@ const PROJECT_COLUMNS: Record<string, keyof Project> = {
   balance_date: "balanceDate",
 };
 const PROJECT_DATE_COLS = new Set(["deadline", "deposit_expected", "balance_expected", "deposit_date", "balance_date"]);
+/** The only foreign keys in the schema — both on projects. Empty means NULL. */
+export const PROJECT_FK_COLS = new Set(["account_id", "supplier_id"]);
 
 const SPEC_FIELDS = [
   "caseRef", "caseMat", "caseDia", "caseDiaT", "l2l", "thick", "lugW", "caseFin", "wr", "caseNote",
@@ -89,7 +91,11 @@ export const projectToRow = (p: Project, ownerId: string): Row => {
   const row: Row = { id: p.id, owner_id: ownerId, schema_v: p.schemaV };
   for (const [col, key] of Object.entries(PROJECT_COLUMNS)) {
     const v = p[key];
-    row[col] = PROJECT_DATE_COLS.has(col) && v === "" ? null : v;
+    // Empty must become NULL for dates *and* for the two foreign keys: a project
+    // with no supplier (or no client) carries "", and "" is not a row in
+    // suppliers/accounts, so Postgres rejects the whole upsert with a foreign
+    // key violation. Reading back, NULL falls through to the blank "" default.
+    row[col] = (PROJECT_DATE_COLS.has(col) || PROJECT_FK_COLS.has(col)) && v === "" ? null : v;
   }
   row.controls = pick(p, CONTROLS_FIELDS);
   row.spec = pick(p, SPEC_FIELDS);

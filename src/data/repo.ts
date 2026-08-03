@@ -146,7 +146,22 @@ export async function pushWorkspaceDiff(ownerId: string, prev: WorkspaceState, n
   await settle(phase1);
 
   // Phase 2 — projects (depend on accounts/suppliers).
-  if (projs.upserts.length) await settle([sb.from("projects").upsert(projs.upserts.map((p) => M.projectToRow(p, ownerId)))]);
+  //
+  // A project can still point at a client or supplier that has since been
+  // deleted locally; that id is gone from the workspace but survives on the
+  // project, and upserting it violates the foreign key. Drop references that no
+  // longer resolve — the same outcome the schema's `on delete set null` gives.
+  if (projs.upserts.length) {
+    const accountIds = new Set(Object.keys(next.accounts));
+    const supplierIds = new Set(Object.keys(next.suppliers));
+    const rows = projs.upserts.map((p) => {
+      const row = M.projectToRow(p, ownerId);
+      if (row.account_id && !accountIds.has(String(row.account_id))) row.account_id = null;
+      if (row.supplier_id && !supplierIds.has(String(row.supplier_id))) row.supplier_id = null;
+      return row;
+    });
+    await settle([sb.from("projects").upsert(rows)]);
+  }
 
   // Phase 3 — tasks + expenses (expenses have no stable id → replace wholesale).
   const phase3: PromiseLike<unknown>[] = [];
