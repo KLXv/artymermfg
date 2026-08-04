@@ -207,3 +207,15 @@ describe("cost modes", () => {
     expect(fin.margin).toBe(50);
   });
 });
+
+describe("break-even", () => {
+  it("is not a number when there is no tooling to clear", () => {
+    const p = project({ qty: "30", unitPrice: "960", currency: "RON", costMode: "simple", cUnit: "145", costCurrency: "USD", tooling: "" });
+    expect(projFinance(p, blankCompany()).breakEvenUnits).toBeNull();
+  });
+
+  it("still counts the units that clear real tooling", () => {
+    const p = project({ qty: "100", unitPrice: "100", currency: "EUR", costCurrency: "EUR", cMovement: "40", costMode: "itemised", feePct: "0", tooling: "1200" });
+    expect(projFinance(p, blankCompany()).breakEvenUnits).toBe(20);
+  });
+});

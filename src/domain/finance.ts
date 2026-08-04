@@ -124,7 +124,10 @@ export const projFinance = (pr: Project, company: Company): FinanceBreakdown => 
     cost: fin.cost,
     profit: fin.profit,
     margin: fin.margin,
-    breakEvenUnits: contribution > 0 ? Math.ceil(toolingTotal / contribution) : null,
+    // Break-even answers "how many units clear the one-off tooling". With no
+    // tooling there is nothing to clear, so it is not a number — reporting 0
+    // read as if the job broke even before it started.
+    breakEvenUnits: toolingTotal > 0 && contribution > 0 ? Math.ceil(toolingTotal / contribution) : null,
   };
 };
 

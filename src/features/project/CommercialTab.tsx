@@ -169,7 +169,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           <Stat
             label="Break-even"
             value={fb.breakEvenUnits == null ? "—" : `${fb.breakEvenUnits} pc`}
-            tone={fb.breakEvenUnits != null && fb.breakEvenUnits <= fb.qtyN ? "ok" : "warn"}
+            tone={fb.toolingTotal <= 0 ? undefined : fb.breakEvenUnits != null && fb.breakEvenUnits <= fb.qtyN ? "ok" : "warn"}
           />
         </div>
         {/* Per-unit waterfall */}
@@ -183,9 +183,11 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
         </div>
         <p className="mt-2 font-mono text-[11px] text-faint">
           One-off tooling {baseMoney(fb.toolingTotal, company)} · contribution {baseMoney(fb.contribution, company)}/unit ·{" "}
-          {fb.breakEvenUnits == null
-            ? "price below variable cost — no break-even"
-            : `clears tooling after ${fb.breakEvenUnits} of ${fb.qtyN || "—"} pc`}
+          {fb.toolingTotal <= 0
+            ? "no tooling to clear"
+            : fb.breakEvenUnits == null
+              ? "price below variable cost — tooling never clears"
+              : `clears tooling after ${fb.breakEvenUnits} of ${fb.qtyN || "—"} pc`}
         </p>
       </Panel>
 
@@ -209,16 +211,21 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           }
         />
         <div className="flex items-center gap-4">
+          {/* The slider works in the sale currency, because that is what a price
+              is typed in. Its floor is the landed cost expressed in that same
+              currency (fb.unitMaterial is EUR), and the readout converts back
+              out of it — otherwise the price is shown having been converted
+              twice, which made a 674 lei price read as 3,536 lei at 2%. */}
           <input
             type="range"
-            min={Math.max(1, Math.round(fb.unitMaterial))}
+            min={Math.max(1, Math.round(fb.unitMaterial / (fb.rate || 1)))}
             max={Math.max(50, Math.round(num(p.unitPrice) * 2.5))}
             value={previewPrice}
             onChange={(e) => setWhatIf(Number(e.target.value))}
             className="flex-1 accent-[#2FE8AC]"
           />
           <div className="w-44 text-right font-mono text-[13px]">
-            <span className="text-ink">{baseMoney(previewPrice, company)}</span>
+            <span className="text-ink">{baseMoney(previewPrice * fb.rate, company)}</span>
             <span className="text-faint"> · </span>
             <span className={previewFb.margin >= 30 ? "text-ok" : "text-warn"}>{previewFb.margin.toFixed(0)}%</span>
           </div>
