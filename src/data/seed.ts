@@ -167,6 +167,9 @@ const project: Project = {
   files: { movementSpec: "", engravingVector: "" },
 
   tooling: "1200",
+  // The demo piece is costed component by component, the rarer of the two modes.
+  costMode: "itemised",
+  cUnit: "",
   cMovement: "28",
   cCase: "38",
   cDial: "14",

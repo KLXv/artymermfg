@@ -54,6 +54,23 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
+/**
+ * Tolerances and derived dimensions — the numbers the factory sets, or that
+ * follow from a choice already made. They belong in the spec, but demanding
+ * them up front asks for information you often cannot know yet, so they fold
+ * away and the tab leads with the decisions that are actually yours.
+ */
+function Advanced({ children }: { children: React.ReactNode }) {
+  return (
+    <details className="mt-1 border-t border-line/70 pt-3 sm:col-span-2 lg:col-span-3">
+      <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-label text-faint transition-colors hover:text-dim">
+        Factory detail &amp; tolerances
+      </summary>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+    </details>
+  );
+}
+
 /** A full-width free-text note that flows into the production spec. */
 function Note({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   return (
@@ -128,9 +145,6 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Material" {...f("caseMat")} />
         <Field label="Finish" {...f("caseFin")} />
         <Field label="Ø diameter (mm)" {...f("caseDia")} />
-        <Field label="Ø tolerance" {...f("caseDiaT")} />
-        <Field label="Lug-to-lug (mm)" {...f("l2l")} />
-        <Field label="Thickness (mm)" {...f("thick")} />
         <Field label="Lug width (mm)" {...f("lugW")} />
         <div className="sm:col-span-2 lg:col-span-3">
           <Segmented
@@ -142,51 +156,51 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
           <Field {...f("wr")} className="mt-2" placeholder="…or a custom rating" />
         </div>
         <Note value={p.caseNote} onChange={(v) => patch({ caseNote: v })} placeholder="e.g. brushed top, polished bevel; drilled lugs; specific caseback gasket…" />
+        <Advanced>
+          <Field label="Ø tolerance (mm)" {...f("caseDiaT")} />
+          <Field label="Lug-to-lug (mm)" {...f("l2l")} />
+          <Field label="Thickness (mm)" {...f("thick")} />
+        </Advanced>
       </Group>
 
       <Group title="Movement">
         <Field label="Caliber" {...f("cal")} />
         <Field label="Function" {...f("calFn")} />
-        <Field label="Accuracy (seconds)" {...f("acc")} />
-        <Segmented
-          label="Accuracy window"
-          value={p.accUnit === "month" ? "/ month" : "/ day"}
-          onChange={(v) => patch({ accUnit: v === "/ month" ? "month" : "day" })}
-          options={["/ day", "/ month"]}
-        />
         <Field label="Hands ref" {...f("handRef")} />
-        <Field label="Hand length" {...f("handLen")} />
         <Field label="Hand finish" {...f("handFin")} />
         <Field label="Lume" {...f("lume")} />
         <Note value={p.movementNote} onChange={(v) => patch({ movementNote: v })} placeholder="e.g. regulated to chronometer spec; custom rotor engraving; hack seconds required…" />
+        <Advanced>
+          <Field label="Accuracy (seconds)" {...f("acc")} />
+          <Segmented
+            label="Accuracy window"
+            value={p.accUnit === "month" ? "/ month" : "/ day"}
+            onChange={(v) => patch({ accUnit: v === "/ month" ? "month" : "day" })}
+            options={["/ day", "/ month"]}
+          />
+          <Field label="Hand length (mm)" {...f("handLen")} />
+        </Advanced>
       </Group>
 
       <Group title="Crystal & exterior">
         <Field label="Crystal material" {...f("crysMat")} />
         <Field label="Shape" {...f("crysShape")} />
         <Field label="AR coating" {...f("ar")} />
-        <Field label="Ø diameter (mm)" {...f("crysDia")} />
-        <Field label="Ø tolerance" {...f("crysDiaT")} />
         <Field label="Crown" {...f("crown")} />
         <Field label="Caseback" {...f("back")} />
         <Field label="Strap" {...f("strap")} />
         <Note value={p.crystalNote} onChange={(v) => patch({ crystalNote: v })} placeholder="e.g. box sapphire with inner + outer AR; signed crown; quick-release spring bars…" />
+        <Advanced>
+          <Field label="Ø diameter (mm)" {...f("crysDia")} />
+          <Field label="Ø tolerance (mm)" {...f("crysDiaT")} />
+        </Advanced>
       </Group>
 
       <Group title="Dial — designed by Artymer">
         <Field label="Base material" {...f("dialMat")} />
-        <Field label="Ø diameter (mm)" {...f("dialDia")} />
-        <Field label="Ø tolerance" {...f("dialDiaT")} />
-        <Field label="Feet (match caliber)" {...f("feet")} />
         <Field label="Finish / texture (sunburst…)" {...f("tex")} />
-        <Field label="Texture depth (mm)" {...f("texDepth")} />
-        <Field label="Depth tolerance" {...f("texDepthT")} />
-        <Field label="Gloss (GU)" {...f("gloss")} />
         <Field label="Printing" {...f("print")} />
-        <Field label="Registration (mm)" {...f("reg")} />
         <Field label="Markers" {...f("marker")} />
-        <Field label="Marker placement (mm)" {...f("markerPos")} />
-        <Field label="Marker attachment" {...f("markerAtt")} />
         <Field label="Date" {...f("date")} />
         <div className="sm:col-span-2 lg:col-span-3">
           <Segmented
@@ -200,6 +214,17 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
           </p>
         </div>
         <Note value={p.dialNote} onChange={(v) => patch({ dialNote: v })} placeholder="e.g. multi-level dial; sandwich construction; specific brushing direction; SuperLumiNova grade…" />
+        <Advanced>
+          <Field label="Ø diameter (mm)" {...f("dialDia")} />
+          <Field label="Ø tolerance (mm)" {...f("dialDiaT")} />
+          <Field label="Feet (match caliber)" {...f("feet")} />
+          <Field label="Texture depth (mm)" {...f("texDepth")} />
+          <Field label="Depth tolerance (mm)" {...f("texDepthT")} />
+          <Field label="Gloss (GU)" {...f("gloss")} />
+          <Field label="Registration (mm)" {...f("reg")} />
+          <Field label="Marker placement (mm)" {...f("markerPos")} />
+          <Field label="Marker attachment" {...f("markerAtt")} />
+        </Advanced>
       </Group>
 
       <Panel className="p-4">
@@ -254,13 +279,22 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
         <Field label="Location" {...f("engLoc")} />
         <Field label="Text" {...f("engTxt")} />
         <Field label="Method" {...f("engMethod")} />
-        <Field label="Depth (mm)" {...f("engDepth")} />
         <Note value={p.engNote} onChange={(v) => patch({ engNote: v })} placeholder="e.g. fill colour; font reference; individual serial numbering per unit…" />
+        <Advanced>
+          <Field label="Depth (mm)" {...f("engDepth")} />
+        </Advanced>
       </Group>
 
       <Panel className="p-4">
-        <SectionHead title="Finished-watch tolerances" kicker="verify vs factory" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* These are acceptance criteria checked against what the factory sends
+            back, not decisions made while designing — they ship with sensible
+            defaults and stay folded until QC. */}
+        <SectionHead title="Finished-watch tolerances" kicker="acceptance criteria · defaults are sensible" />
+        <details>
+          <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-label text-faint transition-colors hover:text-dim">
+            Show acceptance criteria
+          </summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Dial centering (mm)" {...f("center")} />
           <Field label="Hand alignment (°)" {...f("align")} />
           <Field label="Hand-to-crystal (mm)" {...f("clear")} />
@@ -273,13 +307,14 @@ export function BuildTab({ p, patch }: { p: Project; patch: Patch }) {
             <Label>Cleanliness standard</Label>
             <Field {...f("clean")} />
           </div>
-          {p.lume !== "none" && (
-            <div className="sm:col-span-2 lg:col-span-3">
-              <Label>Lume standard</Label>
-              <Field {...f("lumeStd")} />
-            </div>
-          )}
-        </div>
+            {p.lume !== "none" && (
+              <div className="sm:col-span-2 lg:col-span-3">
+                <Label>Lume standard</Label>
+                <Field {...f("lumeStd")} />
+              </div>
+            )}
+          </div>
+        </details>
       </Panel>
 
       <p className="px-1 text-[13px] text-faint">

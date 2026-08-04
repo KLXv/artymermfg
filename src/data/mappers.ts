@@ -83,7 +83,7 @@ const SPEC_FIELDS = [
   "engLoc", "engTxt", "engMethod", "engDepth", "engNote",
   "center", "align", "clear", "bezel", "wrTest", "clean", "lumeStd",
 ] as const satisfies readonly (keyof Project)[];
-const COSTS_FIELDS = ["tooling", "cMovement", "cCase", "cDial", "cHands", "cCrystal", "cStrap", "cAssembly", "cPack", "cShip", "cDuty", "cOther", "feePct"] as const satisfies readonly (keyof Project)[];
+const COSTS_FIELDS = ["tooling", "costMode", "cUnit", "cMovement", "cCase", "cDial", "cHands", "cCrystal", "cStrap", "cAssembly", "cPack", "cShip", "cDuty", "cOther", "feePct"] as const satisfies readonly (keyof Project)[];
 const CONTROLS_FIELDS = ["deposit", "lotFail", "rework", "window"] as const satisfies readonly (keyof Project)[];
 const PRESENTATION_FIELDS = ["pieceName", "edition", "story", "highlights", "lang"] as const satisfies readonly (keyof Project)[];
 

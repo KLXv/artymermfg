@@ -214,6 +214,10 @@ export const blankProject = (accountId = ""): Project => ({
   images: { hero: "", dial: "", caseImg: "", back: "", clientLogo: "", movementImg: "" },
   files: { movementSpec: "", engravingVector: "" },
   tooling: "",
+  // Blank on purpose: costModeOf() infers from the data, so a project costed
+  // by part before the modes existed keeps computing that way.
+  costMode: "",
+  cUnit: "",
   cMovement: "",
   cCase: "",
   cDial: "",

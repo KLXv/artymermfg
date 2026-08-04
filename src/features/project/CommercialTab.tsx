@@ -1,11 +1,12 @@
 /**
  * The commercial + cost editor — the money instrument.
  *
- * A clear per-unit COGS build-up (material lines + one-off tooling + the
- * payment-channel fee), live economics (revenue, cost split, per-unit profit,
- * margin, break-even), a what-if price slider, and the deposit/balance schedule
- * that feeds the deck's cash events. All derivations come from the finance
- * domain (`projFinance`).
+ * Order and cost first, because everything else is derived from them: the
+ * factory's price for a finished watch (or, rarely, a per-part build-up),
+ * freight and customs on top, one-off tooling and the channel fee. Then the
+ * economics that follow — revenue, per-unit profit, margin, break-even — a
+ * what-if price slider, and the deposit/balance schedule feeding the deck's
+ * cash events. All derivations come from the finance domain (`projFinance`).
  */
 import { useState } from "react";
 import {
@@ -14,9 +15,12 @@ import {
   cfg,
   committed,
   dep,
+  costModeOf,
+  hasCosts,
   num,
   owed,
   projFinance,
+  unitBuild,
   type Company,
   type Project,
 } from "@/domain";
@@ -26,7 +30,8 @@ import { makeBind, type Patch } from "./bind";
 
 const CURRENCIES = ["EUR", "RON", "USD"];
 
-const COST_LINES: [keyof Project, string][] = [
+/** Component lines — the exception, not the rule. Itemised mode only. */
+const PART_LINES: [keyof Project, string][] = [
   ["cMovement", "Movement"],
   ["cCase", "Case"],
   ["cDial", "Dial"],
@@ -34,9 +39,13 @@ const COST_LINES: [keyof Project, string][] = [
   ["cCrystal", "Crystal"],
   ["cStrap", "Strap / bracelet"],
   ["cAssembly", "Assembly"],
-  ["cPack", "Packaging"],
-  ["cShip", "Shipping"],
+];
+
+/** Landed costs on top of the build — these apply in either mode. */
+const EXTRA_LINES: [keyof Project, string][] = [
+  ["cShip", "Freight / shipping"],
   ["cDuty", "Duty / customs"],
+  ["cPack", "Packaging"],
   ["cOther", "Other"],
 ];
 
@@ -45,6 +54,8 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
   const suppliers = useStore((s) => s.suppliers);
   const fb = projFinance(p, company);
   const cur = p.currency || "EUR";
+  const mode = costModeOf(p);
+  const costed = hasCosts(p);
 
   // What-if price slider (local; "Set as price" applies it).
   const [whatIf, setWhatIf] = useState<number | null>(null);
@@ -72,9 +83,73 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
         </div>
       </Panel>
 
+      {/* What it costs you — the input everything below depends on, so it comes
+          first. One factory price per watch is the normal case; the per-part
+          build-up is there for the job that is actually costed that way. */}
+      <Panel className="p-4">
+        <SectionHead
+          title="What it costs you"
+          kicker={`per unit · ${cur}`}
+          right={
+            <div className="flex gap-1">
+              {(["simple", "itemised"] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => patch({ costMode: m })}
+                  className={cx(
+                    "rounded-full border px-2.5 py-1 font-mono text-[11px] uppercase tracking-label transition-colors",
+                    mode === m ? "border-brass/50 bg-brass-dim text-brass" : "border-line text-faint hover:text-dim",
+                  )}
+                >
+                  {m === "simple" ? "One price" : "Itemised"}
+                </button>
+              ))}
+            </div>
+          }
+        />
+
+        {mode === "simple" ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label={`Factory price per watch (${cur})`} {...f("cUnit")} />
+            <div className="flex items-end pb-2 font-mono text-[11px] leading-snug text-faint sm:col-span-1 lg:col-span-2">
+              What the finished watch costs you, landed from the maker. Freight and customs go below.
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {PART_LINES.map(([key, label]) => (
+              <Field key={key} label={label} value={(p[key] as string) ?? ""} onChange={(v) => patch({ [key]: v } as Partial<Project>)} />
+            ))}
+            <div className="flex items-end pb-2 font-mono text-[12px] text-dim">
+              Build {baseMoney(unitBuild(p) * fb.rate, company)}/unit
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-2 lg:grid-cols-4">
+          {EXTRA_LINES.map(([key, label]) => (
+            <Field key={key} label={label} value={(p[key] as string) ?? ""} onChange={(v) => patch({ [key]: v } as Partial<Project>)} />
+          ))}
+        </div>
+
+        <div className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-3">
+          <Field label={`Tooling — one-off, whole order (${cur})`} {...f("tooling")} />
+          <Field label="Payment-channel fee %" {...f("feePct")} />
+          <div className="flex items-end pb-2 font-mono text-[13px] text-dim">
+            Landed cost <span className="ml-1.5 text-ink">{baseMoney(fb.unitMaterial, company)}</span>
+            <span className="ml-1 text-faint">/unit</span>
+          </div>
+        </div>
+      </Panel>
+
       {/* Economics — the headline */}
       <Panel className="p-4">
         <SectionHead title="Economics" kicker={`all ${company.baseCurrency} · FX RON ${company.fx.RON} · USD ${company.fx.USD}`} />
+        {!costed && (
+          <p className="mb-3 rounded-md border border-warn/30 bg-warn/[.06] px-3 py-2 font-mono text-[12px] leading-snug text-warn">
+            Nothing costed yet, so every figure below treats this as pure profit. Enter what the watch costs you above.
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="Revenue" value={baseMoney(fb.revenue, company)} tone="brass" />
           <Stat label="Total cost" value={baseMoney(fb.cost, company)} />
@@ -90,7 +165,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
         {/* Per-unit waterfall */}
         <div className="mt-3 grid gap-2 rounded-lg border border-line bg-inset-grad p-3 font-mono text-[13px] sm:grid-cols-2">
           <Row label="Price / unit" value={baseMoney(fb.unitPrice, company)} strong />
-          <Row label="Material / unit" value={`− ${baseMoney(fb.unitMaterial, company)}`} />
+          <Row label="Landed cost / unit" value={`− ${baseMoney(fb.unitMaterial, company)}`} />
           <Row label={`Channel fee ${num(p.feePct) || 0}%`} value={`− ${baseMoney(fb.fee, company)}`} />
           <Row label="Tooling / unit (amortized)" value={`− ${baseMoney(fb.toolingPerUnit, company)}`} />
           <Row label="Cost / unit" value={baseMoney(fb.unitCost, company)} />
@@ -142,23 +217,6 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           <Stat label="Profit / unit" value={baseMoney(previewFb.unitProfit, company)} tone={previewFb.unitProfit >= 0 ? "ok" : "bad"} />
           <Stat label="Total profit" value={baseMoney(previewFb.profit, company)} tone={previewFb.profit >= 0 ? "ok" : "bad"} />
           <Stat label="Break-even" value={previewFb.breakEvenUnits == null ? "—" : `${previewFb.breakEvenUnits} pc`} />
-        </div>
-      </Panel>
-
-      {/* Cost build-up */}
-      <Panel className="p-4">
-        <SectionHead title="Cost build-up" kicker={`per unit · ${cur}`} />
-        <div className="grid gap-3 sm:grid-cols-3">
-          {COST_LINES.map(([key, label]) => (
-            <Field key={key} label={label} value={(p[key] as string) ?? ""} onChange={(v) => patch({ [key]: v } as Partial<Project>)} />
-          ))}
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3 border-t border-line pt-3">
-          <Field label={`Tooling — one-off (${cur})`} {...f("tooling")} />
-          <Field label="Payment-channel fee %" {...f("feePct")} />
-          <div className="flex items-end font-mono text-[12px] text-dim">
-            Material/unit {baseMoney(fb.unitMaterial, company)}
-          </div>
         </div>
       </Panel>
 

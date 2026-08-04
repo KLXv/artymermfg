@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blankAccount, blankCompany, blankProject } from "./factories";
-import { bal, committed, dep, feePerUnit, owed, projFin, projFinance, rateOf, stageIdx, svcOf, unitCOGS } from "./finance";
+import { bal, committed, costModeOf, dep, feePerUnit, hasCosts, owed, projFin, projFinance, rateOf, stageIdx, svcOf, unitBuild, unitCOGS, unitMaterial } from "./finance";
 import type { Account, Company, Project } from "./types";
 
 const company = (): Company => blankCompany();
@@ -148,5 +148,43 @@ describe("projFinance — the money engine", () => {
     const fb = projFinance(p, company()); // USD rate 0.92
     expect(fb.revenue).toBeCloseTo(184); // 2*100*0.92
     expect(fb.unitPrice).toBeCloseTo(92);
+  });
+});
+
+describe("cost modes", () => {
+  const c = blankCompany();
+
+  it("uses the single factory price in simple mode, ignoring stale part lines", () => {
+    const p = project({ costMode: "simple", cUnit: "80", cMovement: "999", cShip: "5", cDuty: "3" });
+    expect(unitBuild(p)).toBe(80);
+    expect(unitMaterial(p)).toBe(88); // 80 + 5 + 3
+  });
+
+  it("sums the component lines in itemised mode", () => {
+    const p = project({ costMode: "itemised", cUnit: "999", cMovement: "40", cCase: "20", cDial: "10", cShip: "5" });
+    expect(unitBuild(p)).toBe(70);
+    expect(unitMaterial(p)).toBe(75);
+  });
+
+  it("infers itemised for older projects that were costed by part", () => {
+    expect(costModeOf(project({ costMode: "", cCase: "12" }))).toBe("itemised");
+  });
+
+  it("infers simple when no component line was ever filled", () => {
+    expect(costModeOf(project({ costMode: "", cShip: "9" }))).toBe("simple");
+  });
+
+  it("knows when a project has not been costed at all", () => {
+    expect(hasCosts(project({ costMode: "simple", cUnit: "", tooling: "" }))).toBe(false);
+    expect(hasCosts(project({ costMode: "simple", cUnit: "1" }))).toBe(true);
+    expect(hasCosts(project({ costMode: "simple", tooling: "500" }))).toBe(true);
+  });
+
+  it("carries the simple unit cost through to margin", () => {
+    const p = project({ currency: "EUR", qty: "10", unitPrice: "200", costMode: "simple", cUnit: "100" });
+    const fin = projFin(p, c);
+    expect(fin.rev).toBe(2000);
+    expect(fin.cost).toBe(1000);
+    expect(fin.margin).toBe(50);
   });
 });

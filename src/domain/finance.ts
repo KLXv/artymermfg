@@ -24,19 +24,47 @@ export const cfg = (pr: Project, key: "deposit" | "lotFail" | "rework" | "window
 export const rateOf = (cur: string, company: Company): number =>
   cur === "EUR" ? 1 : num(company?.fx?.[cur]) || 1;
 
-/** Per-unit material/build cost (no tooling, no channel fee). */
-export const unitMaterial = (pr: Project): number =>
-  num(pr.cMovement) +
-  num(pr.cCase) +
-  num(pr.cDial) +
-  num(pr.cHands) +
-  num(pr.cCrystal) +
-  num(pr.cStrap) +
-  num(pr.cAssembly) +
-  num(pr.cPack) +
-  num(pr.cShip) +
-  num(pr.cDuty) +
-  num(pr.cOther);
+/**
+ * How the build cost is captured.
+ *
+ * Nearly always the factory quotes one price for a finished watch, and the only
+ * other real numbers are freight and customs — so "simple" is the default and
+ * `cUnit` carries the quote. The per-part build-up is for the rare job that is
+ * actually costed component by component; it stays available and, when used,
+ * feeds exactly the same total.
+ */
+export type CostMode = "simple" | "itemised";
+
+/** The seven component lines — only meaningful in itemised mode. */
+export const PART_COST_FIELDS = [
+  "cMovement", "cCase", "cDial", "cHands", "cCrystal", "cStrap", "cAssembly",
+] as const satisfies readonly (keyof Project)[];
+
+/** Landed costs that apply either way: they sit on top of the build cost. */
+export const EXTRA_COST_FIELDS = ["cPack", "cShip", "cDuty", "cOther"] as const satisfies readonly (keyof Project)[];
+
+/**
+ * The mode for a project. Unset (every project that predates the choice) is
+ * inferred from the data: if any component line is filled it was costed
+ * itemised, otherwise simple — so existing numbers keep computing as before.
+ */
+export const costModeOf = (pr: Project): CostMode => {
+  if (pr.costMode === "simple" || pr.costMode === "itemised") return pr.costMode;
+  return PART_COST_FIELDS.some((k) => num(pr[k]) > 0) ? "itemised" : "simple";
+};
+
+const sum = (pr: Project, keys: readonly (keyof Project)[]): number =>
+  keys.reduce((a, k) => a + num(pr[k]), 0);
+
+/** What one finished watch costs before freight/customs — the factory's number. */
+export const unitBuild = (pr: Project): number =>
+  costModeOf(pr) === "itemised" ? sum(pr, PART_COST_FIELDS) : num(pr.cUnit);
+
+/** Per-unit landed cost (no tooling, no channel fee). */
+export const unitMaterial = (pr: Project): number => unitBuild(pr) + sum(pr, EXTRA_COST_FIELDS);
+
+/** True when nothing has been costed yet — margin figures are meaningless. */
+export const hasCosts = (pr: Project): boolean => unitMaterial(pr) > 0 || num(pr.tooling) > 0;
 
 /** Payment-channel fee per unit (% of the sale price). */
 export const feePerUnit = (pr: Project): number => num(pr.unitPrice) * (num(pr.feePct) / 100);

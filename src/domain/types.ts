@@ -320,6 +320,10 @@ export interface Project {
 
   // costs (per-unit material lines + one-off tooling + channel fee %)
   tooling: string;
+  /** How cost is captured: "simple" (one factory price) | "itemised". Blank = infer. */
+  costMode: string;
+  /** Simple mode: what one finished watch costs you from the factory. */
+  cUnit: string;
   cMovement: string;
   cCase: string;
   cDial: string;
