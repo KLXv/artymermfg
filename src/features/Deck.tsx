@@ -90,7 +90,9 @@ export function Deck() {
         <Stat label="Next 30 days" value={baseMoney(d.expected30, company)} sub="expected inflow" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      {/* [&>*]:min-w-0 — grid items default to min-width:auto, so one long
+          task title stretched the column and scrolled the whole page sideways. */}
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr] [&>*]:min-w-0">
         {/* Action queue */}
         <Panel className="p-4">
           <SectionHead title="Action queue" kicker="prioritized" />
