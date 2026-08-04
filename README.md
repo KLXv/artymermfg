@@ -34,38 +34,33 @@ supabase/       schema migrations
 
 ## Status
 
-**Phase 5 — Auth, cloud sync, deploy.** Optional Supabase auth + cloud sync over
-the offline-first store: a sign-in gate, the pure flat ↔ relational+JSONB repo
-mapping (deferred from Phase 1, round-trip tested), and a diff-based sync engine
-that loads/seeds on sign-in and write-throughs debounced changes — degrading
-gracefully to local-only. Mobile polish + `SETUP.md` deploy guide. 67 tests green.
-See `SETUP.md` to deploy.
+In daily use. The domain layer is pure and tested (172 tests); every screen is a
+surface over it.
 
-**Phase 4 — Assistant as operator.** The assistant proposes confirmable actions
-grounded in live state — create a task, advance a stage, set a price, log
-contact, schedule a follow-up, or draft copy. It references entities by handles
-([P1]/[A1]) resolved through a map snapshotted at send time; nothing touches the
-store until you tap Apply. Pure parsing/protocol (`src/domain/operator.ts`); 61
-tests green.
+**The money model.** Every figure is normalised to **EUR** internally and rendered in
+the operator's home currency (**RON**) on the way out; amounts typed by hand — overheads,
+the monthly target — are already in the home currency and use a separate formatter. A
+project carries two currencies: what it **sells** for and what the **supplier quotes**
+in, since Artymer sells in lei and buys in dollars. Invoices keep their own currency on
+the document and convert when summed. `src/domain/finance.ts` is the authority.
 
-**Phase 3 — Money engine.** Money is forward-looking: a 6-month cash-flow
-forecast (scheduled receivables vs overhead burn, cumulative position/runway),
-receivables aging (cash at risk by overdue bucket), margin health (worst-first +
-blended, thin-margin flags), and inline payment tracking on the ledger. Pure and
-tested (`src/domain/money.ts`); 53 tests green.
+**Cost capture** matches how a job is actually quoted: one factory price for a finished
+watch by default, with the per-part build-up available for the rare job costed that way.
+A committed project with no cost entered is chased from the deck's action queue —
+without it, margin and break-even are computing against zero.
 
-**Phase 2 — Pipeline engine.** The board drives work, not just displays it:
-advancing a stage generates its canonical next-action task and fills in expected
-payment dates; a forecast strip shows probability-weighted pipeline value and win
-rate; an outreach cadence lists who needs a touch with one-tap "Log contact"; and
-Tasks are a first-class surface (`/tasks`). All engine logic is pure and tested
-(`src/domain/pipeline.ts`); 44 tests green.
+**Cloud sync** is offline-first: the local store is always the live copy, diffs are
+written through debounced, and every write is checked. A rejected write surfaces as
+`sync error` with the database's own message and a retry, and never advances the synced
+baseline — the local copy stays authoritative.
 
-**Phase 1 — Parity & polish.** The full app rebuilt on the foundation:
+**Outbound** runs a target list with a real contact log (what was said, what came back),
+follow-ups that appear on the deck as ordinary tasks, and promotion to a client that
+carries the conversation across.
 
-- **Shell + routing** — the brass-on-graphite instrument frame, "the index" tick language throughout (`IndexRing`, `StageTrack`), mobile-first.
-- **Views** — Command Deck (action queue, cash runway, pulse), Pipeline board, Projects register + the five-tab project workbench (Build/spec · Commercial · QC · Presentation · Documents), Clients CRM, Suppliers bench, Money engine, AI Assistant (streaming), Settings.
-- **Real PDF export** — dossier + certificate via `@react-pdf/renderer`, with the Private-Label override baked in. Lazy-loaded so the renderer stays out of the initial bundle.
-- **Data vehicle** — JSON import/export round-trip preserved, with the one-time legacy migration applied on import, so existing data (LóFő, HFN) drops straight in. Persists to `localStorage`; cloud sync arrives with auth in a later phase.
+**Not yet done:** RO e-Factura XML export (Romanian B2B invoicing is legally required to
+go through ANAF, and PDFs alone are not sufficient), and live FX from BNR instead of
+rates typed into Settings.
 
-State lives in one Zustand store (`src/state/`); every view is a faithful surface over the pure `src/domain/` layer (33 passing tests). **Phase 0** laid the foundation: stack, schema, secure AI proxy, design language, and the ported logic.
+See `STATE.md` for current live state, the deploy rules and the migration ledger, and
+`DECISIONS.md` for why things are built the way they are.

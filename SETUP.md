@@ -15,11 +15,13 @@ You can stop at any mode.
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. **Schema:** open the SQL editor and run every file in `supabase/migrations/`
-   in numeric order (`0001_init.sql` → `0011_outbound_engine.sql`). `0001`
+   in numeric order (`0001_init.sql` → `0013_prospect_log.sql`). `0001`
    creates the core tables and the row-level-security policies (every row is
    scoped to its owner); later migrations add invoices, the client portal, and
    the Outbound Engine. They are idempotent, so if your project predates one,
-   just run the ones you're missing.
+   just run the ones you're missing — or run `0012_schema_repair.sql` on its own,
+   which restates every additive change from `0002`–`0011` in one pass and skips
+   whatever already exists.
 3. **Image storage (optional):** create a public bucket named `project-images`
    (Storage → New bucket), or run the snippet at the bottom of the migration.
 4. **Auth:** Authentication → Providers → Email is on by default. For a single
@@ -69,5 +71,11 @@ npm run typecheck
 - On sign-in: if your cloud is empty, the local workspace is pushed up once;
   otherwise the cloud copy is loaded in.
 - Edits write through, debounced, as minimal diffs. The sidebar shows
-  `synced` / `saving` / `sync error`. On error the local copy stays authoritative
-  — export to JSON if you need a guaranteed backup.
+  `synced` / `saving` / `sync error`.
+- Every write is checked. supabase-js *resolves* rather than rejects when the
+  database refuses a write, so failures are read off the response — otherwise a
+  rejected write is indistinguishable from a successful one.
+- On error the sidebar shows the database's own message and a **Retry now**, the
+  synced baseline does **not** advance (so the change is retried, not stranded),
+  and the local copy stays authoritative. Don't sign out while it is red —
+  export to JSON if you want a guaranteed backup.

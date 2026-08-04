@@ -32,7 +32,28 @@ needed.
 6. **Keep STATE.md true.** When you change something real, update `STATE.md` (current
    state + migration ledger) so the next session isn't lost.
 
+7. **Money is EUR inside, lei on screen.** Every domain figure is normalised to EUR;
+   `baseMoney()` converts on render. Amounts the operator *types* — overheads, the
+   monthly target — are already in the home currency and use `homeMoney()` /
+   `homeToEur()`. Mixing the two either inflates a number by the rate or subtracts lei
+   from euros, and both have shipped before. A project sells in `currency` and buys in
+   `costCurrency` (RON out, USD in) — never assume one rate covers both. See `STATE.md` §4.
+
+8. **Check every database write.** supabase-js *resolves* when the database refuses a
+   write; the error is on the response. Anything that writes must go through the checked
+   path in `src/data/repo.ts` — an unchecked write is indistinguishable from a
+   successful one and silently loses data behind a green status light.
+
+9. **Verify before claiming.** Run the build and the tests, and for anything visual,
+   render it and look. Several bugs here were invisible in code and obvious on screen —
+   and the test suite passed through a timezone bug for months because it ran in UTC
+   (`TZ=Europe/Bucharest npx vitest run` is the honest check).
+
 ## Quick facts
 - Stack: Vite + React + TypeScript · Tailwind · Supabase (db/auth) · Vercel · Anthropic AI proxy.
 - Build: `npm install && npm run build` (this is exactly what Vercel runs).
-- Tests: `npm test`. Typecheck: `npm run typecheck`.
+- Tests: `npm test` (also run under `TZ=Europe/Bucharest`). Typecheck: `npm run typecheck`.
+- `npm run typecheck` is looser than the build — `tsc -b` catches unused imports and
+  duplicate keys that `--noEmit` lets through. Trust the build.
+- Screens: `SHOTS_OUT=/tmp/shots node scripts/shots.mjs` against `npx vite preview`
+  captures every route with demo data loaded.

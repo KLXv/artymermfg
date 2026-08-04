@@ -66,16 +66,53 @@ to `main`, the site never shows the feature. **You usually need both.**
 
 ## 4. Current state (update the date when this changes)
 
-**As of 2026-08-03:**
+**As of 2026-08-04:**
 
-- **Live production code:** `main` @ `1d698e0` — *"Add Outbound Engine (Phase 1) + PROSPECTOR import bridge."*
-- **Database migrations applied:** `0001` → `0011` (the Outbound Engine migration
-  `0011_outbound_engine.sql` was run on 2026-08-03). Migrations are **idempotent** —
+- **Live production code:** `main` @ `0bd8522`. 172 tests green.
+- **Database migrations applied:** `0001` → `0013`. Migrations are **idempotent** —
   re-running one is harmless, it skips whatever already exists.
-- **Newest feature live:** the **Outbound Engine** — Prospects, Discovery queue, and
-  the PROSPECTOR import bridge. (Screens: `src/features/outreach/`.)
 - **Hosting:** Vercel project **ARTYMER** (Hobby plan), auto-deploys `main` to Production.
 - **Env vars are set on Vercel** (see §7). AI + cloud sync are both working.
+
+### How money is held — read this before touching any figure
+
+This caused a run of subtle, expensive bugs, so it is worth stating plainly:
+
+- **Everything inside the app is kept in EUR.** Every project figure is converted to
+  EUR the moment it is computed, so totals across differently-priced jobs are comparable.
+- **The screen shows lei.** `baseMoney()` converts EUR → the home currency on the way
+  out. Anything the *operator types* — overheads, the monthly target — is already in the
+  home currency, so it uses `homeMoney()` / `homeToEur()` instead and must never be run
+  through `baseMoney()`.
+- **A project has two currencies.** `currency` is what it sells for (usually RON);
+  `costCurrency` is what the supplier quotes in (usually USD). Cost, freight, duty and
+  tooling convert at the supplier's rate; price and the channel fee at the sale rate.
+- **Invoices keep their own currency** on the document, and are converted to EUR when
+  they are summed into any total.
+
+Two things follow. Displaying an EUR figure without converting prints euros under a lei
+label — that shipped once and understated every number about fivefold. And mixing a
+typed lei amount into an EUR total silently subtracts one currency from another.
+
+### What is live now
+
+- **Outbound Engine** — targets with a contact log (what was said, what came back),
+  follow-ups that surface on the deck as ordinary tasks, and promotion to a client that
+  carries the whole conversation across. Discovery queue + PROSPECTOR import.
+- **Projects** — cost captured the way it is quoted (one factory price by default, a
+  per-part build-up when a job really is costed that way), Build leading with the
+  decisions that are yours, and the deck chasing any committed project with no cost.
+- **The studio clock** is the real Artymer piece (`src/ui/ArtymerWatch.tsx`); project
+  spec previews still use the generic `WatchDial`, which follows each project's spec.
+
+### Known gaps (not bugs — work not yet done)
+
+- **e-Factura.** Romanian B2B invoicing must go through ANAF's RO e-Factura as XML
+  within 5 working days. The cockpit produces PDFs, which are not sufficient on their
+  own; the penalty is 15% of the invoice value.
+- **FX is typed, not fetched.** Rates live in Settings and go stale silently. BNR
+  publishes a free daily feed; wiring it up would remove a standing source of error.
+- **Backup is manual** — the JSON export in Settings. Worth doing after a heavy session.
 
 ### Branches — only one matters
 - **`main`** = production. This is the only branch that affects your live site.
@@ -123,6 +160,8 @@ All migrations are written to be **idempotent** — safe to run more than once.
 | `0001_init.sql` | Core tables + row-level security | ✅ |
 | `0002`–`0010` | Files, branding, supplier ranking, client portal, base currency, content, inquiries, invoices, strategy/retention | ✅ |
 | `0011_outbound_engine.sql` | `prospects`, `discovery_candidates` tables + `icp` on `company` | ✅ (2026-08-03) |
+| `0012_schema_repair.sql` | Restates every additive change from `0002`–`0011` in one idempotent block — the catch-up for a database that quietly missed one | ✅ (2026-08-04) |
+| `0013_prospect_log.sql` | `log` on `prospects` — the contact history behind the Outbound target list | ✅ (2026-08-04) |
 
 > When a future migration is added, add a row here and mark it applied once you've run it.
 
@@ -173,6 +212,27 @@ commit, then **Cmd+Shift+R**.
 **"A new feature shows up but errors / stays empty / says something failed."**
 → Its database migration wasn't run. Fix: run the matching SQL file in Supabase (§6).
 The Supabase dashboard showing API errors / a low success rate is the classic sign.
+
+**The sidebar says `sync error`.**
+→ Read the red text under it — since 2026-08-04 it names the actual database error.
+Your work is safe: the local copy stays authoritative and the change is retried, not
+discarded. **Do not sign out or clear the browser** until it clears. Export the JSON
+backup from Settings, fix whatever the message names (usually a missing column → run
+`0012_schema_repair.sql`), then press **Retry now**.
+
+> Before that date a rejected write was swallowed: the light stayed green while the data
+> never left the browser. If something you typed in the past has vanished, that is
+> almost certainly why, and it cannot be recovered from the cloud — it was never there.
+
+**A figure looks wrong by roughly 5×, or a lei number looks like a euro one.**
+→ Something skipped a conversion. See the money model in §4: EUR inside, lei on screen,
+typed amounts already in lei. Check whether the value went through `baseMoney()` when it
+should have used `homeMoney()`, or the reverse.
+
+**A screen scrolls sideways / the layout looks shoved over.**
+→ Some long unbroken text is stretching a grid column instead of truncating. The column
+needs `min-w-0`; grid and flex items default to `min-width: auto`, which lets content
+win over truncation.
 
 **"Claude can't push — 403."**
 → Normal in web sessions. Give Claude a token (§7).

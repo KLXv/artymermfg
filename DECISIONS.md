@@ -302,3 +302,83 @@ Reduced-motion respected globally; visible keyboard focus; mobile-first layout.
 ### Deferred to Phase 1
 
 The data/repo mapping (flat domain `Project` ↔ relational+JSONB row), the app shell + all views, real PDF export, and migrating LóFő/HFN via JSON import.
+
+---
+
+## 2026-08-04 — Money, and the things that were quietly wrong
+
+A day of corrections rather than features. Recording them because each was invisible
+from the screen and expensive to find twice.
+
+### Currency: EUR inside, home currency out
+
+`baseMoney()` restamped the symbol without converting. Since every domain figure is
+EUR-normalised and the home currency is RON, the whole cockpit printed euro amounts
+under a lei label — the deck could read *"you're owed 12,552 euros"* directly above a
+tile saying *"12,552 lei"* for the same money.
+
+The model is now explicit: **EUR internally, home currency on render**. Amounts the
+operator types (overheads, the monthly target) are already in the home currency and go
+through `homeMoney()` / `homeToEur()` — running those through `baseMoney()` inflates
+them by the rate, and summing them raw into an EUR total subtracts one currency from
+another. Both had shipped.
+
+### A project sells in one currency and buys in another
+
+One `currency` field served both. Artymer sells in lei and buys from the factory in
+dollars, so no single rate could be right. `costCurrency` was added (defaulting to USD,
+falling back to the sale currency so older projects are untouched): build, freight, duty
+and tooling convert at the supplier's rate; price and the channel fee — a share of price
+— at the sale rate.
+
+### Cost is one number, not eleven
+
+The commercial tab assumed per-part costing. That is roughly one job in twenty; the
+normal case is a single quoted price for a finished watch plus freight and customs, and
+there was nowhere to put it. `costMode` splits the two, defaults to the simple case, and
+is *inferred* when unset so nothing costed by part changes behaviour. Cost also moved
+above the economics it feeds — it had been sitting below figures that could not mean
+anything until it was filled in.
+
+### Failed cloud writes were invisible
+
+`pushWorkspaceDiff` never inspected the PostgREST responses. supabase-js resolves rather
+than rejects when the database refuses a write, so a rejection looked exactly like a
+success: the engine advanced its synced baseline, the sidebar showed `synced`, and
+because the baseline had moved the row was never retried. Data survived in localStorage
+and was simply absent from the cloud.
+
+Every write goes through a checked path now. Two failures surfaced immediately:
+`account_id`/`supplier_id` — the only foreign keys in the schema — were written as `""`
+for a project with no supplier, which Postgres rejects, making **every project without a
+supplier unsyncable**; and databases that had missed a migration. Hence
+`0012_schema_repair.sql`.
+
+### Dates were built in local time and read back in UTC
+
+`addDays`, `monthKeys` and the warranty expiry parsed dates as local and formatted with
+`toISOString()`. East of London every result drifted a day, and month-ends could fail to
+advance at all. The tests ran in UTC and passed throughout. All UTC now, and the suite
+runs green under `Europe/Bucharest` as well.
+
+### Real-world constants go stale
+
+VAT was 19% (Romania moved to 21% on 1 Aug 2025) and the FX defaults had drifted ~6%.
+Defaults do not rewrite saved data, so the live values had to be corrected in Settings by
+hand. Rates typed into a settings screen are a standing source of error; BNR publishes a
+free daily feed and wiring it up is the real fix.
+
+### Layout
+
+Grid and flex items default to `min-width: auto`, so one long task title sized the
+action-queue column to itself and pushed the deck to 2338px against a 1280px viewport —
+the page scrolled sideways. `min-w-0` on the grid children lets truncation win. The dial
+also moved below the queue on phones (it had pushed the whole point of the screen out of
+view), the page keeps a gutter clear of the floating assistant buttons, and form labels
+are tied to their controls — tapping a label had done nothing.
+
+### Deferred, deliberately
+
+**RO e-Factura.** Romanian B2B invoicing must reach ANAF as CIUS-RO XML within 5 working
+days; a PDF is not compliant and the penalty is 15% of invoice value. The cockpit issues
+PDFs. This is a real exposure, not a nicety.
