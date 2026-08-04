@@ -29,19 +29,19 @@ const company = blankCompany();
 
 describe("date helpers are timezone-independent", () => {
   it("adds days to the deposit date correctly across a month boundary", () => {
-    const p: Project = { ...blankProject("a1"), id: "p1", stage: "Negotiating", depositExpected: "" };
+    const p: Project = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Negotiating", depositExpected: "" };
     const eff = planAdvance(p, [], "2026-08-31");
     expect(eff.patch.depositExpected).toBe("2026-09-05"); // 31 Aug + 5 days
   });
 
   it("sets the stage task due date correctly (today + 3)", () => {
-    const p: Project = { ...blankProject("a1"), id: "p1", stage: "Negotiating" };
+    const p: Project = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Negotiating" };
     const eff = planAdvance(p, [], "2026-08-30");
     expect(eff.newTask?.due).toBe("2026-09-02"); // 30 Aug + 3 days
   });
 
   it("starts the cash-flow forecast on the current calendar month", () => {
-    const list = [{ ...blankProject("a1"), stage: "Won", qty: "1", unitPrice: "100" } as Project];
+    const list = [{ ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", stage: "Won", qty: "1", unitPrice: "100" } as Project];
     const f = cashFlowForecast(list, [], company, 6, "2026-08-15");
     expect(f[0].month).toBe("2026-08"); // not "2026-07"
     expect(f.map((m) => m.month)).toEqual(["2026-08", "2026-09", "2026-10", "2026-11", "2026-12", "2027-01"]);
@@ -49,7 +49,7 @@ describe("date helpers are timezone-independent", () => {
 
   it("computes the warranty expiry date correctly", () => {
     const p: Project = {
-      ...blankProject("a1"),
+      ...blankProject("a1"), currency: "EUR", costCurrency: "EUR",
       id: "p1",
       stage: "Delivered",
       warranty: { deliveredDate: "2026-01-31", months: "12", serial: "", services: [] },

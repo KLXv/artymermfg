@@ -8,9 +8,12 @@
  * brain when a key is configured — and otherwise fall back gracefully. The same
  * facts power the LLM system prompt, so the upgrade speaks from identical data.
  */
+import { baseMoney } from "./format";
 import type { Dashboard } from "./dashboard";
 
-const eur = (n: number) => `${Math.round(n).toLocaleString()} euro${Math.round(n) === 1 ? "" : "s"}`;
+// Figures are EUR-normalised internally; the briefing reads them back in the
+// currency the business is actually run in, so prose and tiles agree.
+const money = (d: Dashboard) => (n: number) => baseMoney(n, d.company);
 const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 /** Queue labels read "Collect deposit — Untitled"; soften the dash for speech. */
 const clean = (s: string) => s.replace(/\s*—\s*/g, ", ").replace(/\s*·\s*/g, ", ");
@@ -30,6 +33,7 @@ const focus = (d: Dashboard): string => {
 };
 
 const moneyLine = (d: Dashboard): string => {
+  const eur = money(d);
   const bits = [`Revenue booked is ${eur(d.totRev)}, net ${eur(d.net)}`];
   bits.push(d.outstanding > 0 ? `${eur(d.outstanding)} is owed to you` : "nothing outstanding");
   if (d.expected30 > 0) bits.push(`and ${eur(d.expected30)} should land within thirty days`);
@@ -74,6 +78,7 @@ const projects = (d: Dashboard): string => {
 
 /** A proactive, spoken start-of-session briefing built from live data. */
 export function coFounderBriefing(d: Dashboard, name = ""): string {
+  const eur = money(d);
   const hi = name ? `Right, ${name}.` : "Right.";
   const parts: string[] = [];
   if (!d.queue.length) parts.push("Board's clear, nothing pressing.");
@@ -89,6 +94,7 @@ export function coFounderBriefing(d: Dashboard, name = ""): string {
 
 /** A compact fact sheet for grounding the LLM brain (the paid upgrade). */
 export function coFounderFacts(d: Dashboard): string {
+  const eur = money(d);
   const lines = [
     `Revenue booked: ${eur(d.totRev)}. Net: ${eur(d.net)}. Outstanding/owed: ${eur(d.outstanding)}. Expected within 30 days: ${eur(d.expected30)}.`,
     `Open leads: ${d.leads.length}${d.leads.length ? ` (${d.leads.slice(0, 5).map((a) => a.name || "unnamed").join(", ")})` : ""}.`,

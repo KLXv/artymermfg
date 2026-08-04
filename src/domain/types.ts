@@ -324,6 +324,8 @@ export interface Project {
   costMode: string;
   /** Simple mode: what one finished watch costs you from the factory. */
   cUnit: string;
+  /** Currency the supplier quotes in (blank = same as the sale currency). */
+  costCurrency: string;
   cMovement: string;
   cCase: string;
   cDial: string;

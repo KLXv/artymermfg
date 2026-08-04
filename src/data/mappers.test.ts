@@ -23,26 +23,26 @@ describe("project mapper", () => {
   // foreign key violation that rejects the whole project upsert, so an
   // unassigned client/supplier has to reach Postgres as NULL.
   it("writes NULL, not \"\", for an unset client or supplier", () => {
-    const row = projectToRow({ ...blankProject(""), id: "p1", supplierId: "" }, OWNER);
+    const row = projectToRow({ ...blankProject(""), currency: "EUR", costCurrency: "EUR", id: "p1", supplierId: "" }, OWNER);
     expect(row.account_id).toBeNull();
     expect(row.supplier_id).toBeNull();
   });
 
   it("keeps a client and supplier that are set", () => {
-    const row = projectToRow({ ...blankProject("acc1"), id: "p1", supplierId: "sup1" }, OWNER);
+    const row = projectToRow({ ...blankProject("acc1"), currency: "EUR", costCurrency: "EUR", id: "p1", supplierId: "sup1" }, OWNER);
     expect(row.account_id).toBe("acc1");
     expect(row.supplier_id).toBe("sup1");
   });
 
   it("restores an unset client/supplier as \"\" when reading NULL back", () => {
-    const back = rowToProject(projectToRow({ ...blankProject(""), id: "p1", supplierId: "" }, OWNER));
+    const back = rowToProject(projectToRow({ ...blankProject(""), currency: "EUR", costCurrency: "EUR", id: "p1", supplierId: "" }, OWNER));
     expect(back.accountId).toBe("");
     expect(back.supplierId).toBe("");
   });
 
   it("round-trips a fully-populated project through columns + JSONB groups", () => {
     const p: Project = {
-      ...blankProject("acc1"),
+      ...blankProject("acc1"), currency: "EUR", costCurrency: "EUR",
       id: "p1",
       name: "Falcon",
       servicePath: "Private label",
@@ -76,7 +76,7 @@ describe("project mapper", () => {
   });
 
   it("nulls empty date columns on write and restores them on read", () => {
-    const p = { ...blankProject("a1"), id: "p1", deadline: "", depositExpected: "2026-07-01" };
+    const p = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", deadline: "", depositExpected: "2026-07-01" };
     const row = projectToRow(p, OWNER);
     expect(row.deadline).toBeNull();
     expect(row.deposit_expected).toBe("2026-07-01");
@@ -85,7 +85,7 @@ describe("project mapper", () => {
   });
 
   it("groups commercial controls into the controls JSONB", () => {
-    const p = { ...blankProject("a1"), id: "p1", deposit: "35", lotFail: "8", rework: "3", window: "5" };
+    const p = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", deposit: "35", lotFail: "8", rework: "3", window: "5" };
     const row = projectToRow(p, OWNER);
     expect(row.controls).toEqual({ deposit: "35", lotFail: "8", rework: "3", window: "5" });
   });

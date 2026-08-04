@@ -163,7 +163,7 @@ export function Invoices() {
   const [selected, setSelected] = useState<string | null>(null);
 
   const list = useMemo(() => Object.values(invoices).sort((a, b) => (a.issueDate < b.issueDate ? 1 : -1)), [invoices]);
-  const summary = useMemo(() => invoiceSummary(Object.values(invoices)), [invoices]);
+  const summary = useMemo(() => invoiceSummary(Object.values(invoices), company), [invoices, company]);
   const current = selected ? invoices[selected] : null;
 
   const create = () => {

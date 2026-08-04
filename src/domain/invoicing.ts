@@ -4,7 +4,7 @@
  * profit-over-time view. Pure + tested.
  */
 import { num } from "./format";
-import { projFin } from "./finance";
+import { projFin, rateOf } from "./finance";
 import { monthlyBurn } from "./money";
 import type { Account, Company, Expense, Invoice, PartySnapshot, Project } from "./types";
 
@@ -59,23 +59,32 @@ export interface InvoiceSummary {
   byMonth: { month: string; net: number; gross: number }[];
 }
 
-/** Roll up issued/paid invoices for the money view. */
-export const invoiceSummary = (invoices: Invoice[], monthsBack = 6): InvoiceSummary => {
+/**
+ * Roll up issued/paid invoices for the money view, in EUR.
+ *
+ * Each invoice is denominated in its own currency, so totalling them raw adds
+ * lei to euros. Converting at the invoice's rate keeps the summary comparable
+ * with every other figure in the cockpit, which is EUR-normalised.
+ */
+export const invoiceSummary = (invoices: Invoice[], company: Company, monthsBack = 6): InvoiceSummary => {
   let invoiced = 0;
   let outstanding = 0;
   let paid = 0;
   const months: Record<string, { net: number; gross: number }> = {};
   invoices.forEach((inv) => {
     if (inv.status === "draft") return;
+    const r = rateOf(inv.currency, company);
     const t = invoiceTotals(inv);
-    invoiced += t.gross;
-    if (inv.status === "paid") paid += t.gross;
-    else outstanding += t.gross;
+    const gross = t.gross * r;
+    const net = t.net * r;
+    invoiced += gross;
+    if (inv.status === "paid") paid += gross;
+    else outstanding += gross;
     const key = (inv.issueDate || "").slice(0, 7);
     if (key) {
       months[key] = months[key] || { net: 0, gross: 0 };
-      months[key].net += t.net;
-      months[key].gross += t.gross;
+      months[key].net += net;
+      months[key].gross += gross;
     }
   });
   const byMonth = Object.keys(months)
@@ -105,20 +114,22 @@ export const profitTimeline = (
   expenses: Expense[],
   monthsBack = 8,
 ): PnlMonth[] => {
-  const burn = monthlyBurn(expenses);
+  const burn = monthlyBurn(expenses, company);
   const projById: Record<string, Project> = Object.fromEntries(projects.map((p) => [p.id, p]));
   const months: Record<string, { revenue: number; cost: number }> = {};
   invoices.forEach((inv) => {
     if (inv.status === "draft") return;
     const key = (inv.issueDate || "").slice(0, 7);
     if (!key) return;
-    const t = invoiceTotals(inv);
+    // Net converts to EUR; the matched COGS from projFin already is, so before
+    // this the two sides of the P&L were in different currencies.
+    const net = invoiceTotals(inv).net * rateOf(inv.currency, company);
     months[key] = months[key] || { revenue: 0, cost: 0 };
-    months[key].revenue += t.net;
+    months[key].revenue += net;
     const p = projById[inv.projectId];
     if (p) {
       const f = projFin(p, company);
-      if (f.rev > 0) months[key].cost += f.cost * (t.net / f.rev);
+      if (f.rev > 0) months[key].cost += f.cost * (net / f.rev);
     }
   });
   return Object.keys(months)

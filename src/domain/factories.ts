@@ -39,9 +39,9 @@ export const blankCompany = (): Company => ({
     series: "ART",
   },
   icp: defaultIcp(),
-  // Value of one unit in EUR. RON ≈ 1/5.25 (EUR/RON ~5.25, Aug 2026).
+  // Value of one unit in EUR. RON ≈ 1/5.25 and USD ≈ 1/1.151 (Aug 2026).
   // These are a starting point only — refresh them in Settings; FX drifts.
-  fx: { RON: 0.1906, USD: 0.92 },
+  fx: { RON: 0.1906, USD: 0.8689 },
   deposit: "30",
   lotFail: "5",
   rework: "2",
@@ -137,7 +137,7 @@ export const blankProject = (accountId = ""): Project => ({
   supplierId: "",
   qty: "30",
   unitPrice: "165",
-  currency: "EUR",
+  currency: "RON",
   deadline: "",
   depositExpected: "",
   balanceExpected: "",
@@ -218,6 +218,7 @@ export const blankProject = (accountId = ""): Project => ({
   // by part before the modes existed keeps computing that way.
   costMode: "",
   cUnit: "",
+  costCurrency: "USD",
   cMovement: "",
   cCase: "",
   cDial: "",

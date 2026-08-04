@@ -8,7 +8,7 @@ const accounts: Record<string, Account> = {
 };
 const suppliers: Record<string, Supplier> = {};
 const company = blankCompany();
-const base = () => ({ ...blankProject("a1"), name: "The Harghita Chronometer", qty: "30", rev: "1.0" });
+const base = () => ({ ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", name: "The Harghita Chronometer", qty: "30", rev: "1.0" });
 
 describe("specText", () => {
   it("carries the governing rule and conformance chain", () => {

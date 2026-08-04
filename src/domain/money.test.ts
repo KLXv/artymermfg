@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { blankCompany, blankProject } from "./factories";
 import { cashFlowForecast, marginAnalysis, monthlyBurn, receivablesAging, scheduledInflows } from "./money";
-import type { Expense, Project } from "./types";
+import type { Company, Expense, Project } from "./types";
 
-const company = blankCompany();
+// Home currency pinned to EUR: overheads are typed in the home currency and
+// normalised to EUR, so a RON default would rescale every expectation here.
+const company: Company = { ...blankCompany(), baseCurrency: "EUR" };
 const today = "2026-06-18";
 
 /** ISO date `n` days from the real today (for aging, which anchors to today()). */
@@ -14,7 +16,7 @@ const rel = (n: number): string => {
 };
 
 const won = (over: Partial<Project>): Project => ({
-  ...blankProject("a1"),
+  ...blankProject("a1"), currency: "EUR", costCurrency: "EUR",
   stage: "Won",
   qty: "30",
   unitPrice: "100", // rev 3000, deposit 30% = 900, balance 2100
@@ -27,7 +29,9 @@ describe("monthlyBurn", () => {
       { label: "Software", amount: "120" },
       { label: "Studio", amount: "380" },
     ];
-    expect(monthlyBurn(expenses)).toBe(500);
+    // Overheads are typed in the home currency; the burn is returned in EUR.
+    expect(monthlyBurn(expenses, { ...company, baseCurrency: "EUR" })).toBe(500);
+    expect(monthlyBurn(expenses, { ...company, baseCurrency: "RON", fx: { RON: 0.2, USD: 0.9 } })).toBeCloseTo(100);
   });
 });
 

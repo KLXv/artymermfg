@@ -6,7 +6,7 @@ import type { Project } from "./types";
 describe("backup round-trip", () => {
   it("builds a schema-3 backup and parses it back", () => {
     const acct = { ...blankAccount(), id: "a1", name: "LóFő" };
-    const proj = { ...blankProject("a1"), id: "p1", name: "Falcon" };
+    const proj = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", name: "Falcon" };
     const backup = buildBackup({
       accounts: { a1: acct },
       projects: { p1: proj },
@@ -29,7 +29,7 @@ describe("backup round-trip", () => {
 describe("migrateLegacy", () => {
   it("synthesizes a client for an account-less legacy project and normalizes it", () => {
     const legacy = {
-      ...blankProject(""),
+      ...blankProject(""), currency: "EUR", costCurrency: "EUR",
       id: "old1",
       accountId: "",
       stage: "WeirdStage",
@@ -49,13 +49,13 @@ describe("migrateLegacy", () => {
 
   it("does nothing once the company is already migrated", () => {
     const company = { ...blankCompany(), migrated: true };
-    const legacy = { ...blankProject(""), id: "old1", accountId: "" };
+    const legacy = { ...blankProject(""), currency: "EUR", costCurrency: "EUR", id: "old1", accountId: "" };
     const res = migrateLegacy(company, {}, { old1: legacy });
     expect(res.changed.projects).toHaveLength(0);
   });
 
   it("leaves projects that already have an account untouched", () => {
-    const p = { ...blankProject("a1"), id: "p1" };
+    const p = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1" };
     const res = migrateLegacy(blankCompany(), {}, { p1: p });
     expect(res.changed.projects).toHaveLength(0);
   });

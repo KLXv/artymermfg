@@ -36,9 +36,30 @@ const eurRate = (ccy: Ccy, fx: Record<string, number>): number => (ccy === "EUR"
 export const convertCcy = (amount: number, from: Ccy, to: Ccy, fx: Record<string, number>): number =>
   from === to ? amount : (amount * eurRate(from, fx)) / eurRate(to, fx);
 
-/** Format an amount that is already in the company's base currency. */
-export const baseMoney = (amount: number, company: Company): string =>
+/**
+ * Format a base-EUR amount in the company's home currency.
+ *
+ * Every figure the domain produces is normalised to EUR (see `rateOf`), so this
+ * has to convert. It used to only restamp the symbol, which printed euro
+ * amounts under a "lei" label — the deck could say "you're owed 12,552 euros"
+ * directly above a tile reading "12,552 lei" for the same money.
+ */
+export const baseMoney = (eur: number, company: Company): string =>
+  moneyIn(eur, (company.baseCurrency as Ccy) || "EUR", company.fx);
+
+/**
+ * Amounts the operator types directly — overheads, the monthly target — are in
+ * the home currency already, not the EUR the domain normalises to. These format
+ * and convert them without the extra hop that would inflate them by the rate.
+ */
+export const homeMoney = (amount: number, company: Company): string =>
   fmtCcy(amount, (company.baseCurrency as Ccy) || "EUR");
+
+/** A home-currency amount, converted into the EUR everything is compared in. */
+export const homeToEur = (amount: number, company: Company): number => {
+  const base = (company.baseCurrency as Ccy) || "EUR";
+  return base === "EUR" ? amount : amount * (company.fx?.[base] || 1);
+};
 
 /** Spec placeholder: a present value, or an underscored blank. */
 export const V = (x: unknown): string => (x && String(x).trim() ? String(x) : "________");

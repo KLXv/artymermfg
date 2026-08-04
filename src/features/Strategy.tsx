@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import {
   acctName,
   baseMoney,
+  homeToEur,
   marginAnalysis,
   num,
   pipelineMetrics,
@@ -114,10 +115,11 @@ export function Strategy() {
 
   const margin = useMemo(() => marginAnalysis(d.projList, company), [d.projList, company]);
   const pm = useMemo(() => pipelineMetrics(d.projList, company), [d.projList, company]);
-  const revMonth = useMemo(() => revenueThisMonth(Object.values(invoices)), [invoices]);
+  const revMonth = useMemo(() => revenueThisMonth(Object.values(invoices), company), [invoices, company]);
   const warranty = useMemo(() => warrantyRegister(d.projList), [d.projList]);
   const referrals = useMemo(() => referralReport(d.acctList, d.projList, company), [d.acctList, d.projList, company]);
-  const revTarget = num(company.monthlyRevenue);
+  // The target is typed in the home currency; actuals are EUR-normalised.
+  const revTarget = homeToEur(num(company.monthlyRevenue), company);
   const money = (n: number) => baseMoney(n, company);
   const pct = (n: number) => `${n.toFixed(0)}%`;
 

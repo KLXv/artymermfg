@@ -170,6 +170,7 @@ const project: Project = {
   // The demo piece is costed component by component, the rarer of the two modes.
   costMode: "itemised",
   cUnit: "",
+  costCurrency: "EUR",
   cMovement: "28",
   cCase: "38",
   cDial: "14",

@@ -99,12 +99,13 @@ export interface FinanceBreakdown {
  */
 export const projFinance = (pr: Project, company: Company): FinanceBreakdown => {
   const rate = rateOf(pr.currency, company);
+  const costRate = rateOf(costCurrencyOf(pr), company);
   const qtyN = num(pr.qty);
   const fin = projFin(pr, company);
-  const mat = unitMaterial(pr) * rate;
+  const mat = unitMaterial(pr) * costRate;
   const fee = feePerUnit(pr) * rate;
   const price = num(pr.unitPrice) * rate;
-  const toolingTotal = num(pr.tooling) * rate;
+  const toolingTotal = num(pr.tooling) * costRate;
   const toolingPerUnit = qtyN ? toolingTotal / qtyN : 0;
   const unitCost = mat + fee + toolingPerUnit;
   const contribution = price - mat - fee;
@@ -134,10 +135,21 @@ export interface ProjFin {
   margin: number;
 }
 
+/**
+ * The currency the supplier quotes in, which is rarely the one you sell in —
+ * factory prices arrive in USD while the job is sold in RON or EUR. Falls back
+ * to the project currency, so a project from before the split is unchanged.
+ */
+export const costCurrencyOf = (pr: Project): string => pr.costCurrency || pr.currency;
+
 export const projFin = (pr: Project, company: Company): ProjFin => {
-  const r = rateOf(pr.currency, company);
-  const rev = num(pr.unitPrice) * num(pr.qty) * r;
-  const cost = unitCOGS(pr) * num(pr.qty) * r;
+  const priceRate = rateOf(pr.currency, company);
+  const costRate = rateOf(costCurrencyOf(pr), company);
+  const q = num(pr.qty);
+  const rev = num(pr.unitPrice) * q * priceRate;
+  // Build and landed costs convert at the supplier's rate; the channel fee is a
+  // percentage of the sale price, so it converts at the price rate.
+  const cost = unitMaterial(pr) * costRate * q + feePerUnit(pr) * priceRate * q + num(pr.tooling) * costRate;
   return { rev, cost, profit: rev - cost, margin: rev ? ((rev - cost) / rev) * 100 : 0 };
 };
 

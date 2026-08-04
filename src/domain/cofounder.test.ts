@@ -16,7 +16,7 @@ const state = (over: Partial<CockpitState> = {}): CockpitState => ({
 
 const withLead = () => {
   const a = { ...blankAccount(), id: "a1", name: "LóFő", status: "prospect" as const };
-  const p = { ...blankProject("a1"), id: "p1", name: "Falcon", stage: "Production", unitPrice: "100", qty: "10" };
+  const p = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", name: "Falcon", stage: "Production", unitPrice: "100", qty: "10" };
   return buildDashboard(state({ accounts: { a1: a }, projects: { p1: p } }));
 };
 
@@ -31,7 +31,8 @@ describe("co-founder brain", () => {
   it("routes money / leads / focus questions to local answers", () => {
     const d = withLead();
     expect(coFounderAnswer("how's the money?", d).handled).toBe(true);
-    expect(coFounderAnswer("how's the money?", d).text).toMatch(/euro/);
+    // The briefing reads back in the home currency (RON by default), not euros.
+    expect(coFounderAnswer("how's the money?", d).text).toMatch(/lei/);
     expect(coFounderAnswer("show me my leads", d).text).toContain("LóFő");
     expect(coFounderAnswer("what should I do today", d).handled).toBe(true);
   });

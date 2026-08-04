@@ -6,16 +6,16 @@
  * attribution (who sends business, and the revenue it brings).
  */
 import { today } from "./factories";
-import { committed, projFin } from "./finance";
+import { committed, projFin, rateOf } from "./finance";
 import { invoiceTotals } from "./invoicing";
 import type { Account, Company, Invoice, Project } from "./types";
 
-/** Net invoiced (issued/paid) in the current calendar month. */
-export const revenueThisMonth = (invoices: Invoice[], todayStr: string = today()): number => {
+/** Net invoiced (issued/paid) in the current calendar month, in EUR. */
+export const revenueThisMonth = (invoices: Invoice[], company: Company, todayStr: string = today()): number => {
   const key = todayStr.slice(0, 7);
   return invoices
     .filter((i) => i.status !== "draft" && (i.issueDate || "").slice(0, 7) === key)
-    .reduce((s, i) => s + invoiceTotals(i).net, 0);
+    .reduce((s, i) => s + invoiceTotals(i).net * rateOf(i.currency, company), 0);
 };
 
 export type WarrantyStatus = "active" | "expiring" | "expired" | "unset";

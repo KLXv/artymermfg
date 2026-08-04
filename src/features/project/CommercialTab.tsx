@@ -15,6 +15,7 @@ import {
   cfg,
   committed,
   dep,
+  costCurrencyOf,
   costModeOf,
   hasCosts,
   num,
@@ -56,6 +57,9 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
   const cur = p.currency || "EUR";
   const mode = costModeOf(p);
   const costed = hasCosts(p);
+  // Suppliers quote in their own currency (usually USD) while the job is sold
+  // in another, so cost carries its own currency rather than borrowing price's.
+  const costCur = costCurrencyOf(p);
 
   // What-if price slider (local; "Set as price" applies it).
   const [whatIf, setWhatIf] = useState<number | null>(null);
@@ -89,7 +93,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
       <Panel className="p-4">
         <SectionHead
           title="What it costs you"
-          kicker={`per unit · ${cur}`}
+          kicker={`per unit · ${costCur}`}
           right={
             <div className="flex gap-1">
               {(["simple", "itemised"] as const).map((m) => (
@@ -110,7 +114,7 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
 
         {mode === "simple" ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label={`Factory price per watch (${cur})`} {...f("cUnit")} />
+            <Field label={`Factory price per watch (${costCur})`} {...f("cUnit")} />
             <div className="flex items-end pb-2 font-mono text-[11px] leading-snug text-faint sm:col-span-1 lg:col-span-2">
               What the finished watch costs you, landed from the maker. Freight and customs go below.
             </div>
@@ -132,8 +136,14 @@ export function CommercialTab({ p, patch, company }: { p: Project; patch: Patch;
           ))}
         </div>
 
-        <div className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-3">
-          <Field label={`Tooling — one-off, whole order (${cur})`} {...f("tooling")} />
+        <div className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-4">
+          <SelectField
+            label="Supplier quotes in"
+            value={costCur}
+            onChange={(v) => patch({ costCurrency: v })}
+            options={CURRENCIES}
+          />
+          <Field label={`Tooling — one-off, whole order (${costCur})`} {...f("tooling")} />
           <Field label="Payment-channel fee %" {...f("feePct")} />
           <div className="flex items-end pb-2 font-mono text-[13px] text-dim">
             Landed cost <span className="ml-1.5 text-ink">{baseMoney(fb.unitMaterial, company)}</span>

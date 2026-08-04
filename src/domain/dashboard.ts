@@ -11,7 +11,7 @@ import { NEXT, PIPE, PROD, STAGES } from "./constants";
 import { acctName, bal, committed, dep, owed, projFin, stageIdx } from "./finance";
 import { dAgo, dFromNow, money, num } from "./format";
 import { projVerdict, sampleApproved } from "./qc";
-import type { Account, CockpitState, Project, Task } from "./types";
+import type { Account, CockpitState, Company, Project, Task } from "./types";
 
 export type QueueTarget =
   | { kind: "project"; id: string }
@@ -54,6 +54,8 @@ const taskTarget = (t: Task): QueueTarget =>
         : { kind: "view", view: "settings" };
 
 export interface Dashboard {
+  /** Carried so derived copy/formatting can use the home currency. */
+  company: Company;
   projList: Project[];
   acctList: Account[];
   activeProjects: Project[];
@@ -231,6 +233,7 @@ export const buildDashboard = (state: CockpitState, responses: ClientResponse[] 
   queue.sort((a, b) => a.w - b.w);
 
   return {
+    company,
     projList,
     acctList,
     activeProjects,

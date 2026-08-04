@@ -22,7 +22,7 @@ describe("mergeWorkspaces (data-loss safety net)", () => {
     const remote = ws({ accounts: { a1: { ...blankAccount(), id: "a1", name: "Cloud" } } });
     const local = ws({
       accounts: { a1: { ...blankAccount(), id: "a1", name: "Stale" } },
-      projects: { p1: { ...blankProject("a1"), id: "p1", name: "Unsynced" } },
+      projects: { p1: { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", name: "Unsynced" } },
     });
     const merged = mergeWorkspaces(remote, local);
     // Remote wins for records it has...

@@ -12,12 +12,17 @@
  */
 import { today as todayFn } from "./factories";
 import { bal, committed, dep, owed, projFin } from "./finance";
-import { dFromNow, num } from "./format";
+import { dFromNow, homeToEur, num } from "./format";
 import type { Company, Expense, Project } from "./types";
 
-/** Sum of the overhead ledger — treated as a monthly burn. */
-export const monthlyBurn = (expenses: Expense[]): number =>
-  expenses.reduce((a, e) => a + num(e.amount), 0);
+/**
+ * Sum of the overhead ledger as a monthly burn, in EUR.
+ *
+ * Overheads are typed in the home currency, while inflows are EUR-normalised —
+ * netting them raw subtracted lei from euros.
+ */
+export const monthlyBurn = (expenses: Expense[], company: Company): number =>
+  homeToEur(expenses.reduce((a, e) => a + num(e.amount), 0), company);
 
 // All arithmetic in UTC so the month axis is the same in every timezone. Parsing
 // as local time then formatting with toISOString() (UTC) shifts the first month
@@ -72,7 +77,7 @@ export const cashFlowForecast = (
 ): CashMonth[] => {
   const months = monthKeys(monthsAhead, todayStr);
   const first = months[0];
-  const burn = monthlyBurn(expenses);
+  const burn = monthlyBurn(expenses, company);
   const inflowByMonth: Record<string, number> = Object.fromEntries(months.map((m) => [m, 0]));
 
   scheduledInflows(projList, company).forEach(({ date, amount }) => {

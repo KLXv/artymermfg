@@ -22,15 +22,15 @@ const stateOf = (accounts: Account[], projects: Project[]): CockpitState => ({
 describe("buildDashboard", () => {
   it("aggregates outstanding receivables on committed work only", () => {
     const acct = { ...blankAccount(), id: "a1", name: "LóFő" };
-    const won = { ...blankProject("a1"), id: "p1", stage: "Won", qty: "30", unitPrice: "165" };
-    const lead = { ...blankProject("a1"), id: "p2", stage: "Proposal", qty: "30", unitPrice: "165" };
+    const won = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Won", qty: "30", unitPrice: "165" };
+    const lead = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p2", stage: "Proposal", qty: "30", unitPrice: "165" };
     const d = buildDashboard(stateOf([acct], [won, lead]));
     expect(d.outstanding).toBeCloseTo(4950); // only the committed project
   });
 
   it("queues deposit collection for a committed, unpaid project", () => {
     const acct = { ...blankAccount(), id: "a1", name: "HFN" };
-    const won = { ...blankProject("a1"), id: "p1", stage: "Won", name: "Falcon" };
+    const won = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Won", name: "Falcon" };
     const d = buildDashboard(stateOf([acct], [won]));
     const dep = d.queue.find((q) => q.lbl.startsWith("Collect deposit"));
     expect(dep).toBeDefined();
@@ -42,7 +42,7 @@ describe("buildDashboard", () => {
   it("surfaces a QC sign-off action (weight 1) when media received and batch ACCEPTs", () => {
     const acct = { ...blankAccount(), id: "a1" };
     const passed: Project = {
-      ...blankProject("a1"),
+      ...blankProject("a1"), currency: "EUR", costCurrency: "EUR",
       id: "p1",
       stage: "Won",
       qty: "1",
@@ -60,7 +60,7 @@ describe("buildDashboard", () => {
 
   it("queues a 'changes requested' action from a client response, not an approval", () => {
     const acct = { ...blankAccount(), id: "a1" };
-    const proj = { ...blankProject("a1"), id: "p1", name: "Falcon" };
+    const proj = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", name: "Falcon" };
     const base = stateOf([acct], [proj]);
     const changes = buildDashboard(base, [{ projectId: "p1", title: "Falcon", decision: "changes", signer: "Eve", note: "Bigger numerals" }]);
     const item = changes.queue.find((q) => q.tag === "Client");

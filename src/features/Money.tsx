@@ -20,12 +20,13 @@ import {
   CCY,
   acctName,
   bal,
-  baseMoney,
   cashFlowForecast,
   committed,
-  convertCcy,
   dep,
   fmtCcy,
+  fromEur,
+  homeToEur,
+  moneyIn,
   marginAnalysis,
   monthlyBurn,
   num,
@@ -61,8 +62,11 @@ export function Money() {
     setCcy(c);
     localStorage.setItem(CCY_KEY, c);
   };
-  const m = (amt: number) => (ccy === base ? baseMoney(amt, company) : fmtCcy(convertCcy(amt, base, ccy, company.fx), ccy));
-  const conv = (amt: number) => convertCcy(amt, base, ccy, company.fx);
+  // Domain figures arrive in EUR; these render them in whichever currency the
+  // page is toggled to. They previously converted *from* the base currency,
+  // which double-counted the rate whenever base was not EUR.
+  const m = (amt: number) => moneyIn(amt, ccy, company.fx);
+  const conv = (amt: number) => fromEur(amt, ccy, company.fx);
 
   const forecast = cashFlowForecast(d.projList, expenses, company, 6).map((row) => ({
     ...row,
@@ -72,7 +76,7 @@ export function Money() {
   }));
   const aging = receivablesAging(d.projList, company);
   const margin = marginAnalysis(d.projList, company);
-  const burn = monthlyBurn(expenses);
+  const burn = monthlyBurn(expenses, company);
   // Runway: months the cumulative position stays solvent given the burn.
   const endingPosition = forecast.length ? forecast[forecast.length - 1].cumulative : 0;
 
@@ -315,7 +319,7 @@ export function Money() {
           </div>
         )}
         <div className="mt-2 text-right font-mono text-[13px] text-dim">
-          Total {m(expenses.reduce((a, e) => a + num(e.amount), 0))}
+          Total {m(homeToEur(expenses.reduce((a, e) => a + num(e.amount), 0), company))}
         </div>
       </Panel>
 

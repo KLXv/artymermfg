@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { baseMoney, blankTask, coFounderBriefing, today } from "@/domain";
+import { baseMoney, blankTask, coFounderBriefing, fmtCcy, fromEur, homeMoney, today, type Ccy } from "@/domain";
 import { Button, Empty, Panel, SectionHead, Stat, Tag } from "@/ui/kit";
 import { deckGreeting, deckSubline, OPERATOR } from "@/ui/companionLines";
 import { ArtymerWatch } from "@/ui/ArtymerWatch";
@@ -30,6 +30,8 @@ export function Deck() {
   const monthlyTarget = parseFloat(company.monthlyRevenue) || 0;
 
   const summary = coFounderBriefing(d, OPERATOR);
+  const baseCcy = (company.baseCurrency as Ccy) || "EUR";
+  const inflowSeries = d.monthBuckets.map((b) => ({ ...b, inflow: Math.round(fromEur(b.inflow, baseCcy, company.fx)) }));
   const [taskTitle, setTaskTitle] = useState("");
   const addQuickTask = () => {
     const t = taskTitle.trim();
@@ -140,7 +142,7 @@ export function Deck() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-dim">Monthly target</span>
-              <span className="tnum font-mono text-sm text-faint">{baseMoney(monthlyTarget, company)}</span>
+              <span className="tnum font-mono text-sm text-faint">{homeMoney(monthlyTarget, company)}</span>
             </div>
           </div>
         </Panel>
@@ -157,12 +159,14 @@ export function Deck() {
       {/* Cash runway */}
       <Panel className="mt-6 p-4">
         <SectionHead title="Cash runway" kicker="expected inflow · next ~5 months" />
+        {/* monthBuckets are EUR-normalised like everything else; convert for the
+            axis so it agrees with the tooltip and the tiles. */}
         {d.monthBuckets.length === 0 ? (
           <Empty>No scheduled deposits or balances yet.</Empty>
         ) : (
           <div style={{ height: 210 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={d.monthBuckets} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+              <AreaChart data={inflowSeries} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="inflowFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#2FE8AC" stopOpacity={0.5} />
@@ -181,7 +185,7 @@ export function Deck() {
                     fontFamily: "var(--mono)",
                     fontSize: 11,
                   }}
-                  formatter={(v: number) => [baseMoney(v, company), "inflow"]}
+                  formatter={(v: number) => [fmtCcy(v, baseCcy), "inflow"]}
                 />
                 <Area
                   type="monotone"

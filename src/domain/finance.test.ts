@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blankAccount, blankCompany, blankProject } from "./factories";
-import { bal, committed, costModeOf, dep, feePerUnit, hasCosts, owed, projFin, projFinance, rateOf, stageIdx, svcOf, unitBuild, unitCOGS, unitMaterial } from "./finance";
+import { bal, committed, costCurrencyOf, costModeOf, dep, feePerUnit, hasCosts, owed, projFin, projFinance, rateOf, stageIdx, svcOf, unitBuild, unitCOGS, unitMaterial } from "./finance";
 import type { Account, Company, Project } from "./types";
 
 const company = (): Company => blankCompany();
@@ -10,6 +10,7 @@ const project = (over: Partial<Project> = {}): Project => ({
   qty: "30",
   unitPrice: "165",
   currency: "EUR",
+  costCurrency: "EUR",
   ...over,
 });
 
@@ -144,10 +145,28 @@ describe("projFinance — the money engine", () => {
   });
 
   it("converts totals to euros via the FX rate", () => {
-    const p = project({ qty: "2", unitPrice: "100", currency: "USD", cMovement: "10" });
-    const fb = projFinance(p, company()); // USD rate 0.92
-    expect(fb.revenue).toBeCloseTo(184); // 2*100*0.92
-    expect(fb.unitPrice).toBeCloseTo(92);
+    // Pinned, not the shipped default — real FX drifts.
+    const c: Company = { ...blankCompany(), fx: { RON: 0.2, USD: 0.9 } };
+    const p = project({ qty: "2", unitPrice: "100", currency: "USD", costCurrency: "USD", cMovement: "10" });
+    const fb = projFinance(p, c);
+    expect(fb.revenue).toBeCloseTo(180); // 2*100*0.9
+    expect(fb.unitPrice).toBeCloseTo(90);
+  });
+
+  it("prices in one currency while costing in the supplier's", () => {
+    const c: Company = { ...blankCompany(), fx: { RON: 0.2, USD: 0.9 } };
+    // Sold at 500 lei each, bought at $50 each — the pair Artymer actually runs.
+    const p = project({ qty: "10", unitPrice: "500", currency: "RON", costMode: "simple", cUnit: "50", costCurrency: "USD" });
+    const fb = projFinance(p, c);
+    expect(fb.revenue).toBeCloseTo(1000); // 500*10*0.2
+    expect(fb.unitMaterial).toBeCloseTo(45); // 50*0.9
+    expect(fb.cost).toBeCloseTo(450);
+    expect(fb.profit).toBeCloseTo(550);
+  });
+
+  it("falls back to the sale currency when the supplier's is unset", () => {
+    const p = project({ currency: "USD", costCurrency: "" });
+    expect(costCurrencyOf(p)).toBe("USD");
   });
 });
 

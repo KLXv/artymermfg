@@ -11,7 +11,7 @@ const passAll = (): QcUnitResult => {
 };
 
 const withResults = (qty: number, results: Record<number, QcUnitResult>): Project => ({
-  ...blankProject("a"),
+  ...blankProject("a"), currency: "EUR", costCurrency: "EUR",
   qty: String(qty),
   qc: { received: false, results, signed: false, signedDate: "" },
 });

@@ -7,8 +7,8 @@ const company = blankCompany();
 describe("marketingMetrics", () => {
   const insta = { ...blankAccount(), id: "a1", name: "A", source: "Instagram" };
   const ref = { ...blankAccount(), id: "a2", name: "B", source: "Referral" };
-  const won = { ...blankProject("a1"), id: "p1", stage: "Production", qty: "10", unitPrice: "100" }; // committed
-  const lead = { ...blankProject("a2"), id: "p2", stage: "Proposal", qty: "10", unitPrice: "100" }; // open
+  const won = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Production", qty: "10", unitPrice: "100" }; // committed
+  const lead = { ...blankProject("a2"), currency: "EUR", costCurrency: "EUR", id: "p2", stage: "Proposal", qty: "10", unitPrice: "100" }; // open
 
   it("builds a funnel and lead→won conversion", () => {
     const m = marketingMetrics([insta, ref], [won, lead], company);

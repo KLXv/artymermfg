@@ -8,7 +8,7 @@ const today = "2026-06-18";
 
 describe("planAdvance", () => {
   it("moves to the next stage and generates the canonical next-action task", () => {
-    const p: Project = { ...blankProject("a1"), id: "p1", stage: "Brief" };
+    const p: Project = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Brief" };
     const eff = planAdvance(p, [], today);
     expect(eff.canAdvance).toBe(true);
     expect(eff.nextStage).toBe("Design");
@@ -21,7 +21,7 @@ describe("planAdvance", () => {
   });
 
   it("fills the deposit-expected date when entering Won, only if blank", () => {
-    const p: Project = { ...blankProject("a1"), id: "p1", stage: "Negotiating", depositExpected: "" };
+    const p: Project = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Negotiating", depositExpected: "" };
     const eff = planAdvance(p, [], today);
     expect(eff.nextStage).toBe("Won");
     expect(eff.patch.depositExpected).toBe("2026-06-23"); // today + 5
@@ -31,21 +31,21 @@ describe("planAdvance", () => {
   });
 
   it("sets balance-expected to the deadline when entering QC", () => {
-    const p: Project = { ...blankProject("a1"), id: "p1", stage: "Production", deadline: "2026-09-01", balanceExpected: "" };
+    const p: Project = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Production", deadline: "2026-09-01", balanceExpected: "" };
     const eff = planAdvance(p, [], today);
     expect(eff.nextStage).toBe("QC");
     expect(eff.patch.balanceExpected).toBe("2026-09-01");
   });
 
   it("does not duplicate an already-open next-action task", () => {
-    const p: Project = { ...blankProject("a1"), id: "p1", stage: "Brief" };
+    const p: Project = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Brief" };
     const existing: Task = { ...blankTask({ type: "project", id: "p1" }), title: "Get CAD approval", done: false };
     const eff = planAdvance(p, [existing], today);
     expect(eff.newTask).toBeNull();
   });
 
   it("is a no-op at the final stage", () => {
-    const p: Project = { ...blankProject("a1"), id: "p1", stage: "Delivered" };
+    const p: Project = { ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", stage: "Delivered" };
     const eff = planAdvance(p, [], today);
     expect(eff.canAdvance).toBe(false);
     expect(eff.patch).toEqual({});
@@ -54,7 +54,7 @@ describe("planAdvance", () => {
 });
 
 describe("pipelineMetrics", () => {
-  const mk = (over: Partial<Project>): Project => ({ ...blankProject("a1"), qty: "30", unitPrice: "100", ...over });
+  const mk = (over: Partial<Project>): Project => ({ ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", qty: "30", unitPrice: "100", ...over });
 
   it("separates speculative from committed value and excludes delivered/lost", () => {
     const projList = [
