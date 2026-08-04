@@ -211,17 +211,41 @@ export function PresentationTab({
       </Panel>
 
       <Panel className="p-4">
-        <SectionHead title="Imagery" kicker="paste hosted image URLs" />
+        {/* These are the same slots the Attachments tab uploads into, so the
+            usual route is to upload there rather than to go and host a file
+            somewhere first. A thumbnail shows whether a link actually resolves,
+            which a bare URL field never did. */}
+        <SectionHead title="Imagery" kicker="uploaded on Attachments · or paste a hosted URL" />
         <div className="grid gap-3 sm:grid-cols-2">
           {IMG_FIELDS.map(([key, label]) => (
-            <Field
-              key={key}
-              label={label}
-              value={p.images[key]}
-              onChange={(v) => patch({ images: { ...p.images, [key]: v } })}
-            />
+            <div key={key} className="flex items-end gap-2">
+              <div
+                className="mb-0.5 grid h-[38px] w-[38px] shrink-0 place-items-center overflow-hidden rounded-md border border-line bg-inset"
+                aria-hidden
+              >
+                {p.images[key] ? (
+                  <img
+                    src={p.images[key]}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    onError={(e) => ((e.currentTarget as HTMLImageElement).style.visibility = "hidden")}
+                  />
+                ) : (
+                  <span className="font-mono text-[11px] text-faint">—</span>
+                )}
+              </div>
+              <Field
+                label={label}
+                value={p.images[key]}
+                onChange={(v) => patch({ images: { ...p.images, [key]: v } })}
+                className="min-w-0 flex-1"
+              />
+            </div>
           ))}
         </div>
+        <p className="mt-2 font-mono text-[11px] text-faint">
+          Drop files on the Attachments tab and these fill in on their own.
+        </p>
       </Panel>
 
       <Panel className="p-4">

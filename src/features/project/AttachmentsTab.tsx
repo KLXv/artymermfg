@@ -61,6 +61,7 @@ function UploadSlot({
   onUpload,
   onClear,
   uploading,
+  disabled,
 }: {
   slotKey: string;
   label: string;
@@ -71,6 +72,8 @@ function UploadSlot({
   onUpload: (file: File, slot: string) => Promise<void>;
   onClear: (slot: string, url: string) => Promise<void>;
   uploading: boolean;
+  /** Storage unavailable (local-only mode) — not the same as mid-upload. */
+  disabled?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -111,14 +114,14 @@ function UploadSlot({
             <button
               onClick={() => inputRef.current?.click()}
               className="rounded border border-line2/50 bg-black/60 px-2 py-1 font-mono text-[11px] text-ink hover:border-brass"
-              disabled={uploading}
+              disabled={uploading || disabled}
             >
               Replace
             </button>
             <button
               onClick={() => onClear(slotKey, url)}
               className="rounded border border-bad/40 bg-black/60 px-2 py-1 font-mono text-[11px] text-bad hover:border-bad"
-              disabled={uploading}
+              disabled={uploading || disabled}
             >
               Remove
             </button>
@@ -128,14 +131,16 @@ function UploadSlot({
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
-          onClick={() => !uploading && inputRef.current?.click()}
+          onClick={() => !uploading && !disabled && inputRef.current?.click()}
           className={cx(
             "flex h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-line transition-colors",
-            uploading ? "opacity-50" : "hover:border-brass/60 hover:bg-white/[.02]",
+            uploading || disabled ? "opacity-50" : "hover:border-brass/60 hover:bg-white/[.02]",
           )}
         >
           {uploading ? (
             <span className="font-mono text-[12px] text-faint">Uploading…</span>
+          ) : disabled ? (
+            <span className="font-mono text-[12px] text-faint">Uploads need cloud sync</span>
           ) : (
             <>
               <UploadIcon />
@@ -251,7 +256,8 @@ export function AttachmentsTab({ p, patch }: { p: Project; patch: Patch }) {
               isImage
               onUpload={handleUpload}
               onClear={handleClear}
-              uploading={uploading.has(key) || !configured}
+              uploading={uploading.has(key)}
+              disabled={!configured}
             />
           ))}
         </div>
@@ -271,7 +277,8 @@ export function AttachmentsTab({ p, patch }: { p: Project; patch: Patch }) {
               isImage={false}
               onUpload={handleUpload}
               onClear={handleClear}
-              uploading={uploading.has(key) || !configured}
+              uploading={uploading.has(key)}
+              disabled={!configured}
             />
           ))}
         </div>
