@@ -281,6 +281,7 @@ export const blankProspect = (): Prospect => ({
   sourceUrl: "",
   status: "Not Contacted",
   touches: ["", "", "", "", ""],
+  log: [],
   notes: "",
   drafts: [],
   accountId: "",

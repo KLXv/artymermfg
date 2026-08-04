@@ -95,6 +95,12 @@ export interface WorkspaceActions {
   deleteProspect: (id: string) => void;
   /** Promote a prospect to a client Account; returns the new account id. */
   promoteProspect: (id: string) => string | null;
+  /**
+   * Record a real contact: appends to the log, stamps the next unused touch in
+   * the cadence, and moves a never-contacted prospect to Contacted — so one
+   * press keeps the history, the sequence and the status in agreement.
+   */
+  logProspectContact: (id: string, entry: { channel: string; note: string }) => void;
 
   upsertCandidate: (c: DiscoveryCandidate) => void;
   /** Approve a discovery candidate → creates a Prospect; returns its id. */
@@ -285,6 +291,26 @@ export const useStore = create<Store>()(
           delete prospects[id];
           return { prospects };
         }),
+      logProspectContact: (id, entry) => {
+        const s = get();
+        const p = s.prospects[id];
+        if (!p) return;
+        const when = today();
+        const touches = [...p.touches];
+        const next = touches.findIndex((t) => !t);
+        if (next !== -1) touches[next] = when;
+        const log = [
+          ...(p.log ?? []),
+          { id: rid("tch"), date: when, channel: entry.channel || p.channel, note: entry.note, reply: "", outcome: "awaiting" as const },
+        ];
+        set({
+          prospects: {
+            ...s.prospects,
+            [id]: { ...p, log, touches, status: p.status === "Not Contacted" ? "Contacted" : p.status },
+          },
+        });
+      },
+
       promoteProspect: (id) => {
         const s = get();
         const p = s.prospects[id];

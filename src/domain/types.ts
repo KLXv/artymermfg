@@ -444,6 +444,23 @@ export interface DiscoveryCandidate {
 }
 
 /** A cold-outbound prospect — the new top-of-funnel entity. */
+/**
+ * One real interaction with a prospect — what you did, and what came back.
+ * The 5-touch `touches` cadence records *when* a sequence step went out; this
+ * records what actually happened, which is what you need when you pick the
+ * conversation back up weeks later.
+ */
+export interface ProspectTouch {
+  id: string;
+  date: string;
+  channel: string; // Email | LinkedIn | Phone | …
+  note: string; // what you sent or said
+  reply: string; // what came back ("" while waiting)
+  outcome: TouchOutcome;
+}
+
+export type TouchOutcome = "awaiting" | "replied" | "meeting" | "not interested" | "no reply";
+
 export interface Prospect {
   id: string;
   name: string; // contact name (may be blank until found)
@@ -460,6 +477,7 @@ export interface Prospect {
   sourceUrl: string; // provenance of the signal
   status: ProspectStatus;
   touches: string[]; // touch 1–5 dates (length 5; "" = not yet done)
+  log: ProspectTouch[]; // the real contact history: what was said, what came back
   notes: string;
   drafts: OutboundDraft[]; // Touch 1–5 drafts (JSONB); approval queue lives here
   accountId: string; // set once promoted to a client Account

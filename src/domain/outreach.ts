@@ -111,8 +111,22 @@ export const promoteFields = (p: Prospect): Partial<Account> => {
     email: p.email,
     phone: p.phone,
     source: "Cold outreach",
-    notes: [p.signal && `Signal: ${p.signal}`, p.sourceUrl, p.notes].filter(Boolean).join("\n"),
-    lastContact: p.touches.filter(Boolean).slice(-1)[0] || "",
+    // The outreach history comes with them. Losing what was said — and what
+    // came back — at the moment a prospect becomes a client is exactly when it
+    // starts mattering most.
+    notes: [
+      p.signal && `Signal: ${p.signal}`,
+      p.sourceUrl,
+      p.notes,
+      ...(p.log ?? []).map((t) =>
+        [`${t.date} · ${t.channel}${t.note ? ` — ${t.note}` : ""}`, t.reply && `  ↳ reply: ${t.reply}`]
+          .filter(Boolean)
+          .join("\n"),
+      ),
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    lastContact: (p.log ?? []).map((t) => t.date).filter(Boolean).sort().slice(-1)[0] || p.touches.filter(Boolean).slice(-1)[0] || "",
   };
 };
 

@@ -67,7 +67,10 @@ export function Deck() {
             </div>
           </div>
 
-          <div className="flex flex-col items-center">
+          {/* Desktop only. On a phone the dial would push the action queue —
+              the whole point of this screen — below the fold, so it moves under
+              the queue instead (rendered after the Pulse panel). */}
+          <div className="hidden flex-col items-center lg:flex">
             <div className="relative grid place-items-center">
               <div className="dial-rings pointer-events-none absolute h-[360px] w-[360px] opacity-70" aria-hidden />
               <ArtymerWatch size={224} mode="live" />
@@ -141,6 +144,14 @@ export function Deck() {
             </div>
           </div>
         </Panel>
+      </div>
+
+      {/* The dial, on phones only — below the queue so it never buries it.
+          A smaller size than the desktop dial, which also keeps the two
+          instances' gradient ids distinct. */}
+      <div className="mt-6 flex flex-col items-center lg:hidden">
+        <ArtymerWatch size={176} mode="live" />
+        <div className="mt-2 font-mono text-[11px] uppercase tracking-label text-faint">Studio time</div>
       </div>
 
       {/* Cash runway */}

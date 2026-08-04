@@ -306,7 +306,10 @@ export function Shell() {
       <MobileTabBar alerts={alerts} onMore={() => setMoreOpen(true)} />
       <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} signedIn={!!user} />
 
-      <main className="relative z-10 lg:pl-56">
+      {/* lg:pr-32 keeps a gutter on the right for the fixed assistant/mic
+          buttons. Without it the content column runs underneath them and they
+          sit on top of real values (the margin % on Money, for one). */}
+      <main className="relative z-10 lg:pl-56 lg:pr-32">
         <motion.div
           key={loc.pathname}
           initial={{ opacity: 0 }}

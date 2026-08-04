@@ -16,6 +16,7 @@ import type { Account, CockpitState, Project, Task } from "./types";
 export type QueueTarget =
   | { kind: "project"; id: string }
   | { kind: "account"; id: string }
+  | { kind: "prospect"; id: string }
   | { kind: "view"; view: string };
 
 export interface QueueItem {
@@ -48,7 +49,9 @@ const taskTarget = (t: Task): QueueTarget =>
     ? { kind: "project", id: t.linkId }
     : t.linkType === "account"
       ? { kind: "account", id: t.linkId }
-      : { kind: "view", view: "settings" };
+      : t.linkType === "prospect"
+        ? { kind: "prospect", id: t.linkId }
+        : { kind: "view", view: "settings" };
 
 export interface Dashboard {
   projList: Project[];

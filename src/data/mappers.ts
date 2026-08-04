@@ -353,6 +353,7 @@ export const prospectToRow = (p: Prospect, ownerId: string): Row => ({
   account_id: p.accountId || null,
   created_at: p.createdAt || null,
   touches: p.touches,
+  log: p.log ?? [],
   drafts: p.drafts,
   prospector: p.prospector ?? null,
 });
@@ -367,6 +368,7 @@ export const rowToProspect = (row: Row): Prospect => {
   p.accountId = (row.account_id as string) ?? "";
   p.createdAt = (row.created_at as string) ?? "";
   if (Array.isArray(row.touches)) p.touches = row.touches as string[];
+  if (Array.isArray(row.log)) p.log = row.log as Prospect["log"];
   if (Array.isArray(row.drafts)) p.drafts = row.drafts as OutboundDraft[];
   if (row.prospector && typeof row.prospector === "object") p.prospector = row.prospector as Prospect["prospector"];
   return p;

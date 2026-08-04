@@ -8,13 +8,14 @@
  * send date is the human step.
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   LANGS,
   OUTBOUND_CHANNELS,
   PROSPECT_STATUS,
   MARKETS,
   blankProspect,
+  blankTask,
   detectLang,
   draftingSystemPrompt,
   linkedinSearchUrl,
@@ -23,6 +24,8 @@ import {
   type OutboundDraft,
   type Prospect,
   type ProspectStatus,
+  type ProspectTouch,
+  type TouchOutcome,
 } from "@/domain";
 import { Button, Empty, Field, Panel, SelectField, Tag, TextArea, cx } from "@/ui/kit";
 import { useStore } from "@/state/store";
@@ -41,6 +44,197 @@ const STATUS_TONE: Record<ProspectStatus, "neutral" | "warn" | "brass" | "ok" | 
   "Closed Lost": "bad",
   Nurture: "pl",
 };
+
+const OUTCOMES: TouchOutcome[] = ["awaiting", "replied", "meeting", "not interested", "no reply"];
+const OUTCOME_TONE: Record<TouchOutcome, "neutral" | "warn" | "brass" | "ok" | "bad"> = {
+  awaiting: "warn",
+  replied: "brass",
+  meeting: "ok",
+  "not interested": "bad",
+  "no reply": "neutral",
+};
+
+/**
+ * The target list's entry point. A prospect is worth nothing until it has a
+ * name and a reason, so this collects both up front rather than dropping an
+ * empty "Untitled" row into the list to be filled in later (or never).
+ */
+function AddProspect({ onDone }: { onDone: () => void }) {
+  const upsertProspect = useStore((s) => s.upsertProspect);
+  const segments = useStore((s) => s.company.icp.segments);
+  const [d, setD] = useState(() => blankProspect());
+  const set = (k: keyof Prospect, v: string) => setD((p) => ({ ...p, [k]: v }) as Prospect);
+
+  const save = () => {
+    if (!d.org.trim()) return;
+    upsertProspect({ ...d, lang: detectLang(d.market, d.city) });
+    onDone();
+  };
+
+  return (
+    <Panel className="mb-4 p-4">
+      <div className="mb-3 font-mono text-[12px] uppercase tracking-label text-brass">New target</div>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <Field label="Organisation *" value={d.org} onChange={(v) => set("org", v)} mono={false} />
+        <Field label="Contact name" value={d.name} onChange={(v) => set("name", v)} mono={false} />
+        <Field label="Role" value={d.role} onChange={(v) => set("role", v)} mono={false} />
+        <SelectField label="Segment" value={d.segment} onChange={(v) => set("segment", v)} options={["", ...segments.map((s) => s.name)]} />
+        <Field label="City" value={d.city} onChange={(v) => set("city", v)} mono={false} />
+        <SelectField label="Market" value={d.market} onChange={(v) => set("market", v)} options={MARKETS} />
+        <SelectField label="Channel" value={d.channel} onChange={(v) => set("channel", v)} options={OUTBOUND_CHANNELS} />
+        <Field label="Email" value={d.email} onChange={(v) => set("email", v)} type="email" inputMode="email" />
+        <Field label="Phone" value={d.phone} onChange={(v) => set("phone", v)} type="tel" inputMode="tel" />
+      </div>
+      <TextArea
+        label="Why them, why now"
+        value={d.signal}
+        onChange={(v) => set("signal", v)}
+        rows={2}
+        className="mt-2"
+        placeholder="120th anniversary next spring · won the league · new HQ opening…"
+      />
+      <Field label="Source URL" value={d.sourceUrl} onChange={(v) => set("sourceUrl", v)} type="url" inputMode="url" className="mt-2" />
+      <div className="mt-3 flex items-center gap-2">
+        <Button variant="primary" onClick={save} disabled={!d.org.trim()}>
+          Add to targets
+        </Button>
+        <Button variant="ghost" onClick={onDone}>
+          Cancel
+        </Button>
+        {!d.org.trim() && <span className="font-mono text-[11px] text-faint">an organisation name is required</span>}
+      </div>
+    </Panel>
+  );
+}
+
+/** The contact history — every touch, and what came back from it. */
+function ContactLog({ p, patch }: { p: Prospect; patch: (patch: Partial<Prospect>) => void }) {
+  const logContact = useStore((s) => s.logProspectContact);
+  const [note, setNote] = useState("");
+  const [channel, setChannel] = useState(p.channel || "Email");
+  const log = [...(p.log ?? [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  const update = (id: string, up: Partial<ProspectTouch>) =>
+    patch({ log: (p.log ?? []).map((t) => (t.id === id ? { ...t, ...up } : t)) });
+
+  return (
+    <div>
+      <div className="mb-2 flex flex-wrap items-end gap-2">
+        <div className="min-w-0 flex-1">
+          <Field label="Log a contact — what did you send or say?" value={note} onChange={setNote} mono={false} />
+        </div>
+        <SelectField label="Channel" value={channel} onChange={setChannel} options={OUTBOUND_CHANNELS} className="w-36" />
+        <Button
+          variant="primary"
+          onClick={() => {
+            logContact(p.id, { channel, note });
+            setNote("");
+          }}
+          className="mb-0"
+        >
+          Log contact
+        </Button>
+      </div>
+
+      {log.length === 0 ? (
+        <p className="font-mono text-[12px] text-faint">No contact logged yet.</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {log.map((t) => (
+            <li key={t.id} className="rounded-lg border border-line bg-panel p-2.5">
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <span className="tnum font-mono text-[12px] text-brass">{t.date}</span>
+                <Tag tone="neutral">{t.channel}</Tag>
+                <select
+                  value={t.outcome}
+                  onChange={(e) => update(t.id, { outcome: e.target.value as TouchOutcome })}
+                  className="rounded-full border border-line bg-white/[.03] px-2 py-0.5 font-mono text-[11px] uppercase tracking-label text-dim focus:outline-none"
+                >
+                  {OUTCOMES.map((o) => (
+                    <option key={o} value={o} className="bg-panel text-ink">
+                      {o}
+                    </option>
+                  ))}
+                </select>
+                <Tag tone={OUTCOME_TONE[t.outcome]}>{t.outcome}</Tag>
+                <button
+                  onClick={() => patch({ log: (p.log ?? []).filter((x) => x.id !== t.id) })}
+                  className="ml-auto font-mono text-[11px] text-faint hover:text-bad"
+                >
+                  remove
+                </button>
+              </div>
+              <TextArea label="What you sent / said" value={t.note} onChange={(v) => update(t.id, { note: v })} rows={2} />
+              <TextArea
+                label="Their response"
+                value={t.reply}
+                onChange={(v) => update(t.id, { reply: v, outcome: t.outcome === "awaiting" && v.trim() ? "replied" : t.outcome })}
+                rows={2}
+                className="mt-1.5"
+                placeholder="Paste or summarise what came back…"
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Follow-ups live in the normal task system, so they surface on the Deck. */
+function FollowUps({ p }: { p: Prospect }) {
+  const tasks = useStore((s) => s.tasks);
+  const upsertTask = useStore((s) => s.upsertTask);
+  const patchTask = useStore((s) => s.patchTask);
+  const deleteTask = useStore((s) => s.deleteTask);
+  const [title, setTitle] = useState("");
+  const [due, setDue] = useState(today());
+
+  const mine = Object.values(tasks)
+    .filter((t) => t.linkType === "prospect" && t.linkId === p.id)
+    .sort((a, b) => Number(a.done) - Number(b.done) || (a.due || "").localeCompare(b.due || ""));
+
+  const add = () => {
+    if (!title.trim()) return;
+    upsertTask({ ...blankTask({ type: "prospect", id: p.id }), title: title.trim(), due, source: "outbound" });
+    setTitle("");
+  };
+
+  return (
+    <div>
+      <div className="mb-2 flex flex-wrap items-end gap-2">
+        <div className="min-w-0 flex-1">
+          <Field label="Next step" value={title} onChange={setTitle} mono={false} placeholder="Call back · send concept · chase reply…" />
+        </div>
+        <Field label="Due" value={due} onChange={setDue} type="date" className="w-40" />
+        <Button variant="ghost" onClick={add} disabled={!title.trim()} className="mb-0">
+          + Follow-up
+        </Button>
+      </div>
+      {mine.length === 0 ? (
+        <p className="font-mono text-[12px] text-faint">No follow-up scheduled. One due today or earlier shows on the Deck.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-line">
+          {mine.map((t) => (
+            <li key={t.id} className="flex items-center gap-2 py-1.5">
+              <input
+                type="checkbox"
+                checked={t.done}
+                onChange={(e) => patchTask(t.id, { done: e.target.checked })}
+                className="h-3.5 w-3.5 accent-[var(--ok)]"
+              />
+              <span className={cx("min-w-0 flex-1 truncate text-[13px]", t.done ? "text-faint line-through" : "text-ink")}>{t.title}</span>
+              <span className="tnum font-mono text-[12px] text-dim">{t.due}</span>
+              <button onClick={() => deleteTask(t.id)} className="font-mono text-[11px] text-faint hover:text-bad">
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function TouchTrack({ p, patch }: { p: Prospect; patch: (patch: Partial<Prospect>) => void }) {
   const setTouch = (i: number, v: string) => {
@@ -171,10 +365,25 @@ function ProspectDetail({ p }: { p: Prospect }) {
       <Field label="Source URL" value={p.sourceUrl} onChange={(v) => set("sourceUrl", v)} type="url" inputMode="url" className="mt-2" />
       <TextArea label="Notes" value={p.notes} onChange={(v) => set("notes", v)} rows={2} className="mt-2" />
 
-      <div className="mt-3">
-        <div className="mb-1 font-mono text-[11px] uppercase tracking-label text-faint">Touch cadence</div>
-        <TouchTrack p={p} patch={patch} />
+      {/* The conversation — the part you come back for. */}
+      <div className="mt-4 border-t border-line/70 pt-3">
+        <div className="mb-2 font-mono text-[12px] uppercase tracking-label text-faint">Contact history</div>
+        <ContactLog p={p} patch={patch} />
       </div>
+
+      <div className="mt-4 border-t border-line/70 pt-3">
+        <div className="mb-2 font-mono text-[12px] uppercase tracking-label text-faint">Follow-ups</div>
+        <FollowUps p={p} />
+      </div>
+
+      <details className="mt-3 border-t border-line/70 pt-3">
+        <summary className="cursor-pointer font-mono text-[12px] uppercase tracking-label text-faint hover:text-dim">
+          5-touch sequence dates
+        </summary>
+        <div className="mt-2">
+          <TouchTrack p={p} patch={patch} />
+        </div>
+      </details>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <a
@@ -225,10 +434,16 @@ function ProspectDetail({ p }: { p: Prospect }) {
   );
 }
 
-function ProspectRow({ p }: { p: Prospect }) {
+function ProspectRow({ p, defaultOpen = false }: { p: Prospect; defaultOpen?: boolean }) {
   const patchProspect = useStore((s) => s.patchProspect);
-  const [open, setOpen] = useState(false);
+  const tasks = useStore((s) => s.tasks);
+  const [open, setOpen] = useState(defaultOpen);
   const doneTouches = p.drafts.filter((d) => d.status === "sent").length || p.touches.filter(Boolean).length;
+  const log = p.log ?? [];
+  const last = [...log].sort((a, b) => (a.date || "").localeCompare(b.date || "")).slice(-1)[0];
+  const nextUp = Object.values(tasks)
+    .filter((t) => t.linkType === "prospect" && t.linkId === p.id && !t.done)
+    .sort((a, b) => (a.due || "").localeCompare(b.due || ""))[0];
 
   return (
     <div className="rounded-lg border border-line bg-inset">
@@ -237,9 +452,15 @@ function ProspectRow({ p }: { p: Prospect }) {
           {open ? "▾" : "▸"}
         </button>
         <span className="min-w-0 flex-1">
-          <span className="text-[14px] font-medium text-ink">{p.org || "Untitled"}</span>
+          <span className="text-[14px] font-medium text-ink">{p.org || "Unnamed target"}</span>
           {p.name && <span className="ml-2 font-mono text-[12px] text-faint">{p.name}</span>}
+          {p.city && <span className="ml-2 font-mono text-[12px] text-faint">{p.city}</span>}
           {p.signal && <span className="ml-2 hidden truncate text-[12px] text-dim md:inline">· {p.signal}</span>}
+          {/* The two things you want without expanding: where it stands, what's next. */}
+          <span className="mt-0.5 block truncate font-mono text-[11px] text-faint">
+            {last ? `last: ${last.date} ${last.channel}${last.reply ? " · replied" : ""}` : "never contacted"}
+            {nextUp && <span className="text-brass"> · next: {nextUp.title} ({nextUp.due})</span>}
+          </span>
         </span>
         {p.accountId && <Tag tone="ok">client</Tag>}
         <span className="font-mono text-[11px] text-faint">{doneTouches}/5</span>
@@ -276,8 +497,10 @@ function ProspectRow({ p }: { p: Prospect }) {
 
 export function Prospects() {
   const prospects = useStore((s) => s.prospects);
-  const upsertProspect = useStore((s) => s.upsertProspect);
   const [filter, setFilter] = useState<ProspectStatus | "all">("all");
+  const [adding, setAdding] = useState(false);
+  // A follow-up task on the Deck links here with ?open=<id>.
+  const openId = new URLSearchParams(useLocation().search).get("open") || "";
 
   const list = useMemo(
     () => Object.values(prospects).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")),
@@ -290,20 +513,20 @@ export function Prospects() {
     return m;
   }, [list]);
 
-  const addProspect = () => upsertProspect(blankProspect());
-
   return (
     <div>
       <PageHeader
         title="Outbound Engine"
         kicker="prospects · pipeline"
         actions={
-          <Button variant="primary" onClick={addProspect}>
-            + Prospect
+          <Button variant="primary" onClick={() => setAdding((a) => !a)}>
+            {adding ? "Close" : "+ Prospect"}
           </Button>
         }
       />
       <OutreachNav />
+
+      {adding && <AddProspect onDone={() => setAdding(false)} />}
 
       <div className="mb-4 flex flex-wrap gap-1.5">
         <button
@@ -331,14 +554,15 @@ export function Prospects() {
 
       {shown.length === 0 ? (
         <Panel className="p-4">
-          <Empty glyph="➤" action={<Button variant="primary" onClick={addProspect}>Add a prospect</Button>}>
-            No prospects{filter !== "all" ? " in this stage" : " yet"}. Approve candidates in Discovery, or add one manually.
+          <Empty glyph="➤" action={<Button variant="primary" onClick={() => setAdding(true)}>Add a target</Button>}>
+            No targets{filter !== "all" ? " in this stage" : " yet"}. Add an organisation worth approaching, or approve
+            candidates in Discovery.
           </Empty>
         </Panel>
       ) : (
         <div className="flex flex-col gap-2">
           {shown.map((p) => (
-            <ProspectRow key={p.id} p={p} />
+            <ProspectRow key={p.id} p={p} defaultOpen={p.id === openId} />
           ))}
         </div>
       )}

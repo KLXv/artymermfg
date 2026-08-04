@@ -363,3 +363,33 @@ describe("parseCockpitExport", () => {
     expect(parseCockpitExport({ leads: [lead()] })).toHaveLength(1);
   });
 });
+
+describe("promoteFields — carrying the outreach history", () => {
+  const withLog = (): Prospect => ({
+    ...blankProspect(),
+    org: "Fétis KFT",
+    name: "Süle József",
+    signal: "120th anniversary",
+    touches: ["2026-01-05", "", "", "", ""],
+    log: [
+      { id: "t1", date: "2026-02-01", channel: "Email", note: "Intro + concept", reply: "", outcome: "awaiting" },
+      { id: "t2", date: "2026-03-04", channel: "Phone", note: "Called back", reply: "Interested, send pricing", outcome: "replied" },
+    ],
+  });
+
+  it("carries what was said and what came back into the client's notes", () => {
+    const f = promoteFields(withLog());
+    expect(f.notes).toContain("Intro + concept");
+    expect(f.notes).toContain("Interested, send pricing");
+    expect(f.name).toBe("Fétis KFT");
+  });
+
+  it("takes last contact from the newest logged touch, not the cadence", () => {
+    expect(promoteFields(withLog()).lastContact).toBe("2026-03-04");
+  });
+
+  it("falls back to the cadence when nothing has been logged", () => {
+    const p = { ...withLog(), log: [] };
+    expect(promoteFields(p).lastContact).toBe("2026-01-05");
+  });
+});

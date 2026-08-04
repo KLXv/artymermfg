@@ -5,7 +5,7 @@
  * electric accent that glows on intent; brushed-silver headline numbers; and
  * deliberately readable type (no sub-10px body text, high-contrast labels).
  */
-import { forwardRef, type ReactNode } from "react";
+import { forwardRef, useId, type ReactNode } from "react";
 
 const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" ");
 export { cx };
@@ -176,10 +176,14 @@ export function Field({
   spellCheck?: boolean;
 }) {
   const listId = list ? `dl-${label || placeholder || "f"}`.replace(/\s+/g, "-") : undefined;
+  // Tie the label to the control so tapping it focuses the field (it is a real
+  // target on a phone) and assistive tech / autofill can pair the two.
+  const id = useId();
   return (
     <div className={className}>
-      {label && <Label>{label}</Label>}
+      {label && <Label htmlFor={id}>{label}</Label>}
       <input
+        id={id}
         type={type}
         value={value}
         placeholder={placeholder}
@@ -217,10 +221,12 @@ export function TextArea({
   rows?: number;
   className?: string;
 }) {
+  const id = useId();
   return (
     <div className={className}>
-      {label && <Label>{label}</Label>}
+      {label && <Label htmlFor={id}>{label}</Label>}
       <textarea
+        id={id}
         value={value}
         rows={rows}
         placeholder={placeholder}
@@ -245,10 +251,11 @@ export function SelectField({
   className?: string;
 }) {
   const opts = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
+  const id = useId();
   return (
     <div className={className}>
-      {label && <Label>{label}</Label>}
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={cx(inputCls, "appearance-none")}>
+      {label && <Label htmlFor={id}>{label}</Label>}
+      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className={cx(inputCls, "appearance-none")}>
         {opts.map((o) => (
           <option key={o.value} value={o.value} className="bg-panel text-ink">
             {o.label}
