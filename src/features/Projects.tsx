@@ -11,19 +11,81 @@ import {
   stageIdx,
   type Project,
 } from "@/domain";
-import { Button, Empty, Field, SelectField, Tag } from "@/ui/kit";
+import { Button, Empty, Field, Panel, SelectField, Tag } from "@/ui/kit";
 import { StageTrack } from "@/ui/StageTrack";
 import { useStore } from "@/state/store";
 import { PageHeader } from "./PageHeader";
+
+/**
+ * Starting a project asked for nothing and dropped you straight into a
+ * seven-tab workbench with an untitled shell to fill in from memory. These are
+ * the facts that exist the moment a job is real — everything else is spec work
+ * that follows.
+ */
+function NewProject({ onDone }: { onDone: () => void }) {
+  const accounts = useStore((s) => s.accounts);
+  const company = useStore((s) => s.company);
+  const upsertProject = useStore((s) => s.upsertProject);
+  const navigate = useNavigate();
+  const [p, setP] = useState(() => blankProject());
+  const set = (k: keyof Project, v: string) => setP((prev) => ({ ...prev, [k]: v }) as Project);
+
+  const acctOpts = [
+    { value: "", label: "— no client yet —" },
+    ...Object.values(accounts).map((a) => ({ value: a.id, label: a.name || "Unnamed" })),
+  ];
+
+  const create = () => {
+    if (!p.name.trim()) return;
+    upsertProject(p);
+    navigate(`/projects/${p.id}`);
+    onDone();
+  };
+
+  return (
+    <Panel className="mb-4 p-4">
+      <div className="mb-3 font-mono text-[12px] uppercase tracking-label text-brass">New project</div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Field label="Piece name *" value={p.name} onChange={(v) => set("name", v)} mono={false} />
+        <SelectField label="Client" value={p.accountId} onChange={(v) => set("accountId", v)} options={acctOpts} />
+        <SelectField label="Service path" value={p.servicePath} onChange={(v) => set("servicePath", v)} options={["", "Commission", "Private label"]} />
+        <Field label="Quantity (pc)" value={p.qty} onChange={(v) => set("qty", v)} />
+        <Field label={`Unit price (${p.currency})`} value={p.unitPrice} onChange={(v) => set("unitPrice", v)} />
+        <SelectField label="You sell in" value={p.currency} onChange={(v) => set("currency", v)} options={["RON", "EUR", "USD"]} />
+        <Field label={`Factory price per watch (${p.costCurrency})`} value={p.cUnit} onChange={(v) => set("cUnit", v)} />
+        <SelectField label="Supplier quotes in" value={p.costCurrency} onChange={(v) => set("costCurrency", v)} options={["USD", "EUR", "RON"]} />
+        <Field label="Deadline" type="date" value={p.deadline} onChange={(v) => set("deadline", v)} />
+      </div>
+      <p className="mt-2 font-mono text-[11px] text-faint">
+        The cost can wait, but the deck will chase you for it — margin is a guess without it. Everything else lives in
+        the project's tabs.
+      </p>
+      <div className="mt-3 flex items-center gap-2">
+        <Button variant="primary" onClick={create} disabled={!p.name.trim()}>
+          Create project
+        </Button>
+        <Button variant="ghost" onClick={onDone}>
+          Cancel
+        </Button>
+        {!p.name.trim() && <span className="font-mono text-[11px] text-faint">a piece name is required</span>}
+        {p.unitPrice && p.cUnit && (
+          <span className="ml-auto font-mono text-[12px] text-dim">
+            margin {projFin(p, company).margin.toFixed(0)}%
+          </span>
+        )}
+      </div>
+    </Panel>
+  );
+}
 
 export function Projects() {
   const projects = useStore((s) => s.projects);
   const accounts = useStore((s) => s.accounts);
   const company = useStore((s) => s.company);
-  const upsertProject = useStore((s) => s.upsertProject);
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
+  const [adding, setAdding] = useState(false);
 
   const rows = useMemo(() => {
     let list = Object.values(projects);
@@ -37,11 +99,6 @@ export function Projects() {
     return list.sort((a, b) => stageIdx(b) - stageIdx(a));
   }, [projects, accounts, q, stageFilter]);
 
-  const newProject = () => {
-    const p = blankProject();
-    upsertProject(p);
-    navigate(`/projects/${p.id}`);
-  };
 
   return (
     <div>
@@ -49,11 +106,13 @@ export function Projects() {
         title="Projects"
         kicker={`${Object.keys(projects).length} total`}
         actions={
-          <Button variant="primary" onClick={newProject}>
-            + New project
+          <Button variant="primary" onClick={() => setAdding((a) => !a)}>
+            {adding ? "Close" : "+ New project"}
           </Button>
         }
       />
+
+      {adding && <NewProject onDone={() => setAdding(false)} />}
 
       <div className="mb-4 flex flex-wrap gap-2">
         <Field value={q} onChange={setQ} placeholder="Search name or client…" className="w-56" />

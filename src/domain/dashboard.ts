@@ -8,7 +8,7 @@
  * so ordering and copy are identical.
  */
 import { NEXT, PIPE, PROD, STAGES } from "./constants";
-import { acctName, bal, committed, dep, owed, projFin, stageIdx } from "./finance";
+import { acctName, bal, committed, dep, hasCosts, owed, projFin, stageIdx } from "./finance";
 import { dAgo, dFromNow, money, num } from "./format";
 import { projVerdict, sampleApproved } from "./qc";
 import type { Account, CockpitState, Company, Project, Task } from "./types";
@@ -172,6 +172,18 @@ export const buildDashboard = (state: CockpitState, responses: ClientResponse[] 
         lbl: `Collect deposit — ${pr.name || "Untitled"}`,
         sub: `${money(dep(pr, company), "€")} · ${acctName(pr, accounts)}`,
         tag: "Cash",
+        target: { kind: "project", id: pr.id },
+      });
+    // Nothing ever asked for costs, so margin, break-even and runway quietly
+    // computed against zero and reported the whole order as profit. Chase it
+    // the same way an unpaid deposit gets chased.
+    if (committed(pr) && !hasCosts(pr))
+      queue.push({
+        w: 3,
+        cls: "",
+        lbl: `Add costs — ${pr.name || "Untitled"}`,
+        sub: "margin and break-even are guesses until this is filled in",
+        tag: "Money",
         target: { kind: "project", id: pr.id },
       });
     if (committed(pr) && stageIdx(pr) >= STAGES.indexOf("QC") && !pr.balancePaid)

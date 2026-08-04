@@ -79,3 +79,26 @@ describe("buildDashboard", () => {
     expect(d.behindOutreach).toBe(true); // target 25
   });
 });
+
+describe("costs nudge", () => {
+  const state = (over: Partial<Project>) =>
+    stateOf(
+      [{ ...blankAccount(), id: "a1", name: "LóFő" }],
+      [{ ...blankProject("a1"), currency: "EUR", costCurrency: "EUR", id: "p1", name: "Falcon", stage: "Won", qty: "10", unitPrice: "100", ...over }],
+    );
+
+  it("chases a committed project that has never been costed", () => {
+    const q = buildDashboard(state({})).queue;
+    expect(q.some((i) => i.lbl.startsWith("Add costs"))).toBe(true);
+  });
+
+  it("stops once a cost is entered", () => {
+    const q = buildDashboard(state({ costMode: "simple", cUnit: "60" })).queue;
+    expect(q.some((i) => i.lbl.startsWith("Add costs"))).toBe(false);
+  });
+
+  it("leaves uncommitted work alone — there is nothing to cost yet", () => {
+    const q = buildDashboard(state({ stage: "Proposal" })).queue;
+    expect(q.some((i) => i.lbl.startsWith("Add costs"))).toBe(false);
+  });
+});
